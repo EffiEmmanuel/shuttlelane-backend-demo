@@ -7,6 +7,8 @@ import jsonwebtoken from "jsonwebtoken";
 import { checkUserEmailValidity } from "../util/db.helper.js";
 import PaymentModel from "../model/payment.model.js";
 import BookingModel from "../model/booking.model.js";
+import CityModel from "../model/city.model.js";
+import VisaOnArrivalRateModel from "../model/visaOnArrivalRate.model.js";
 
 export default class UserService {
   constructor(ShuttlelaneUserModel) {
@@ -245,6 +247,33 @@ export default class UserService {
       status: 200,
       message: `All user's bookings have been fetched successfully.`,
       bookings: bookings,
+    };
+  }
+
+  // This service GETS all cities
+  async getCities() {
+    // Fetch cities
+    const cities = await CityModel.find({});
+
+    return {
+      status: 200,
+      message: `Fetched cities`,
+      cities: cities,
+    };
+  }
+
+  // VISA ON ARRIVAL RATES
+  // This service GETS all visa on arrival rates
+  async getVisaOnArrivalRates() {
+    // Get visaOnArrivalRates
+    const visaOnArrivalRates = await VisaOnArrivalRateModel.find({}).sort({
+      createdAt: -1,
+    });
+
+    return {
+      status: 200,
+      message: `Fetched visa on arrival rates.`,
+      visaOnArrivalRates: visaOnArrivalRates,
     };
   }
 }

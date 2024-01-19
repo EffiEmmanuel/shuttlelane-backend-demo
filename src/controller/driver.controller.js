@@ -12,7 +12,7 @@ const driverService = new DriverService(DriverModel);
 // Sign up driver
 export const signupDriver = async (req, res) => {
   console.log("HI");
-  console.log("DRIVER 111:", req.body);
+  console.log("DRIVER:", req.body);
   try {
     // Create new driver
     const response = await driverService.signupDriver({

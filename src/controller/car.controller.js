@@ -14,11 +14,15 @@ const carService = new CarService(CarModel);
 export const fetchCars = async (req, res) => {
   try {
     // Fetch cars
-    const response = await carService.getCars();
+    const response = await carService.getCars(
+      req.query?.userCountry,
+      req.query?.isAdminRequest
+    );
 
     // Return a response
     return res.status(response?.status).json({
       cars: response?.cars ?? null,
+      currency: response?.currency,
       message: response?.message,
     });
   } catch (error) {

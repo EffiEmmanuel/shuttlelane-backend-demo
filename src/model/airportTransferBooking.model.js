@@ -36,7 +36,9 @@ const airportTransferBookingSchema = new mongoose.Schema(
     // },
 
     vehicleClass: {
-      type: String,
+      type: mongoose.Types.ObjectId,
+      ref: "VehicleClass",
+      required: true,
     },
 
     // city: {

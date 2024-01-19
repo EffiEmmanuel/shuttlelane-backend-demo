@@ -1,4 +1,6 @@
+import CurrencyModel from "../model/currency.model.js";
 import { validateFields } from "../util/auth.helper.js";
+import { convertAmountToUserCurrency } from "../util/index.js";
 
 export default class VehicleClassService {
   constructor(ShuttlelaneVehicleClassModel) {
@@ -6,11 +8,19 @@ export default class VehicleClassService {
   }
 
   // This service CREATES a new vehicle class
-  async createVehicleClass(image, className, passengers, luggages, basePrice) {
+  async createVehicleClass(
+    image,
+    className,
+    description,
+    passengers,
+    luggages,
+    basePrice
+  ) {
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([
       image,
       className,
+      description,
       passengers,
       luggages,
       basePrice,
@@ -34,6 +44,7 @@ export default class VehicleClassService {
     const newVehicleClass = await this.VehicleClassModel.create({
       image,
       className,
+      description,
       passengers,
       luggages,
       basePrice,
@@ -52,15 +63,87 @@ export default class VehicleClassService {
   }
 
   // This service fetches all vehicle classes
-  async getVehicleClasses() {
+  async getVehicleClasses(userCountry, isAdminRequest) {
     const vehicleClasses = await this.VehicleClassModel.find({});
+    console.log("HELLO HELLO::", isAdminRequest);
+    if (isAdminRequest) {
+      // Return a response
+      return {
+        status: 200,
+        message: `Vehicle classes fetched`,
+        vehicleClasses: vehicleClasses,
+      };
+    }
 
-    // Return a response
-    return {
-      status: 200,
-      message: `Vehicle classes fetched`,
-      vehicleClasses: vehicleClasses,
-    };
+    // Get currency (UPDATE LATER TO INCLUDE MORE THAN ONE COUNTRY) where the userCountry is listed
+    const allowedCurrency = await CurrencyModel.findOne({
+      supportedCountries: { $in: [userCountry] },
+    })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        console.log("ERROR:", err);
+      });
+
+    // If the country is anything else other than Nigeria, do this
+    if (userCountry?.toLowerCase() !== "nigeria") {
+      console.log("HI 1");
+      // Check if the user's country has been added to a currency
+      if (allowedCurrency) {
+        let vehicleClassesWithConvertedRates = [];
+
+        for (let i = 0; i < vehicleClasses?.length; i++) {
+          let convertedRate = convertAmountToUserCurrency(
+            allowedCurrency,
+            vehicleClasses[i]?.basePrice
+          );
+          vehicleClasses[i].basePrice = convertedRate;
+          vehicleClassesWithConvertedRates.push(vehicleClasses[i]);
+        }
+
+        // Return a response
+        return {
+          status: 200,
+          message: `Vehicle classes fetched`,
+          vehicleClasses: vehicleClassesWithConvertedRates,
+          currency: allowedCurrency,
+        };
+      } else {
+        // Default to USD
+        const currency = await CurrencyModel.findOne({
+          currencyLabel: "Dollars",
+        });
+
+        let vehicleClassesWithConvertedRates = [];
+
+        for (let i = 0; i < vehicleClasses?.length; i++) {
+          let convertedRate = convertAmountToUserCurrency(
+            allowedCurrency,
+            vehicleClasses[i]?.basePrice
+          );
+
+          vehicleClasses[i].basePrice = convertedRate;
+          vehicleClassesWithConvertedRates.push(vehicleClasses[i]);
+        }
+
+        // Return a response
+        return {
+          status: 200,
+          message: `Vehicle classes fetched`,
+          vehicleClasses: vehicleClassesWithConvertedRates,
+          currency: currency,
+        };
+      }
+    } else {
+      // If the user is operating from Nigeria
+      // Return a response
+      return {
+        status: 200,
+        message: `Vehicle classes fetched`,
+        vehicleClasses: vehicleClasses,
+      };
+    }
   }
 
   // This service fetches a vehicle class

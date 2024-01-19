@@ -12,6 +12,7 @@ import vehicleClassRouter from "./router/vehicleClass.router.js";
 import carRouter from "./router/car.router.js";
 import priorityPassRouter from "./router/priorityPass.router.js";
 import blogRouter from "./router/blog.router.js";
+import cityRouter from "./router/city.router.js";
 // iscD1lQF1aB7gDxy
 
 async function startServer() {
@@ -28,6 +29,7 @@ async function startServer() {
   app.use(routes.API_CARS_ROUTE, carRouter); // cars router
   app.use(routes.API_PASS_ROUTE, priorityPassRouter); // passes router
   app.use(routes.API_BLOG_ROUTE, blogRouter); // blog router
+  app.use(routes.API_CITY_ROUTE, cityRouter); // city router
 
   app.listen(config.server.port, () => {
     console.log(`Server listening on port ${config.server.port}`);

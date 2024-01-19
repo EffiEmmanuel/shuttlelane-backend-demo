@@ -1,4 +1,6 @@
+import CurrencyModel from "../model/currency.model.js";
 import { validateFields } from "../util/auth.helper.js";
+import { convertAmountToUserCurrency } from "../util/index.js";
 
 export default class PriorityPassService {
   constructor(ShuttlelanePriorityPassModel) {
@@ -43,15 +45,86 @@ export default class PriorityPassService {
   }
 
   // This service fetches all passes
-  async getPasses() {
+  async getPasses(userCountry, isAdminRequest) {
     const passes = await this.PriorityPassModel.find({});
 
-    // Return a response
-    return {
-      status: 200,
-      message: `Passes fetched`,
-      passes: passes,
-    };
+    if (isAdminRequest) {
+      // Return a response
+      return {
+        status: 200,
+        message: `Passes fetched`,
+        passes: passes,
+      };
+    }
+
+    // Get currency (UPDATE LATER TO INCLUDE MORE THAN ONE COUNTRY) where the userCountry is listed
+    const allowedCurrency = await CurrencyModel.findOne({
+      supportedCountries: { $in: [userCountry] },
+    })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        console.log("ERROR:", err);
+      });
+
+    // If the country is anything else other than Nigeria, do this
+    if (userCountry?.toLowerCase() !== "nigeria") {
+      // Check if the user's country has been added to a currency
+      if (allowedCurrency) {
+        let passesWithConvertedRates = [];
+
+        for (let i = 0; i < passes?.length; i++) {
+          let convertedRate = convertAmountToUserCurrency(
+            allowedCurrency,
+            passes[i]?.price
+          );
+          passes[i].price = convertedRate;
+          passesWithConvertedRates.push(passes[i]);
+        }
+
+        // Return a response
+        return {
+          status: 200,
+          message: `Passes fetched`,
+          passes: passesWithConvertedRates,
+          currency: allowedCurrency,
+        };
+      } else {
+        // Default to USD
+        const currency = await CurrencyModel.findOne({
+          currencyLabel: "Dollars",
+        });
+
+        let passesWithConvertedRates = [];
+
+        for (let i = 0; i < passes?.length; i++) {
+          let convertedRate = convertAmountToUserCurrency(
+            allowedCurrency,
+            passes[i]?.rate
+          );
+
+          passes[i].rate = convertedRate;
+          passesWithConvertedRates.push(passes[i]);
+        }
+
+        // Return a response
+        return {
+          status: 200,
+          message: `Passes fetched`,
+          passes: passesWithConvertedRates,
+          currency: currency,
+        };
+      }
+    } else {
+      // If the user is operating from Nigeria
+      // Return a response
+      return {
+        status: 200,
+        message: `Passes fetched`,
+        passes: passes,
+      };
+    }
   }
 
   // This service fetches a pass

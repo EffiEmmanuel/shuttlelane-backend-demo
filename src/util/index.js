@@ -1,4 +1,6 @@
+import axios from "axios";
 import ShortUniqueId from "short-unique-id";
+import RatePerMileModel from "../model/ratePerMile.model.js";
 
 export function generateBookingReference(bookingType) {
   const AIRPORT_TRANSFER_BASE_REF = "AT";
@@ -41,4 +43,65 @@ export function generateSlug(str) {
     .trim() // Trim leading/trailing spaces
     .replace(/\s+/g, "-") // Replace spaces with hyphens
     .replace(/-+/g, "-"); // Replace multiple consecutive hyphens with a single hyphen
+}
+
+export function convertAmountToUserCurrency(currency, amountInNaira) {
+  const exchangeAmount = Number(amountInNaira) / Number(currency?.exchangeRate);
+  let exchangeAmountToFixed = exchangeAmount.toFixed(2);
+  return exchangeAmountToFixed;
+}
+
+export async function calculateDistanceAndDuration(
+  pickupAddress,
+  dropoffAddress,
+  currency
+) {
+  try {
+    const apiUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${pickupAddress}&destinations=${dropoffAddress}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+
+    // Fetch distance and trip duration
+    const response = await axios.get(apiUrl);
+
+    const distance = response.data.rows[0].elements[0].distance?.text;
+    const duration = response.data.rows[0].elements[0].duration?.text;
+
+    // Fetch price per mile (Admin fuction)
+    const ratePerMile = await RatePerMileModel.find({});
+    console.log("RATE PER MILE:", ratePerMile[0]);
+
+    // Subtract distance from from the minimum mile set by the admin
+    console.log("HEY HEY :", distance?.split(" ")[0]);
+    const eligibleDistanceForBilling =
+      Number(distance?.split(" ")[0].replace(/,/g, "")) -
+      Number(ratePerMile[0]?.mile);
+    console.log("ELIGIBLE DISTANCE FOR BILLING:", eligibleDistanceForBilling);
+
+    // Calculate bill for eligible distance (by default, in naira)
+    let billedDistanceTotal = 0;
+    if (eligibleDistanceForBilling > 0) {
+      billedDistanceTotal =
+        Number(ratePerMile[0]?.rate) * eligibleDistanceForBilling;
+
+      console.log("BILL AMOUNT:", billedDistanceTotal);
+      // Convert to user's currency
+      if (currency) {
+        const convertedAmount = convertAmountToUserCurrency(
+          currency,
+          billedDistanceTotal
+        );
+        console.log("CONVERTED AMOUNT:", convertedAmount);
+        billedDistanceTotal = convertedAmount;
+      }
+    }
+
+    console.log("BILLED DISTANCE TOTAL:", billedDistanceTotal);
+
+    return {
+      distance,
+      duration,
+      billedDistanceTotal,
+    };
+  } catch (error) {
+    console.log("ERROR:", error);
+  }
 }

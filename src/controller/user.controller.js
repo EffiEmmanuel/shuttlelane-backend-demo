@@ -181,3 +181,35 @@ export const getUserBookingsByUserId = async (req, res) => {
     return res.status(500).json({ message: internalServerError });
   }
 };
+
+// CITIES
+// Get Cities
+export const getCities = async (req, res) => {
+  try {
+    // Fetch cities
+    const response = await userService.getCities();
+
+    // Return a response
+    return res
+      .status(response?.status)
+      .json({ cities: response?.cities ?? null, message: response?.message });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// VISA ON ARRIVAL RATES
+export const getVisaOnArrivalRates = async (req, res) => {
+  try {
+    // Fetch visa on arrival rates
+    const response = await userService.getVisaOnArrivalRates();
+
+    // Return a response
+    return res.status(response?.status).json({
+      visaOnArrivalRates: response?.visaOnArrivalRates ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};

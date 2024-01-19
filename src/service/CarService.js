@@ -1,4 +1,6 @@
+import CurrencyModel from "../model/currency.model.js";
 import { validateFields } from "../util/auth.helper.js";
+import { convertAmountToUserCurrency } from "../util/index.js";
 
 export default class CarService {
   constructor(ShuttlelaneCarModel) {
@@ -43,15 +45,88 @@ export default class CarService {
   }
 
   // This service fetches all cars
-  async getCars() {
+  async getCars(userCountry, isAdminRequest) {
     const cars = await this.CarModel.find({});
 
-    // Return a response
-    return {
-      status: 200,
-      message: `Cars fetched`,
-      cars: cars,
-    };
+    console.log("HELLO HELLO::", isAdminRequest);
+    if (isAdminRequest) {
+      // Return a response
+      return {
+        status: 200,
+        message: `Cars fetched`,
+        cars: cars,
+      };
+    }
+
+    // Get currency (UPDATE LATER TO INCLUDE MORE THAN ONE COUNTRY) where the userCountry is listed
+    const allowedCurrency = await CurrencyModel.findOne({
+      supportedCountries: { $in: [userCountry] },
+    })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        console.log("ERROR:", err);
+      });
+
+    // If the country is anything else other than Nigeria, do this
+    if (userCountry?.toLowerCase() !== "nigeria") {
+      console.log("HI 1");
+      // Check if the user's country has been added to a currency
+      if (allowedCurrency) {
+        let carsWithConvertedRates = [];
+
+        for (let i = 0; i < cars?.length; i++) {
+          let convertedRate = convertAmountToUserCurrency(
+            allowedCurrency,
+            cars[i]?.price
+          );
+          cars[i].price = convertedRate;
+          carsWithConvertedRates.push(cars[i]);
+        }
+
+        // Return a response
+        return {
+          status: 200,
+          message: `Cars fetched`,
+          cars: carsWithConvertedRates,
+          currency: allowedCurrency,
+        };
+      } else {
+        // Default to USD
+        const currency = await CurrencyModel.findOne({
+          currencyLabel: "Dollars",
+        });
+
+        let carsWithConvertedRates = [];
+
+        for (let i = 0; i < cars?.length; i++) {
+          let convertedRate = convertAmountToUserCurrency(
+            allowedCurrency,
+            cars[i]?.price
+          );
+
+          cars[i].price = convertedRate;
+          carsWithConvertedRates.push(cars[i]);
+        }
+
+        // Return a response
+        return {
+          status: 200,
+          message: `Cars fetched`,
+          cars: carsWithConvertedRates,
+          currency: currency,
+        };
+      }
+    } else {
+      // If the user is operating from Nigeria
+      // Return a response
+      return {
+        status: 200,
+        message: `Cars fetched`,
+        cars: cars,
+      };
+    }
   }
 
   // This service fetches a car

@@ -13,6 +13,7 @@ import {
   createVisaOnArrivalRate,
   deleteBlogPost,
   deleteCar,
+  deleteCurrency,
   deleteDriverById,
   deleteEnquiryById,
   deletePass,
@@ -41,6 +42,7 @@ import {
   setVisaOnArrivalBaseRates,
   updateBlogPost,
   updateCar,
+  updateCurrency,
   updatePass,
   updateVehicleClass,
   updateVisaOnArrivalRate,
@@ -136,6 +138,8 @@ adminRouter.post("/broadcasts/bulk-email", verifyUserToken, sendBulkEmail);
 // CURRENCIES / RATES
 adminRouter.get("/currencies", verifyUserToken, fetchCurrencies);
 adminRouter.post("/currencies/create-new", verifyUserToken, createCurrency);
+adminRouter.put("/currencies/:_id", verifyUserToken, updateCurrency);
+adminRouter.delete("/currencies/:_id", verifyUserToken, deleteCurrency);
 
 // RATE PER MILE
 // Set rate per mile

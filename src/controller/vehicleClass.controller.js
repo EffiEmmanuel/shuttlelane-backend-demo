@@ -14,11 +14,15 @@ const vehicleClassService = new VehicleClassService(VehicleClassModel);
 export const fetchVehicleClasses = async (req, res) => {
   try {
     // Fetch vehicle classes
-    const response = await vehicleClassService.getVehicleClasses();
+    const response = await vehicleClassService.getVehicleClasses(
+      req.query?.userCountry,
+      req.query?.isAdminRequest
+    );
 
     // Return a response
     return res.status(response?.status).json({
       vehicleClasses: response?.vehicleClasses ?? null,
+      currency: response?.currency,
       message: response?.message,
     });
   } catch (error) {

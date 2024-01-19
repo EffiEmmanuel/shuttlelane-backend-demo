@@ -14,11 +14,15 @@ const priorityPassService = new PriorityPassService(PriorityPassModel);
 export const fetchPasses = async (req, res) => {
   try {
     // Fetch passes
-    const response = await priorityPassService.getPasses();
+    const response = await priorityPassService.getPasses(
+      req.query?.userCountry,
+      req.query?.isAdminRequest
+    );
 
     // Return a response
     return res.status(response?.status).json({
       passes: response?.passes ?? null,
+      currency: response?.currency ?? null,
       message: response?.message,
     });
   } catch (error) {

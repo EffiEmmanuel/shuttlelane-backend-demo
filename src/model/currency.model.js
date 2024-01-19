@@ -8,6 +8,12 @@ const currencySchema = new mongoose.Schema(
       required: true,
     },
 
+    supportedCountries: [
+      {
+        type: String,
+      },
+    ],
+
     // Exchange rate assumes Naira as the base currency
     exchangeRate: {
       type: String,

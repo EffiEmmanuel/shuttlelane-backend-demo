@@ -1,5 +1,7 @@
 import BookingModel from "../model/booking.model.js";
+import PriorityPassModel from "../model/priorityPass.model.js";
 import BookingService from "../service/BookingService.js";
+import { convertAmountToUserCurrency } from "../util/index.js";
 
 // Generic messages
 const internalServerError =
@@ -200,6 +202,26 @@ export const getUserBookingsByUserId = async (req, res) => {
 
     // Return a response
     return res.status(response?.status).json({ message: response?.message });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Calculate booking total
+export const calculateBookingTotal = async (req, res) => {
+  const { userCurrency, bookingDetails } = req.body;
+
+  try {
+    // Calculate the total
+    const response = await bookingService.calculateBookingTotal(
+      userCurrency,
+      bookingDetails
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      ...response,
+    });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
   }

@@ -529,8 +529,52 @@ export const createCurrency = async (req, res) => {
       req.body?.currencyLabel,
       req.body?.exchangeRate,
       req.body?.currencySymbol,
-      req.body?.currencyAlias
+      req.body?.currencyAlias,
+      req.body?.supportedCountries
     );
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      status: response?.status,
+      currencies: response?.currencies,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: internalServerError, error });
+  }
+};
+
+// Update currency
+export const updateCurrency = async (req, res) => {
+  try {
+    // UPDATE currency
+    const response = await adminService.updateCurrency(
+      req.params?._id,
+      req.body?.currencyLabel,
+      req.body?.exchangeRate,
+      req.body?.symbol,
+      req.body?.alias,
+      req.body?.supportedCountries
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      status: response?.status,
+      currencies: response?.currencies,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: internalServerError, error });
+  }
+};
+
+// Delete currency
+export const deleteCurrency = async (req, res) => {
+  try {
+    // DELETE currency
+    const response = await adminService.deleteCurrency(req.params?._id);
 
     // Return a response
     return res.status(response?.status).json({
@@ -589,7 +633,8 @@ export const createVisaOnArrivalRate = async (req, res) => {
     // CREATE new visa on arrival rate
     const response = await adminService.createNewVisaOnArrivalRate(
       req.body?.country,
-      req.body?.visaFee
+      req.body?.visaFee,
+      req.body?.isNigerianVisaRequired
     );
 
     // Return a response
@@ -610,7 +655,9 @@ export const updateVisaOnArrivalRate = async (req, res) => {
     // UPDATE visa on arrival rate
     const response = await adminService.updateVisaOnArrivalRate(
       req.params?._id,
+      req.body?.country,
       req.body?.visaFee,
+      req.body?.isNigerianVisaRequired,
       req.body?.voaBaseFeeId
     );
 
@@ -696,6 +743,7 @@ export const createVehicleClass = async (req, res) => {
     const response = await vehicleClassService.createVehicleClass(
       req.body?.image,
       req.body?.className,
+      req.body?.description,
       req.body?.passengers,
       req.body?.luggages,
       req.body?.basePrice
@@ -705,7 +753,7 @@ export const createVehicleClass = async (req, res) => {
     return res.status(response?.status).json({
       message: response?.message,
       status: response?.status,
-      cars: response?.cars,
+      vehicleClasses: response?.vehicleClasses,
     });
   } catch (error) {
     console.log(error);
@@ -728,7 +776,7 @@ export const updateVehicleClass = async (req, res) => {
     return res.status(response?.status).json({
       message: response?.message,
       status: response?.status,
-      cars: response?.cars,
+      vehicleClasses: response?.vehicleClasses,
     });
   } catch (error) {
     console.log(error);
@@ -748,7 +796,7 @@ export const deleteVehicleClass = async (req, res) => {
     return res.status(response?.status).json({
       message: response?.message,
       status: response?.status,
-      cars: response?.cars,
+      vehicleClasses: response?.vehicleClasses,
     });
   } catch (error) {
     console.log(error);

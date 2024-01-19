@@ -10,6 +10,8 @@ import {
   getUserTotalSpendByUserId,
   getUserBookingsByUserId,
   updateUserById,
+  getCities,
+  getVisaOnArrivalRates,
 } from "../controller/user.controller.js";
 
 const userRouter = express.Router();
@@ -37,5 +39,13 @@ userRouter.patch("/update-user/:userId", verifyUserToken, updateUserById);
 userRouter.delete("/delete-user-by-email", verifyUserToken, deleteUserByEmail);
 // DELETE USER BY ID
 userRouter.delete("/delete-user/:userId", verifyUserToken, deleteUserById);
+
+// CITIES
+// Get Cities
+userRouter.get("/cities", getCities);
+
+// VISA ON ARRIVAL RATES
+// Get Visa On Arrival Rates
+userRouter.get("/voaRates", getVisaOnArrivalRates);
 
 export default userRouter;

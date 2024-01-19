@@ -7,6 +7,8 @@ const vehicleClassSchema = new mongoose.Schema({
 
   className: { type: String, required: true },
 
+  description: { type: String, required: true },
+
   passengers: { type: String, required: true },
 
   luggages: { type: String, required: true },

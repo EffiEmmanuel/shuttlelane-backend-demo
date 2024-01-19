@@ -8,6 +8,11 @@ const visaOnArrivalRateSchema = new mongoose.Schema(
       required: true,
     },
 
+    isNigerianVisaRequired: {
+      type: Boolean,
+      required: true,
+    },
+
     visaFee: {
       type: String,
       required: true,

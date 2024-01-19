@@ -853,7 +853,8 @@ export default class AdminService {
     currencyLabel,
     exchangeRate,
     currencySymbol,
-    currenncyAlias
+    currenncyAlias,
+    supportedCountries
   ) {
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([
@@ -861,6 +862,7 @@ export default class AdminService {
       exchangeRate,
       currencySymbol,
       currenncyAlias,
+      supportedCountries,
     ]);
 
     // areFieldsEmpty is an object that contains a status and message field
@@ -883,6 +885,7 @@ export default class AdminService {
       exchangeRate,
       symbol: currencySymbol,
       alias: currenncyAlias,
+      supportedCountries,
     });
 
     const currencies = await CurrencyModel.find({}).sort({ createdAt: -1 });
@@ -891,6 +894,81 @@ export default class AdminService {
       status: 201,
       message: `Currency created successfully~`,
       currencies: currencies,
+    };
+  }
+  // This service UPDATES a currency
+  async updateCurrency(
+    _id,
+    currencyLabel,
+    exchangeRate,
+    symbol,
+    alias,
+    supportedCountries
+  ) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([
+      _id,
+      currencyLabel,
+      exchangeRate,
+      symbol,
+      alias,
+      supportedCountries,
+    ]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Update currency
+    const updatedCurrency = await CurrencyModel.findOneAndUpdate(
+      { _id },
+      {
+        currencyLabel,
+        exchangeRate,
+        symbol,
+        alias,
+        supportedCountries,
+      }
+    );
+
+    const currencies = await CurrencyModel.find({}).sort({
+      createdAt: -1,
+    });
+
+    return {
+      status: 201,
+      message: `Currency updated successfully!`,
+      currencies,
+    };
+  }
+
+  // This service DELETES a currency
+  async deleteCurrency(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any currency exists with the id provided
+    const currencyExists = await CurrencyModel.findOneAndDelete({
+      _id: _id,
+    });
+
+    if (!currencyExists) {
+      return {
+        status: 404,
+        message: "No currency exists with the id specified!",
+      };
+    }
+
+    const currencies = await CurrencyModel.find({}).sort({
+      createdAt: -1,
+    });
+
+    return {
+      status: 201,
+      message: `Currency deleted successfully!`,
+      currencies,
     };
   }
 
@@ -948,9 +1026,13 @@ export default class AdminService {
     };
   }
   // This service creates a new visa on arrival rate
-  async createNewVisaOnArrivalRate(country, visaFee) {
+  async createNewVisaOnArrivalRate(country, visaFee, isNigerianVisaRequired) {
     // Validate if fields are empty
-    const areFieldsEmpty = validateFields([country, visaFee]);
+    const areFieldsEmpty = validateFields([
+      country,
+      visaFee,
+      isNigerianVisaRequired,
+    ]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
@@ -993,6 +1075,7 @@ export default class AdminService {
     // Create Visa on arrival rate
     const newVisaOnArrivalRate = await VisaOnArrivalRateModel.create({
       country,
+      isNigerianVisaRequired,
       voaBaseFees: voaBaseFees[0]?._id,
       visaFee,
       vat,
@@ -1013,9 +1096,21 @@ export default class AdminService {
   }
 
   // This service UPDATES a visa on arrival rate
-  async updateVisaOnArrivalRate(_id, visaFee, voaBaseFeeId) {
+  async updateVisaOnArrivalRate(
+    _id,
+    country,
+    visaFee,
+    isNigerianVisaRequired,
+    voaBaseFeeId
+  ) {
     // Validate if fields are empty
-    const areFieldsEmpty = validateFields([_id, visaFee, voaBaseFeeId]);
+    const areFieldsEmpty = validateFields([
+      _id,
+      country,
+      visaFee,
+      isNigerianVisaRequired,
+      voaBaseFeeId,
+    ]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
@@ -1060,9 +1155,11 @@ export default class AdminService {
       await VisaOnArrivalRateModel.findOneAndUpdate(
         { _id },
         {
+          country,
           visaFee,
           vat,
           total,
+          isNigerianVisaRequired,
         }
       );
 
@@ -1079,7 +1176,7 @@ export default class AdminService {
     };
   }
 
-  // This service DELETED a visa on arrival rate
+  // This service DELETES a visa on arrival rate
   async deleteVisaOnArrivalRate(_id) {
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([_id]);

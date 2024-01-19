@@ -1,3 +1,4 @@
+// @ts-nocheck
 import bcrypt from "bcryptjs";
 import { validateFields } from "../util/auth.helper.js";
 import PaymentModel from "../model/payment.model.js";
@@ -9,8 +10,18 @@ import PriorityPassBookingModel from "../model/priorityPassBooking.model.js";
 import VisaOnArrivalBookingModel from "../model/visaOnArrivalBooking.model.js";
 import UserModel from "../model/user.model.js";
 import DriverModel from "../model/driver.model.js";
-import { generateBookingReference } from "../util/index.js";
+import {
+  calculateDistanceAndDuration,
+  convertAmountToUserCurrency,
+  generateBookingReference,
+} from "../util/index.js";
 import RatePerMileModel from "../model/ratePerMile.model.js";
+import CurrencyModel from "../model/currency.model.js";
+import PriorityPassModel from "../model/priorityPass.model.js";
+import axios from "axios";
+import CarModel from "../model/car.model.js";
+import VoaBaseFeesModel from "../model/voaBaseFees.model.js";
+import VisaOnArrivalRateModel from "../model/visaOnArrivalRate.model.js";
 
 export default class BookingService {
   constructor(ShuttlelaneBookingModel) {
@@ -302,4 +313,156 @@ export default class BookingService {
       message: `Booking with _id ${_id} has been updated successfully.`,
     };
   }
+
+  async calculateBookingTotal(userCurrency, bookingDetails) {
+    console.log("BOOKING DETAILS:", bookingDetails);
+
+    // Variables
+    let sum, distanceMatrix, returnObject;
+
+    // Cases: Airport, Car, Priority, Visa
+    switch (bookingDetails?.bookingType) {
+      case "Airport":
+        //   // Calculate the sum
+        sum = Number(bookingDetails?.currentVehicleClass?.basePrice);
+        console.log("FIRST SUM:", sum);
+        if (bookingDetails?.isAddPriorityPass) {
+          const passTotal =
+            Number(bookingDetails?.passType?.value?.price) *
+            Number(bookingDetails?.numberOfPasses?.value);
+
+          console.log("PASS TOTAL:", passTotal);
+          sum = sum + passTotal;
+        }
+
+        // Fetch distance between the two addresses
+        distanceMatrix = await calculateDistanceAndDuration(
+          bookingDetails?.pickupLocation,
+          bookingDetails?.dropoffLocation,
+          userCurrency
+        );
+
+        sum = sum + Number(distanceMatrix?.billedDistanceTotal);
+
+        console.log("DISTANCE MATRIX:", distanceMatrix);
+        // Return a response
+        returnObject = {
+          status: 200,
+          message: `Total Fetched`,
+          total: sum,
+          userCurrency: userCurrency,
+          distance: distanceMatrix?.distance,
+          duration: distanceMatrix?.duration,
+        };
+        break;
+
+      case "Car":
+        // Get the car the user selected
+        const car = await CarModel.findOne({
+          _id: bookingDetails?.carSelected?.value?._id,
+        });
+
+        if (!car) {
+          return {
+            status: 404,
+            message: `Car selected does not exist.`,
+          };
+        }
+
+        // Calculate the sum
+        sum =
+          Number(bookingDetails?.carSelected?.value?.price) *
+          Number(bookingDetails?.days);
+
+        console.log("SUM:", sum);
+        // Return a response
+        returnObject = {
+          status: 200,
+          message: `Total Fetched`,
+          total: sum,
+          userCurrency: userCurrency,
+        };
+        break;
+
+      case "Priority":
+        // Get the priority pass the user selected
+        const pass = await PriorityPassModel.findOne({
+          _id: bookingDetails?.passSelected?.value?._id,
+        });
+
+        if (!pass) {
+          return {
+            status: 404,
+            message: `Pass selected does not exist.`,
+          };
+        }
+
+        // Calculate the sum
+        sum =
+          Number(bookingDetails?.passSelected?.value?.price) *
+          Number(bookingDetails?.passengers);
+
+        console.log("SUM:", sum);
+        // Return a response
+        returnObject = {
+          status: 200,
+          message: `Total Fetched`,
+          total: sum,
+          userCurrency: userCurrency,
+        };
+        break;
+
+      case "Visa":
+        // Check support for country
+        const isCountrySupported = await VisaOnArrivalRateModel.findOne({
+          country: bookingDetails?.country,
+        }).populate("voaBaseFees");
+
+        if (!isCountrySupported) {
+          return {
+            status: 404,
+            message: `Sorry, we do not process a Nigerian visa on arrival for ${bookingDetails?.country} at the moment. Please do well to reach out to us via info@shuttlelane.com for further instructions. Thank you.`,
+            voaVerificationStatus: "noSupport",
+          };
+        }
+
+        if (isCountrySupported?.isNigerianVisaRequired) {
+          // Return a response
+          returnObject = {
+            status: 200,
+            message: `Support successfully confirmed. You can now proceed to make a visa on arrival booking.`,
+            visaFee: isCountrySupported?.visaFee,
+            transactionFee: isCountrySupported?.voaBaseFees?.transactionFee,
+            processingFee: isCountrySupported?.voaBaseFees?.processingFee,
+            biometricFee: isCountrySupported?.voaBaseFees?.biometricFee,
+            vat: isCountrySupported?.voaBaseFees?.vat,
+            total: isCountrySupported?.total,
+            userCurrency: userCurrency,
+            voaVerificationStatus: "visaRequired",
+          };
+        } else {
+          // Return a response
+          returnObject = {
+            status: 200,
+            message: `Citizens of ${bookingDetails?.country} do not require a visa to visit Nigeria.`,
+            visaFee: isCountrySupported?.visaFee,
+            transactionFee: isCountrySupported?.voaBaseFees?.transactionFee,
+            processingFee: isCountrySupported?.voaBaseFees?.processingFee,
+            biometricFee: isCountrySupported?.voaBaseFees?.biometricFee,
+            vat: isCountrySupported?.voaBaseFees?.vat,
+            total: isCountrySupported?.total,
+            userCurrency: userCurrency,
+            voaVerificationStatus: "visaNotRequired",
+          };
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    return returnObject;
+  }
+
+  async verifyCountryAvailability(country) {}
 }
