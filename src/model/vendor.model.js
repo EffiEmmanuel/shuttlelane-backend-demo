@@ -56,9 +56,21 @@ const vendorSchema = new mongoose.Schema(
         ref: "Booking",
       },
     ],
+
+    phoneVerification: {
+      type: mongoose.Types.ObjectId,
+      ref: "Verification",
+      required: true,
+    },
   },
   { timestamps: true }
 );
+
+vendorSchema.virtual("verification", {
+  ref: "Verification",
+  localField: "_id",
+  foreignField: "userId",
+});
 
 const VendorModel = mongoose.model("Vendor", vendorSchema);
 

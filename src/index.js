@@ -1,3 +1,4 @@
+// @ts-nocheck
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
@@ -13,6 +14,9 @@ import carRouter from "./router/car.router.js";
 import priorityPassRouter from "./router/priorityPass.router.js";
 import blogRouter from "./router/blog.router.js";
 import cityRouter from "./router/city.router.js";
+import shortid from "shortid";
+import { sendSMS } from "./util/twilio.js";
+import driverRouter from "./router/driver.router.js";
 // iscD1lQF1aB7gDxy
 
 async function startServer() {
@@ -24,6 +28,7 @@ async function startServer() {
   app.use(routes.API_AUTH_PREFIX, authRouter); // auth router
   app.use(routes.API_USER_ROUTE, userRouter); // user router
   app.use(routes.API_ADMIN_ROUTE, adminRouter); // admin router
+  app.use(routes.API_DRIVER_ROUTE, driverRouter); // driver router
   app.use(routes.API_BOOKING_ROUTE, bookingRouter); // booking router
   app.use(routes.API_VEHICLE_CLASS_ROUTE, vehicleClassRouter); // vehicle class router
   app.use(routes.API_CARS_ROUTE, carRouter); // cars router

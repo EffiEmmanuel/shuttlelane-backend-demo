@@ -3,7 +3,8 @@ import routes from "../routes.js";
 import { loginUser, signupUser } from "../controller/user.controller.js";
 import { loginAdmin, signupAdmin } from "../controller/admin.controller.js";
 import { verifyJWT } from "../util/auth.helper.js";
-import { signupDriver } from "../controller/driver.controller.js";
+import { loginDriver, signupDriver } from "../controller/driver.controller.js";
+import { resendOTP, verifyOTP } from "../controller/verification.controller.js";
 
 const authRouter = express.Router();
 
@@ -23,8 +24,14 @@ authRouter.post(routes.API_ADMIN_LOGIN_ROUTE, loginAdmin);
 // SIGNUP DRIVER
 authRouter.post(routes.API_DRIVER_SIGNUP_ROUTE, signupDriver);
 // LOGIN DRIVER
-authRouter.post(routes.API_DRIVER_LOGIN_ROUTE, loginAdmin);
+authRouter.post(routes.API_DRIVER_LOGIN_ROUTE, loginDriver);
 
 // Verify Token
 authRouter.post("/verify-token", verifyJWT);
+
+// Resend OTP
+authRouter.post(`${routes.API_VERIFICATON_ROUTE}/resend-otp`, resendOTP);
+
+// Resend OTP
+authRouter.post(`${routes.API_VERIFICATON_ROUTE}/verify-otp`, verifyOTP);
 export default authRouter;

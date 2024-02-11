@@ -276,4 +276,21 @@ export default class UserService {
       visaOnArrivalRates: visaOnArrivalRates,
     };
   }
+  // This service GETS all visa on arrival rates THAT REQUIRE NIGERIAN VISA
+  async getVisaOnArrivalRatesWithNigerianVisa() {
+    // Get getVisaOnArrivalRatesWithNigerianVisa
+    const visaOnArrivalRates = await VisaOnArrivalRateModel.find({
+      isNigerianVisaRequired: true,
+    }).sort({
+      createdAt: -1,
+    });
+
+    console.log("VOA RATES:", visaOnArrivalRates);
+
+    return {
+      status: 200,
+      message: `Fetched visa on arrival rates with Nigerian visa requirement.`,
+      visaOnArrivalRates: visaOnArrivalRates,
+    };
+  }
 }

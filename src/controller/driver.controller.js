@@ -1,5 +1,8 @@
 import DriverModel from "../model/driver.model.js";
+import VerificationModel from "../model/verification.model.js";
 import DriverService from "../service/DriverService.js";
+import VerificationService from "../service/VerificationService.js";
+import { resetPassword } from "../util/auth.helper.js";
 
 // Generic messages
 const internalServerError =
@@ -8,6 +11,7 @@ const internalServerError =
 // SERVICE INSTANCES
 // Create a new DriverService instance
 const driverService = new DriverService(DriverModel);
+const verificationService = new VerificationService(VerificationModel);
 
 // Sign up driver
 export const signupDriver = async (req, res) => {
@@ -28,6 +32,7 @@ export const signupDriver = async (req, res) => {
       message: response?.message,
       token: response?.token,
       driver: response?.driver,
+      status: response?.status,
     });
   } catch (error) {
     console.log("ERROR:", error);
@@ -52,6 +57,7 @@ export const loginDriver = async (req, res) => {
       message: response?.message,
       token: response?.token,
       driver: response?.driver,
+      status: response?.status,
     });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
@@ -87,36 +93,6 @@ export const getDriverById = async (req, res) => {
   }
 };
 
-// Get drivers
-// TO-DO: Transfer to admin controller
-export const getDrivers = async (req, res) => {
-  try {
-    // Fetch drivers
-    const drivers = await driverService.getDrivers();
-
-    // Return a response
-    return res
-      .status(drivers?.status)
-      .json({ drivers: drivers?.driver ?? null, message: drivers?.message });
-  } catch (error) {
-    return res.status(500).json({ message: internalServerError });
-  }
-};
-
-// Delete driver by email
-export const deleteDriverByEmail = async (req, res) => {
-  const { email } = req.body;
-  try {
-    // DELETE driver
-    const response = await driverService.deleteDriverByEmail(email);
-
-    // Return a response
-    return res.status(response?.status).json({ message: response?.message });
-  } catch (error) {
-    return res.status(500).json({ message: internalServerError });
-  }
-};
-
 // Delete driver by id
 export const deleteDriverById = async (req, res) => {
   const { driverId } = req.params;
@@ -135,16 +111,48 @@ export const deleteDriverById = async (req, res) => {
 export const updateDriverById = async (req, res) => {
   const { driverId } = req.params;
 
+  console.log("HI FROM THE CONTROLLER MOD:", req.body);
+
   try {
     // UPDATE driver
-    const response = await driverService.updateDriverById(
+    const response = await driverService.updateDriverById(driverId, {
+      ...req.body,
+    });
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+      driver: response?.driver,
+      token: response?.token,
+    });
+  } catch (error) {
+    console.log("ERROR FROM UPDATE DRIVER:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Reset driver password
+export const resetDriverPassword = async (req, res) => {
+  const { driverId } = req.params;
+  const { oldPassword, newPassword, userType } = req.body;
+
+  try {
+    // RESET password
+    const response = await resetPassword(
       driverId,
-      ...req.body
+      oldPassword,
+      newPassword,
+      userType
     );
 
     // Return a response
-    return res.status(response?.status).json({ message: response?.message });
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+    });
   } catch (error) {
+    console.log("ERROR FROM RESET DRIVER PASSWORD:", error);
     return res.status(500).json({ message: internalServerError });
   }
 };

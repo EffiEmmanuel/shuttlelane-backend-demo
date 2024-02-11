@@ -68,6 +68,16 @@ const driverSchema = new mongoose.Schema(
       required: true,
     },
 
+    bvn: {
+      type: String,
+      required: true,
+    },
+
+    nin: {
+      type: String,
+      required: true,
+    },
+
     address: {
       type: String,
       required: true,
@@ -146,6 +156,11 @@ const driverSchema = new mongoose.Schema(
         ref: "Booking",
       },
     ],
+
+    phoneVerification: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -6,10 +6,11 @@ import DriverModel from "../model/driver.model.js";
 import AdminModel from "../model/admin.model.js";
 import SupplierModel from "../model/vendor.model.js";
 import config from "../config/index.js";
+import { sendEmail } from "./sendgrid.js";
 
 const { sign, verify } = jsonwebtoken;
 
-// This method validates input fields
+// This function validates input fields
 export function validateFields(args) {
   args.forEach((arg) => {
     if (!arg || arg === "") {
@@ -19,6 +20,13 @@ export function validateFields(args) {
       };
     }
   });
+}
+
+// This function generates a verification code
+export function generateVerificationCode(digits) {
+  const min = Math.pow(10, digits - 1); // Lower bound
+  const max = Math.pow(10, digits) - 1; // Upper bound
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export const jwtSign = (payload) => {
@@ -69,9 +77,12 @@ export const verifyJWT = (request, response) => {
 export const verifyUserToken = (request, response, next) => {
   try {
     const authHeader = request.headers.token;
+    console.log("AUTH HEADER:", authHeader);
     let result;
     if (authHeader) {
       const token = authHeader.split(" ")[1];
+      console.log("TOKEN:::", token);
+
       result = jwtVerify(token);
       if (!result) {
         response.status(400).send("Invalid bearer token");
@@ -133,7 +144,10 @@ export async function validateUserLoginDetails(email, password) {
 
 // This function validates a driver's login details provided
 export async function validateDriverLoginDetails(email, password) {
-  const driverExists = await DriverModel.findOne({ email });
+  const driverExists = await DriverModel.findOne({ email }).populate(
+    "phoneVerification"
+  );
+  console.log("DRIVER RETURNED:", driverExists?.phoneVerification);
   if (!driverExists)
     return {
       message: "Invalid email provided",
@@ -216,4 +230,66 @@ export async function validateSupplierLoginDetails(email, password) {
     token: token,
     status: 200,
   };
+}
+
+export async function resetPassword(_id, oldPassword, newPassword, userType) {
+  try {
+    let user;
+    switch (userType) {
+      case "driver":
+        user = await DriverModel.findById(_id);
+        break;
+      case "user":
+        user = await UserModel.findById(_id);
+        break;
+      case "vendor":
+        user = await VendorModel.findById(_id);
+        break;
+      default:
+        break;
+    }
+
+    if (!user)
+      return { status: 400, message: "No user exists with the id specified." };
+
+    const isPasswordCorrect = bcrypt.compareSync(oldPassword, user?.password);
+    if (!isPasswordCorrect)
+      return {
+        message:
+          "You have provided a wrong password. Your password was not reset.",
+        status: 403,
+      };
+
+    // TO-DO: Perform security measures
+    // Do not allow more than 3 attempts on password change / block the account after 3 attempts
+
+    // Hash password
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Hash the password
+    user.password = hashedPassword;
+    const updatedUserDoc = await user.save();
+
+    // TO-DO: Send confirmation email here
+    const message = {
+      to: user.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: "Password Reset Successful",
+      html: `<h1>Your password has been reset successfully!</h1><p>Dear ${user?.firstName}, Your password has just been reset. If this was not initiated by you, please reach out to info@shuttlelane.com immediately.`,
+    };
+    await sendEmail(message);
+
+    return {
+      status: 201,
+      message: `Your password has been successfully reset. You'll be required to log in again.`,
+      user: updatedUserDoc,
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      message:
+        "An error occured while processing your request. Please, try again.",
+    };
+  }
 }

@@ -45,6 +45,12 @@ const userSchema = new mongoose.Schema(
         ref: "Booking",
       },
     ],
+
+    phoneVerification: {
+      type: mongoose.Types.ObjectId,
+      ref: "Verification",
+      required: true,
+    },
   },
   { timestamps: true }
 );

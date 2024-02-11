@@ -12,6 +12,7 @@ import {
   updateUserById,
   getCities,
   getVisaOnArrivalRates,
+  getVisaOnArrivalRatesWithNigerianVisa,
 } from "../controller/user.controller.js";
 
 const userRouter = express.Router();
@@ -47,5 +48,10 @@ userRouter.get("/cities", getCities);
 // VISA ON ARRIVAL RATES
 // Get Visa On Arrival Rates
 userRouter.get("/voaRates", getVisaOnArrivalRates);
+// Get Visa On Arrival Rates With Nigerian Visa Requirement
+userRouter.get(
+  "/voaRatesWithNigerianVisa",
+  getVisaOnArrivalRatesWithNigerianVisa
+);
 
 export default userRouter;

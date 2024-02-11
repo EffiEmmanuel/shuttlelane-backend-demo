@@ -2,12 +2,20 @@ import bcrypt from "bcryptjs";
 import {
   validateFields,
   validateDriverLoginDetails,
+  generateVerificationCode,
+  jwtSign,
 } from "../util/auth.helper.js";
 import jsonwebtoken from "jsonwebtoken";
 import { checkDriverEmailValidity } from "../util/db.helper.js";
 import PaymentModel from "../model/payment.model.js";
 import BookingModel from "../model/booking.model.js";
 import { sendEmail } from "../util/sendgrid.js";
+import shortid from "shortid";
+import VerificationModel from "../model/verification.model.js";
+import { sendSMS } from "../util/twilio.js";
+import VerificationService from "./VerificationService.js";
+
+const verificationService = new VerificationService(VerificationModel);
 
 export default class DriverService {
   constructor(ShuttlelaneDriverModel) {
@@ -36,22 +44,51 @@ export default class DriverService {
     const newDriver = await this.DriverModel.create({
       ...driver,
       password: hashedPassword,
+      phoneVerification: false,
     });
 
     // TO-DO: Send confirmation email here
     const message = {
       to: driver.email,
       from: process.env.SENGRID_EMAIL,
-      subject: "This is a test subject",
-      text: "Therefore, this is a test body also",
-      html: `<h1>Sign up Successful!🎉</h1><p>Dear ${newDriver?.firstName}, Your driver account has been created successully. Our team will review your profile within the next 72 hours. You can log in to to view your account status <p><a href='https://www.shuttlelane.com/driver'>here</a>.`,
+      subject: "Welcome to Shuttlelane🎉",
+      html: `<h1>Sign up Successful!🎉</h1><p>Dear ${newDriver?.firstName}, Your driver account has been created successully. Our team will review your profile within the next 72 hours. You can log in to to view your account status <a href='https://www.shuttlelane.com/driver'>here</a>.`,
     };
     await sendEmail(message);
 
+    // TO-DO: Send phone verification SMS here
+    // Generate verification code
+    const smsVerificationCode = generateVerificationCode(4); // '4' refers to the
+    // Add verification code to the verification model
+    const verificationRecord = await VerificationModel.create({
+      userId: newDriver?._id,
+      code: smsVerificationCode,
+    });
+    // Update Driver document to include the verification
+    const driverVerification = await this.DriverModel.findOneAndUpdate(
+      { _id: newDriver?._id },
+      {
+        phoneVerification: true,
+      }
+    );
+
+    // Send sms
+    const smsMessage = `Welcome to Shuttlelane! Use this code to verify your phone number: ${smsVerificationCode}`;
+    await sendSMS(newDriver.mobile, smsMessage)
+      .then((res) => console.log("SMS sent successfully!"))
+      .catch((err) =>
+        console.log(
+          "An error occured while sending the verification SMS => ",
+          err
+        )
+      );
+
+    const token = jwtSign(newDriver);
     return {
       status: 201,
       message: "Your account has been created successfully!",
       driver: newDriver,
+      token: token,
     };
   }
 
@@ -193,11 +230,7 @@ export default class DriverService {
     if (areFieldsEmpty) return areFieldsEmpty;
 
     // Check if any driver exists with the _id
-    const driver = await this.DriverModel.findOneAndUpdate(
-      { _id: _id },
-      { ...updatedDriver }
-    );
-
+    const driver = await this.DriverModel.findOne({ _id: _id });
     if (!driver) {
       return {
         status: 404,
@@ -205,9 +238,33 @@ export default class DriverService {
       };
     }
 
+    let updatedDriverDoc;
+    let isMobileDifferent = false;
+
+    // If the user changes their phone number, they should be required to verify it again
+    if (updatedDriver?.mobile && updatedDriver?.mobile !== driver?.mobile) {
+      updatedDriverDoc = await this.DriverModel.findOneAndUpdate(
+        { _id: _id },
+        { ...updatedDriver, phoneVerification: false }
+      );
+      isMobileDifferent = true;
+    } else {
+      updatedDriverDoc = await this.DriverModel.findOneAndUpdate(
+        { _id: _id },
+        { ...updatedDriver }
+      );
+    }
+
+    const updatedDriverAccount = await this.DriverModel.findOne({ _id: _id });
+    const token = jwtSign(updatedDriverAccount);
+
     return {
       status: 201,
-      message: `Driver with _id ${_id} has been updated successfully.`,
+      message: isMobileDifferent
+        ? `Your account has been updated successfully. Please verify your phone number again.`
+        : `Your account has been updated successfully.`,
+      driver: updatedDriverAccount,
+      token,
     };
   }
 

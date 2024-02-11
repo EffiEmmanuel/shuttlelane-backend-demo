@@ -213,3 +213,20 @@ export const getVisaOnArrivalRates = async (req, res) => {
     return res.status(500).json({ message: internalServerError });
   }
 };
+
+// VISA ON ARRIVAL RATES WITH NIGERIEAN VISA REQUIRMENT
+export const getVisaOnArrivalRatesWithNigerianVisa = async (req, res) => {
+  console.log("HELLO FROM THE NG CONTROLLER");
+  try {
+    // Fetch visa on arrival rates with nigerian visa requirement
+    const response = await userService.getVisaOnArrivalRatesWithNigerianVisa();
+
+    // Return a response
+    return res.status(response?.status).json({
+      visaOnArrivalRates: response?.visaOnArrivalRates ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};

@@ -34,16 +34,17 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 // }
 const apiKey = `${process.env.SENDGRID_API_KEY}`;
 
-export const sendEmail = async (recipient, subject, content) => {
+export const sendEmail = async (message) => {
+  console.log("RECIPIENT:", message);
   const data = {
     personalizations: [
       {
-        to: [{ email: recipient }],
-        subject: subject,
+        to: [{ email: message?.to }],
+        subject: message?.subject,
       },
     ],
     from: { email: "info@shuttlelane.com" },
-    content: [{ type: "text/html", value: content }],
+    content: [{ type: "text/html", value: message?.html }],
   };
 
   try {

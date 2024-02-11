@@ -37,12 +37,11 @@ export default class BookingService {
     const newBooking = await this.BookingModel.create({
       bookingType: booking?.bookingType,
       bookingReference,
-      paymentId: booking?.paymentId,
-      passengerTitle: booking?.title,
+      paymentId: booking?.paymentId ?? null,
+      title: booking?.title,
       firstName: booking?.firstName,
       lastName: booking?.lastName,
       email: booking?.email,
-      countryCode: booking?.countryCode,
       mobile: booking?.mobile,
       user: booking?.userId ?? null,
     });
@@ -51,7 +50,7 @@ export default class BookingService {
 
     try {
       switch (booking?.bookingType) {
-        case "Airport Transfer":
+        case "Airport":
           const newAirportTransferBooking = AirportTransferBookingModel.create({
             bookingReference,
             bookingId: newBooking?._id,
@@ -316,6 +315,7 @@ export default class BookingService {
 
   async calculateBookingTotal(userCurrency, bookingDetails) {
     console.log("BOOKING DETAILS:", bookingDetails);
+    console.log("USER CURRENCY:", userCurrency);
 
     // Variables
     let sum, distanceMatrix, returnObject;
@@ -435,7 +435,7 @@ export default class BookingService {
             transactionFee: isCountrySupported?.voaBaseFees?.transactionFee,
             processingFee: isCountrySupported?.voaBaseFees?.processingFee,
             biometricFee: isCountrySupported?.voaBaseFees?.biometricFee,
-            vat: isCountrySupported?.voaBaseFees?.vat,
+            vat: isCountrySupported?.vat,
             total: isCountrySupported?.total,
             userCurrency: userCurrency,
             voaVerificationStatus: "visaRequired",

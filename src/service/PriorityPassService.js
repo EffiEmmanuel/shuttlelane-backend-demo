@@ -91,29 +91,13 @@ export default class PriorityPassService {
           currency: allowedCurrency,
         };
       } else {
-        // Default to USD
-        const currency = await CurrencyModel.findOne({
-          currencyLabel: "Dollars",
-        });
-
-        let passesWithConvertedRates = [];
-
-        for (let i = 0; i < passes?.length; i++) {
-          let convertedRate = convertAmountToUserCurrency(
-            allowedCurrency,
-            passes[i]?.rate
-          );
-
-          passes[i].rate = convertedRate;
-          passesWithConvertedRates.push(passes[i]);
-        }
-
+        // Default to Naira
         // Return a response
         return {
           status: 200,
           message: `Passes fetched`,
-          passes: passesWithConvertedRates,
-          currency: currency,
+          passes: passes,
+          currency: null,
         };
       }
     } else {

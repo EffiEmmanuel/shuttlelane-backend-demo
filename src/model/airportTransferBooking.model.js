@@ -55,11 +55,11 @@ const airportTransferBookingSchema = new mongoose.Schema(
     },
 
     pickupDate: {
-      type: String,
+      type: Date,
     },
 
     pickupTime: {
-      type: String,
+      type: Date,
     },
 
     dropoffAddress: {
@@ -68,11 +68,11 @@ const airportTransferBookingSchema = new mongoose.Schema(
     },
 
     returnDate: {
-      type: String,
+      type: Date,
     },
 
     returnTime: {
-      type: String,
+      type: Date,
     },
 
     hasPriorityPass: {

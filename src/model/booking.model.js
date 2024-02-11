@@ -5,6 +5,7 @@ import shortid from "shortid";
 const bookingSchema = new mongoose.Schema({
   bookingType: {
     type: String,
+    enum: ["Airport", "Car", "Priority", "Visa"],
     required: true,
   },
 
@@ -24,7 +25,7 @@ const bookingSchema = new mongoose.Schema({
   },
 
   // The following fields cover the passenger's details - (By default, these are guests on the website and on the mobile app)
-  passengerTitle: {
+  title: {
     type: String,
   },
 
@@ -40,10 +41,6 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     trim: true,
     match: /.+\@.+\..+/,
-  },
-
-  countryCode: {
-    type: String,
   },
 
   mobile: {

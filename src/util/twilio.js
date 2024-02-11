@@ -1,18 +1,18 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+dotenv.config();
+import twilio from "twilio";
 
-function sendSMS(phone, message) {
-  //   const accountSid = "AC3319551d170c34d5e479c10b28e5ffef";
-  //   const authToken = "16fde20d11c8a9782b9ea891e57187f9";
-  const accountSid = process.env.TWILO_ACCOUNT_SID;
-  const authToken = process.env.TWILO_AUTH_TOKEN;
-  const providerNumber = process.env.TWILIO_PHONE_NUMBER;
-  //   const providerNumber = "+447429738615";
-  const client = require("twilio")(accountSid, authToken);
-  console.log("sending SMS", process.env.TWILIO_ACCOUNT_SID);
-  client.messages
+const TWILIO_ACCOUNT_SID = "AC3319551d170c34d5e479c10b28e5ffef";
+const TWILIO_AUTH_TOKEN = "de4d267b8710a4ceb4a1f2e293a6bf68";
+const TWILIO_PHONE_NUMBER = "+447429738615";
+
+export async function sendSMS(phone, message) {
+  const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+  console.log("sending SMS", `${TWILIO_ACCOUNT_SID}`);
+  await twilioClient.messages
     .create({
       body: message,
-      from: providerNumber,
+      from: TWILIO_PHONE_NUMBER,
       to: phone,
     })
     .then((message) => {
@@ -20,8 +20,6 @@ function sendSMS(phone, message) {
       console.log(message.sid);
     })
     .catch((err) => {
-      console.log("ERROR:", err);
+      console.log("ERROR from here:", err);
     });
 }
-
-module.exports = sendSMS;
