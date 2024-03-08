@@ -9,6 +9,11 @@ import PaymentModel from "../model/payment.model.js";
 import BookingModel from "../model/booking.model.js";
 import CityModel from "../model/city.model.js";
 import VisaOnArrivalRateModel from "../model/visaOnArrivalRate.model.js";
+import EnquiryNotificationTemplate from "../emailTemplates/adminEmailTemplates/EnquiryNotificationEmail/index.js";
+import { sendEmail } from "../util/sendgrid.js";
+import ReactDOMServer from "react-dom/server";
+import CurrencyModel from "../model/currency.model.js";
+import { convertAmountToUserCurrency } from "../util/index.js";
 
 export default class UserService {
   constructor(ShuttlelaneUserModel) {
@@ -251,15 +256,76 @@ export default class UserService {
   }
 
   // This service GETS all cities
-  async getCities() {
+  async getCities(userCountry) {
+    console.log("USER COUNTRY:", userCountry);
     // Fetch cities
-    const cities = await CityModel.find({});
+    const cities = await CityModel.find({}).populate("vehicleClasses");
 
-    return {
-      status: 200,
-      message: `Fetched cities`,
-      cities: cities,
-    };
+    // Get currency (UPDATE LATER TO INCLUDE MORE THAN ONE COUNTRY) where the userCountry is listed
+    const allowedCurrency = await CurrencyModel.findOne({
+      supportedCountries: { $in: [userCountry] },
+    })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        console.log("ERROR:", err);
+      });
+
+    console.log("ALLOWED CURRENCY:", allowedCurrency);
+
+    // Check if the user's country has been added to a currency
+    if (allowedCurrency) {
+      let citiesWithConvertedRates = [];
+
+      cities.forEach((city) => {
+        console.log("HELLO:", city);
+        let vehicleClassesWithConvertedRates = [];
+        for (let i = 0; i < city?.vehicleClasses?.length; i++) {
+          let convertedRate = convertAmountToUserCurrency(
+            allowedCurrency,
+            city?.vehicleClasses[i]?.basePrice
+          );
+          city.vehicleClasses[i].basePrice = convertedRate;
+          vehicleClassesWithConvertedRates.push(city?.vehicleClasses[i]);
+        }
+        console.log(
+          "vehicleClassesWithConvertedRates:",
+          vehicleClassesWithConvertedRates
+        );
+
+        console.log("CITY AT THE END OF THE ARRAY:", city);
+
+        let cityWithConvertedRate = {
+          _id: city?._id,
+          cityName: city?.cityName,
+          airports: city?.airports,
+          vehicleClasses: vehicleClassesWithConvertedRates,
+        };
+        citiesWithConvertedRates.push(cityWithConvertedRate);
+      });
+
+      console.log("CITIES:", citiesWithConvertedRates);
+
+      // Return a response
+      return {
+        status: 200,
+        message: `Cities fetched`,
+        cities: citiesWithConvertedRates,
+        currency: allowedCurrency,
+      };
+    } else {
+      // Default to Naira
+      const userCurrency = await CurrencyModel.findOne({ symbol: "₦" });
+
+      // Return a response
+      return {
+        status: 200,
+        message: `Cities fetched`,
+        cities: cities,
+        currency: userCurrency,
+      };
+    }
   }
 
   // VISA ON ARRIVAL RATES
@@ -291,6 +357,36 @@ export default class UserService {
       status: 200,
       message: `Fetched visa on arrival rates with Nigerian visa requirement.`,
       visaOnArrivalRates: visaOnArrivalRates,
+    };
+  }
+
+  // ENQUIRY
+  // This service SENDS an email from the Get in touch form
+  async sendEnquiryEmail(fullName, email, message) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([fullName, email, message]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Send Email
+    const emailHTML = EnquiryNotificationTemplate({
+      fullName,
+      email,
+      message,
+    });
+
+    const emailMessage = {
+      to: "info@shuttlelane.com",
+      from: process.env.SENGRID_EMAIL,
+      subject: "🔔You just received a message on Shuttlelane.com",
+      html: ReactDOMServer.renderToString(emailHTML),
+    };
+    await sendEmail(emailMessage);
+
+    return {
+      status: 200,
+      message: `Message sent! Our team will be in touch shortly.`,
     };
   }
 }

@@ -35,7 +35,7 @@ const carRentalBookingSchema = new mongoose.Schema(
 
     car: {
       type: mongoose.Types.ObjectId,
-      ref: "car",
+      ref: "Car",
     },
   },
   { timestamps: true }

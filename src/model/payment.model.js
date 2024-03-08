@@ -26,7 +26,7 @@ const paymentSchema = new mongoose.Schema({
 
   bookingId: {
     type: mongoose.Types.ObjectId,
-    ref: "booking",
+    ref: "Booking",
   },
 
   userId: {

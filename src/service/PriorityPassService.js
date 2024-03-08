@@ -68,45 +68,36 @@ export default class PriorityPassService {
         console.log("ERROR:", err);
       });
 
-    // If the country is anything else other than Nigeria, do this
-    if (userCountry?.toLowerCase() !== "nigeria") {
-      // Check if the user's country has been added to a currency
-      if (allowedCurrency) {
-        let passesWithConvertedRates = [];
+    // Check if the user's country has been added to a currency
+    if (allowedCurrency) {
+      let passesWithConvertedRates = [];
 
-        for (let i = 0; i < passes?.length; i++) {
-          let convertedRate = convertAmountToUserCurrency(
-            allowedCurrency,
-            passes[i]?.price
-          );
-          passes[i].price = convertedRate;
-          passesWithConvertedRates.push(passes[i]);
-        }
-
-        // Return a response
-        return {
-          status: 200,
-          message: `Passes fetched`,
-          passes: passesWithConvertedRates,
-          currency: allowedCurrency,
-        };
-      } else {
-        // Default to Naira
-        // Return a response
-        return {
-          status: 200,
-          message: `Passes fetched`,
-          passes: passes,
-          currency: null,
-        };
+      for (let i = 0; i < passes?.length; i++) {
+        let convertedRate = convertAmountToUserCurrency(
+          allowedCurrency,
+          passes[i]?.price
+        );
+        passes[i].price = convertedRate;
+        passesWithConvertedRates.push(passes[i]);
       }
+
+      // Return a response
+      return {
+        status: 200,
+        message: `Passes fetched`,
+        passes: passesWithConvertedRates,
+        currency: allowedCurrency,
+      };
     } else {
-      // If the user is operating from Nigeria
+      // Default to Naira
+      const userCurrency = await CurrencyModel.findOne({ symbol: "₦" });
+
       // Return a response
       return {
         status: 200,
         message: `Passes fetched`,
         passes: passes,
+        currency: userCurrency,
       };
     }
   }

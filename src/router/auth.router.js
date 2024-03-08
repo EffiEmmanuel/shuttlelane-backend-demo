@@ -1,7 +1,11 @@
 import express from "express";
 import routes from "../routes.js";
 import { loginUser, signupUser } from "../controller/user.controller.js";
-import { loginAdmin, signupAdmin } from "../controller/admin.controller.js";
+import {
+  handleCompleteAdminAccountSignup,
+  loginAdmin,
+  signupAdmin,
+} from "../controller/admin.controller.js";
 import { verifyJWT } from "../util/auth.helper.js";
 import { loginDriver, signupDriver } from "../controller/driver.controller.js";
 import { resendOTP, verifyOTP } from "../controller/verification.controller.js";
@@ -17,6 +21,11 @@ authRouter.post(routes.API_USER_LOGIN_ROUTE, loginUser);
 // Auth routes for Admins
 // SIGNUP ADMIN
 authRouter.post(routes.API_ADMIN_SIGNUP_ROUTE, signupAdmin);
+// COMPLETE ADMIN SIGNUP
+authRouter.post(
+  routes.API_ADMIN_COMPLETE_SIGNUP_ROUTE,
+  handleCompleteAdminAccountSignup
+);
 // LOGIN ADMIN
 authRouter.post(routes.API_ADMIN_LOGIN_ROUTE, loginAdmin);
 

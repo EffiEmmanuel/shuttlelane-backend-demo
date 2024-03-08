@@ -8,11 +8,6 @@ const airportTransferBookingSchema = new mongoose.Schema(
       type: String,
     },
 
-    bookingId: {
-      type: mongoose.Types.ObjectId,
-      ref: "Booking",
-    },
-
     isRoundTrip: {
       type: Boolean,
       required: true,

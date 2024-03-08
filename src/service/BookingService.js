@@ -22,6 +22,8 @@ import axios from "axios";
 import CarModel from "../model/car.model.js";
 import VoaBaseFeesModel from "../model/voaBaseFees.model.js";
 import VisaOnArrivalRateModel from "../model/visaOnArrivalRate.model.js";
+import BookingSuccessfulEmail from "../emailTemplates/userEmailTemplates/BookingSuccessfulEmail/index.js";
+import ReactDOMServer from "react-dom/server";
 
 export default class BookingService {
   constructor(ShuttlelaneBookingModel) {
@@ -30,47 +32,184 @@ export default class BookingService {
 
   // This service CREATES a new booking
   async createBooking(booking) {
+    console.log("BOOKING:", booking);
     // Generate booking reference
     const bookingReference = generateBookingReference(booking?.bookingType);
-
-    // If the email is available, then proceed to sign up the booking
-    const newBooking = await this.BookingModel.create({
-      bookingType: booking?.bookingType,
-      bookingReference,
-      paymentId: booking?.paymentId ?? null,
-      title: booking?.title,
-      firstName: booking?.firstName,
-      lastName: booking?.lastName,
-      email: booking?.email,
-      mobile: booking?.mobile,
-      user: booking?.userId ?? null,
-    });
 
     let shuttlelaneBooking;
 
     try {
+      let newBooking;
+
       switch (booking?.bookingType) {
         case "Airport":
-          const newAirportTransferBooking = AirportTransferBookingModel.create({
+          const newAirportTransferBooking =
+            await AirportTransferBookingModel.create({
+              bookingReference,
+              isRoundTrip: booking?.isRoundTrip,
+              passengers: booking?.passengers,
+              airline: booking?.airline,
+              flightNumber: booking?.flightNumber,
+              vehicleClass: booking?.vehicleClass,
+              city: booking?.city,
+              pickupAddress: booking?.pickupAddress,
+              pickupDate: booking?.pickupDate,
+              pickupTime: booking?.pickupTime,
+              dropoffAddress: booking?.dropoffAddress,
+              returnDate: booking?.returnDate ?? null,
+              returnTime: booking?.returnTime ?? null,
+              hasPriorityPass: booking?.hasPriorityPass,
+              passType: booking?.passType ?? null,
+              priorityPassCount: booking?.priorityPassCount ?? null,
+            });
+
+          console.log("NATBid:", newAirportTransferBooking?._id);
+          newBooking = await this.BookingModel.create({
+            booking: newAirportTransferBooking?._id,
+            bookingType: booking?.bookingType,
             bookingReference,
-            bookingId: newBooking?._id,
-            isRoundTrip: booking?.isRoundTrip,
-            passengers: booking?.passengers,
-            airline: booking?.airline,
-            flightNumber: booking?.flightNumber,
-            vehicleClass: booking?.vehicleClass,
-            city: booking?.city,
+            bookingCurrency: booking?.bookingCurrency,
+            bookingTotal: booking?.bookingTotal,
+            paymentId: booking?.paymentId ?? null,
+            title: booking?.title,
+            firstName: booking?.firstName,
+            lastName: booking?.lastName,
+            email: booking?.email,
+            mobile: booking?.mobile,
+            user: booking?.userId ?? null,
+            bookingSchemaType: "AirportTransferBooking",
+          });
+
+          shuttlelaneBooking = newAirportTransferBooking;
+          break;
+        case "Car":
+          console.log("HELLO FROM THIS PART OF THE CODE:", booking);
+          const newCarBooking = await CarRentalBookingModel.create({
+            bookingReference,
+            days: booking?.days,
+            city: booking?.citySelected,
             pickupAddress: booking?.pickupAddress,
             pickupDate: booking?.pickupDate,
             pickupTime: booking?.pickupTime,
-            dropoffAddress: booking?.dropoffAddress,
-            returnDate: booking?.returnDate ?? null,
-            returnTime: booking?.returnTime ?? null,
-            hasPriorityPass: booking?.hasPriorityPass,
-            passType: booking?.passType ?? null,
-            priorityPassCount: booking?.priorityPassCount ?? null,
+            car: booking?.carSelected,
           });
-          shuttlelaneBooking = newAirportTransferBooking;
+
+          console.log("NATBid:", newCarBooking?._id);
+          newBooking = await this.BookingModel.create({
+            booking: newCarBooking?._id,
+            bookingType: booking?.bookingType,
+            bookingReference,
+            bookingCurrency: booking?.bookingCurrency,
+            bookingTotal: booking?.bookingTotal,
+            paymentId: booking?.paymentId ?? null,
+            title: booking?.title,
+            firstName: booking?.firstName,
+            lastName: booking?.lastName,
+            email: booking?.email,
+            mobile: booking?.mobile,
+            user: booking?.userId ?? null,
+            bookingSchemaType: "CarRentalBooking",
+          });
+
+          shuttlelaneBooking = newCarBooking;
+          break;
+        case "Priority":
+          console.log("HELLO FROM THIS PART OF THE CODE:", booking);
+          const newPriorityBooking = await PriorityPassBookingModel.create({
+            bookingReference,
+            days: booking?.days,
+            city: booking?.citySelected,
+            pickupAddress: booking?.pickupLocation,
+            pickupDate: booking?.pickupDate,
+            pickupTime: booking?.pickupTime,
+            service: booking?.selectedProtocol,
+            pass: booking?.passSelected,
+            airline: booking?.airline,
+            flightNumber: booking?.flightNumber,
+            passengers: booking?.passengers,
+          });
+
+          console.log("NATBid:", newPriorityBooking?._id);
+          newBooking = await this.BookingModel.create({
+            booking: newPriorityBooking?._id,
+            bookingType: booking?.bookingType,
+            bookingReference,
+            bookingCurrency: booking?.bookingCurrency,
+            bookingTotal: booking?.bookingTotal,
+            paymentId: booking?.paymentId ?? null,
+            title: booking?.title,
+            firstName: booking?.firstName,
+            lastName: booking?.lastName,
+            email: booking?.email,
+            mobile: booking?.mobile,
+            user: booking?.userId ?? null,
+            bookingSchemaType: "PriorityPassBooking",
+          });
+
+          console.log("NB:", newBooking);
+
+          shuttlelaneBooking = newPriorityBooking;
+          break;
+        case "Visa":
+          console.log("HELLO FROM THIS PART OF THE CODE::", booking);
+          const newVisaBooking = await VisaOnArrivalBookingModel.create({
+            bookingReference,
+            // GENERAL INFORMATION
+            nationality: booking?.nationality,
+            visaClass: booking?.visaClass,
+            passportType: booking?.passportType,
+            // BIODATA
+            passportPhotograph: booking?.passportPhotograph,
+            title: booking?.title,
+            surname: booking?.surname,
+            firstName: booking?.firstName,
+            middleName: booking?.middleName,
+            email: booking?.email,
+            dateOfBirth: booking?.dateOfBirth,
+            placeOfBirth: booking?.placeOfBirth,
+            gender: booking?.gender,
+            maritalStatus: booking?.maritalStatus,
+            passportNumber: booking?.passportNumber,
+            passportExpiryDate: booking?.passportExpiryDate,
+            // TRAVEL INFORMATION
+            purposeOfJourney: booking?.purposeOfJourney,
+            airline: booking?.airline,
+            flightNumber: booking?.flightNumber,
+            countryOfDeparture: booking?.countryOfDeparture,
+            departureDate: booking?.departureDate,
+            arrivalDate: booking?.arrivalDate,
+            portOfEntry: booking?.portOfEntry,
+            durationOfStay: booking?.durationOfStay,
+            // Contact / Hotel Details In Nigeria
+            contactName: booking?.contactName,
+            contactNumber: booking?.contactNumber,
+            contactAddress: booking?.contactAddress,
+            contactCity: booking?.contactCity,
+            contactState: booking?.contactState,
+            contactEmail: booking?.contactEmail,
+            contactPostalCode: booking?.contactPostalCode,
+          });
+
+          console.log("NATBid:", newVisaBooking?._id);
+          newBooking = await this.BookingModel.create({
+            booking: newVisaBooking?._id,
+            bookingType: "Ongoing",
+            bookingReference,
+            bookingCurrency: booking?.bookingCurrency,
+            bookingTotal: booking?.bookingTotal,
+            paymentId: booking?.paymentId ?? null,
+            title: booking?.title,
+            firstName: booking?.firstName,
+            lastName: booking?.lastName,
+            email: booking?.email,
+            mobile: booking?.mobile,
+            user: booking?.userId ?? null,
+            bookingSchemaType: "VisaOnArrivalBooking",
+          });
+
+          console.log("NB:", newBooking);
+
+          shuttlelaneBooking = newVisaBooking;
           break;
 
         default:
@@ -87,15 +226,17 @@ export default class BookingService {
       };
     }
 
-    // TO-DO: Send confirmation email here
-    // const message = {
-    //   to: booking.email,
-    //   from: process.env.SENGRID_EMAIL,
-    //   subject: "This is a test subject",
-    //   text: "Therefore, this is a test body also",
-    //   html: "<h1>Therefore, this is a test body also</h1>",
-    // };
-    // await sendEmail(message);
+    const emailHTML = BookingSuccessfulEmail({
+      bookingReference,
+    });
+
+    const message = {
+      to: booking?.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: "Booking Successfully Created🎊",
+      html: ReactDOMServer.renderToString(emailHTML),
+    };
+    sendEmail(message);
 
     return {
       status: 201,
@@ -117,70 +258,24 @@ export default class BookingService {
     };
   }
 
-  // This service logs in the booking
-  async loginBooking(username, password) {
-    // Validate if fields are empty
-    const areFieldsEmpty = validateFields([username, password]);
-
-    // areFieldsEmpty is an object that contains a status and message field
-    if (areFieldsEmpty) return areFieldsEmpty;
-
-    // If the fields are not empty, check the DB for username
-    const bookingExists = await validateBookingLoginDetails(username, password);
-
-    // TODO: If booking has 2FA turned on, Send OTP to booking's username
-    // return {
-    //     status: 200,
-    //     message: 'An OTP was sent to your registered username.'
-    // }
-
-    return bookingExists;
-  }
-
-  // This service GETS a booking by their email
-  async getBookingByEmail(email) {
-    // Validate if fields are empty
-    const areFieldsEmpty = validateFields([email]);
-
-    // areFieldsEmpty is an object that contains a status and message field
-    if (areFieldsEmpty) return areFieldsEmpty;
-
-    // Check if any booking exists with the email
-    const booking = await this.BookingModel.findOne({
-      email: email,
-    }).populate({
-      path: "bookings",
-    });
-
-    if (!booking) {
-      return {
-        status: 404,
-        message: "No booking exists with the email specified.",
-        booking: booking,
-      };
-    }
-
-    return {
-      status: 200,
-      message: `Fetched booking with email ${email}.`,
-      booking: booking,
-    };
-  }
-
   // This service GETS dashboard statistics
   async getStatistics() {
     // Fetch the number of airport transfer bookings
-    const numberOfAirportTransferBookings =
-      await AirportTransferBookingModel.find().count();
+    const numberOfAirportTransferBookings = await this.BookingModel.find({
+      bookingType: "Airport",
+    }).count();
     // Fetch the number of car rental bookings
-    const numberOfCarRentalBookings =
-      await CarRentalBookingModel.find().count();
+    const numberOfCarRentalBookings = await this.BookingModel.find({
+      bookingType: "Car",
+    }).count();
     // Fetch the number of priority pass bookings
-    const numberOfPriorityPassBookings =
-      await PriorityPassBookingModel.find().count();
+    const numberOfPriorityPassBookings = await this.BookingModel.find({
+      bookingType: "Priority",
+    }).count();
     // Fetch the number of visa on arrival bookings
-    const numberOfVisaOnArrivalBookings =
-      await VisaOnArrivalBookingModel.find().count();
+    const numberOfVisaOnArrivalBookings = await this.BookingModel.find({
+      bookingType: "Visa",
+    }).count();
     // Fetch users
     const users = await UserModel.find();
     // Fetch drivers
@@ -237,33 +332,87 @@ export default class BookingService {
     };
   }
 
-  // This service DELETES booking by email
-  // TO-DO: Send OTP along with the email to verify the booking is actually sending the request to delete his/her account
-  async deleteBookingByEmail(email) {
+  // This service GETS a booking by their booking reference
+  async getBookingByBookingReference(bookingReference) {
     // Validate if fields are empty
-    const areFieldsEmpty = validateFields([email]);
+    const areFieldsEmpty = validateFields([bookingReference]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
 
-    // Check if any booking exists with the email
-    const booking = await this.BookingModel.findOneAndRemove({ email: email });
+    let innerBookingPopulateField =
+      bookingReference?.split("-")[0] == "AT"
+        ? {
+            path: "booking",
+            populate: {
+              path: "vehicleClass",
+            },
+          }
+        : bookingReference?.split("-")[0] == "CR"
+        ? {
+            path: "booking",
+            populate: {
+              path: "car",
+            },
+          }
+        : bookingReference?.split("-")[0] == "PP"
+        ? {
+            path: "booking",
+            populate: [
+              {
+                path: "city",
+              },
+              {
+                path: "pass",
+              },
+            ],
+          }
+        : {
+            path: "booking",
+          };
+
+    // Check if any booking exists with the booking reference
+    const booking = await this.BookingModel.findOne({
+      bookingReference: bookingReference,
+    })
+      .populate(innerBookingPopulateField)
+      .populate({
+        path: "bookingCurrency",
+      })
+      .populate({
+        path: "assignedDriver",
+      })
+      .populate({
+        path: "assignedVendor",
+      })
+      .populate({
+        path: "paymentId",
+      })
+      .populate({
+        path: "assignedDriver",
+      })
+      .populate({
+        path: "user",
+      });
 
     if (!booking) {
       return {
         status: 404,
-        message: `No booking with email ${email} exists.`,
+        message: "No booking exists with the reference specified.",
+        booking: booking,
       };
     }
 
     return {
-      status: 201,
-      message: `Booking with email ${email} has been deleted successfully.`,
+      status: 200,
+      message: `Fetched booking with booking reference ${bookingReference}.`,
+      booking: booking,
     };
   }
 
   // This service DELETES booking by id
   async deleteBookingById(_id) {
+    console.log("BOOKING ID:", _id);
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([_id]);
 
@@ -271,7 +420,25 @@ export default class BookingService {
     if (areFieldsEmpty) return areFieldsEmpty;
 
     // Check if any booking exists with the _id
-    const booking = await this.BookingModel.findOneAndRemove({ _id: _id });
+    const booking = await this.BookingModel.findOneAndDelete({ _id: _id });
+    console.log("deletedBooking:", booking);
+    if (booking?.bookingType == "Airport") {
+      await AirportTransferBookingModel.findOneAndDelete({
+        bookingReference: booking?.bookingReference,
+      });
+    } else if (booking?.bookingType == "Car") {
+      await CarRentalBookingModel.findOneAndDelete({
+        bookingReference: booking?.bookingReference,
+      });
+    } else if (booking?.bookingType == "Priority") {
+      await PriorityPassBookingModel.findOneAndDelete({
+        bookingReference: booking?.bookingReference,
+      });
+    } else {
+      await VisaOnArrivalBookingModel.findOneAndDelete({
+        bookingReference: booking?.bookingReference,
+      });
+    }
 
     if (!booking) {
       return {
@@ -280,9 +447,32 @@ export default class BookingService {
       };
     }
 
+    const allBookings = await this.BookingModel.find().populate("booking");
+    // Fetch upcoming bookings
+    const bookingsAwaitingAssignment = await BookingModel.find({
+      bookingStatus: "Not yet assigned",
+    }).populate("booking");
+
+    // Remove Visa On Arrival Bookings
+    const filteredVoaBookings = bookingsAwaitingAssignment?.filter(
+      (booking) => {
+        return booking?.bookingType !== "Visa";
+      }
+    );
+
+    // Fetch upcoming bookings
+    const upcomingBookings = await BookingModel.find({
+      bookingStatus: "Scheduled",
+    }).populate({
+      path: "booking",
+    });
+
     return {
       status: 201,
-      message: `Booking with _id ${_id} has been deleted successfully.`,
+      message: `Booking deleted successfully.`,
+      bookings: allBookings,
+      bookingsAwaitingAssignment: filteredVoaBookings,
+      upcomingBookings: upcomingBookings,
     };
   }
 
@@ -319,6 +509,7 @@ export default class BookingService {
 
     // Variables
     let sum, distanceMatrix, returnObject;
+    const currencyToReturn = await CurrencyModel.findOne({ symbol: "₦" });
 
     // Cases: Airport, Car, Priority, Visa
     switch (bookingDetails?.bookingType) {
@@ -350,7 +541,7 @@ export default class BookingService {
           status: 200,
           message: `Total Fetched`,
           total: sum,
-          userCurrency: userCurrency,
+          userCurrency: userCurrency ?? currencyToReturn,
           distance: distanceMatrix?.distance,
           duration: distanceMatrix?.duration,
         };
@@ -380,7 +571,7 @@ export default class BookingService {
           status: 200,
           message: `Total Fetched`,
           total: sum,
-          userCurrency: userCurrency,
+          userCurrency: userCurrency ?? currencyToReturn,
         };
         break;
 
@@ -408,7 +599,7 @@ export default class BookingService {
           status: 200,
           message: `Total Fetched`,
           total: sum,
-          userCurrency: userCurrency,
+          userCurrency: userCurrency ?? currencyToReturn,
         };
         break;
 
@@ -451,7 +642,7 @@ export default class BookingService {
             biometricFee: isCountrySupported?.voaBaseFees?.biometricFee,
             vat: isCountrySupported?.voaBaseFees?.vat,
             total: isCountrySupported?.total,
-            userCurrency: userCurrency,
+            userCurrency: userCurrency ?? currencyToReturn,
             voaVerificationStatus: "visaNotRequired",
           };
         }

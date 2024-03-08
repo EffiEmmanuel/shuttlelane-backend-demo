@@ -32,14 +32,14 @@ const adminSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      //   required: true,
     },
 
     role: {
       type: String,
       required: true,
       default: "Blogger",
-      enum: ["Admin", "Blogger"],
+      enum: ["Super Admin", "Blogger"],
     },
   },
   { timestamps: true }

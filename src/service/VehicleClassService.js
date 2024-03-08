@@ -1,3 +1,4 @@
+import CityModel from "../model/city.model.js";
 import CurrencyModel from "../model/currency.model.js";
 import { validateFields } from "../util/auth.helper.js";
 import { convertAmountToUserCurrency } from "../util/index.js";
@@ -14,7 +15,8 @@ export default class VehicleClassService {
     description,
     passengers,
     luggages,
-    basePrice
+    basePrice,
+    cityId
   ) {
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([
@@ -24,23 +26,21 @@ export default class VehicleClassService {
       passengers,
       luggages,
       basePrice,
+      cityId,
     ]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
 
-    const vehicleClassExists = await this.VehicleClassModel.findOne({
-      className,
-    });
-
-    if (vehicleClassExists) {
+    // Check if city exists
+    const cityExists = await CityModel.findOne({ _id: cityId });
+    if (!cityExists)
       return {
-        status: 409,
-        message:
-          "This vehicle class already exists. Try adding a class with a different name.",
+        status: 404,
+        message: "No city exists with the id specified",
       };
-    }
 
+    // Create the vehicle class
     const newVehicleClass = await this.VehicleClassModel.create({
       image,
       className,
@@ -50,6 +50,18 @@ export default class VehicleClassService {
       basePrice,
     });
 
+    // Check if the vehicleClassId is already present in the array
+    if (cityExists.vehicleClasses.includes(newVehicleClass?._id)) {
+      return {
+        status: 400,
+        message: "Vehicle class already exists in the city",
+      };
+    }
+
+    // Add the vehicleClassId to the vehicleClasses array
+    cityExists.vehicleClasses.push(newVehicleClass?._id);
+    await cityExists.save();
+
     // Fetch all vehicle classes (So the frontend can be update without having to refresh the page & to prevent making another request to get them)
     const vehicleClasses = await this.VehicleClassModel.find().sort({
       createdAt: -1,
@@ -57,7 +69,7 @@ export default class VehicleClassService {
 
     return {
       status: 201,
-      message: `Vehicle class created successfully!`,
+      message: `Vehicle class created and added to city successfully!`,
       vehicleClasses: vehicleClasses,
     };
   }
@@ -86,46 +98,36 @@ export default class VehicleClassService {
         console.log("ERROR:", err);
       });
 
-    // If the country is anything else other than Nigeria, do this
-    if (userCountry?.toLowerCase() !== "nigeria") {
-      console.log("HI 1");
-      // Check if the user's country has been added to a currency
-      if (allowedCurrency) {
-        let vehicleClassesWithConvertedRates = [];
+    // Check if the user's country has been added to a currency
+    if (allowedCurrency) {
+      let vehicleClassesWithConvertedRates = [];
 
-        for (let i = 0; i < vehicleClasses?.length; i++) {
-          let convertedRate = convertAmountToUserCurrency(
-            allowedCurrency,
-            vehicleClasses[i]?.basePrice
-          );
-          vehicleClasses[i].basePrice = convertedRate;
-          vehicleClassesWithConvertedRates.push(vehicleClasses[i]);
-        }
-
-        // Return a response
-        return {
-          status: 200,
-          message: `Vehicle classes fetched`,
-          vehicleClasses: vehicleClassesWithConvertedRates,
-          currency: allowedCurrency,
-        };
-      } else {
-        // Default to Naira
-        // Return a response
-        return {
-          status: 200,
-          message: `Vehicle classes fetched`,
-          vehicleClasses: vehicleClasses,
-          currency: currency,
-        };
+      for (let i = 0; i < vehicleClasses?.length; i++) {
+        let convertedRate = convertAmountToUserCurrency(
+          allowedCurrency,
+          vehicleClasses[i]?.basePrice
+        );
+        vehicleClasses[i].basePrice = convertedRate;
+        vehicleClassesWithConvertedRates.push(vehicleClasses[i]);
       }
+
+      // Return a response
+      return {
+        status: 200,
+        message: `Vehicle classes fetched`,
+        vehicleClasses: vehicleClassesWithConvertedRates,
+        currency: allowedCurrency,
+      };
     } else {
-      // If the user is operating from Nigeria
+      // Default to Naira
+      const userCurrency = await CurrencyModel.findOne({ symbol: "₦" });
+
       // Return a response
       return {
         status: 200,
         message: `Vehicle classes fetched`,
         vehicleClasses: vehicleClasses,
+        currency: userCurrency,
       };
     }
   }
@@ -177,32 +179,42 @@ export default class VehicleClassService {
       createdAt: -1,
     });
 
+    const cities = await CityModel.find({}).populate('vehicleClasses');
+
     return {
       status: 201,
       message: `Vehicle class updated successfully.`,
       vehicleClasses: vehicleClasses,
+      cities: cities,
     };
   }
 
   // This service DELETES a vehicle class
-  async deleteVehicleClass(vehicleClassId) {
+  async deleteVehicleClassFromCity(cityId, vehicleClassId) {
     // Validate if fields are empty
-    const areFieldsEmpty = validateFields([vehicleClassId]);
+    const areFieldsEmpty = validateFields([cityId, vehicleClassId]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
 
-    // Check if any vehicleClass exists with the _id
-    const vehicleClass = await this.VehicleClassModel.findOneAndRemove({
-      _id: vehicleClassId,
-    });
+    const city = await CityModel.findById(cityId);
+    if (!city) {
+      return { status: 400, message: "City not found" };
+    }
 
-    if (!vehicleClass) {
+    // Check if the vehicleClassId is present in the array
+    if (!city.vehicleClasses.includes(vehicleClassId)) {
       return {
-        status: 404,
-        message: `No vehicleClass with _id ${vehicleClassId} exists.`,
+        status: 400,
+        message: "Vehicle class does not exist in the city",
       };
     }
+
+    // Remove the vehicleClassId from the vehicleClasses array
+    city.vehicleClasses = city.vehicleClasses.filter(
+      (id) => id.toString() !== vehicleClassId
+    );
+    await city.save();
 
     const vehicleClasses = await this.VehicleClassModel.find({}).sort({
       createdAt: -1,

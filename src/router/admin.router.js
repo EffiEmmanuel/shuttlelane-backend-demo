@@ -3,6 +3,7 @@ import { verifyUserToken } from "../util/auth.helper.js";
 import {
   addAirportToCity,
   approveDriverAccount,
+  assignDriverToJob,
   approveVendorAccount,
   createBlogPost,
   createCar,
@@ -21,6 +22,8 @@ import {
   deleteVehicleClass,
   deleteVendorById,
   deleteVisaOnArrivalRate,
+  fetchUpcomingBookings,
+  fetchBookingsAwaitingAssignment,
   fetchCurrencies,
   fetchVisaOnArrivalBaseFees,
   fetchVisaOnArrivalRates,
@@ -46,13 +49,29 @@ import {
   updatePass,
   updateVehicleClass,
   updateVisaOnArrivalRate,
+  getApprovedDrivers,
+  getAdminAccounts,
+  deleteAdminById,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
 
 // Routes
+// GET ADMIN ACCOUNTS
+adminRouter.get("/", verifyUserToken, getAdminAccounts);
+// DELETE ADMIN ACCOUNT
+adminRouter.delete("/:adminId", verifyUserToken, deleteAdminById);
+
 // GET STATISTICS
 adminRouter.get("/statistics", verifyUserToken, getStatistics);
+// GET UPCOMING BOOKINGS
+adminRouter.get("/bookings/upcoming", verifyUserToken, fetchUpcomingBookings);
+// GET BOOKINGS AWAITING ASSIGNMENT
+adminRouter.get(
+  "/bookings/unassigned",
+  verifyUserToken,
+  fetchBookingsAwaitingAssignment
+);
 
 // CITIES
 // Create City
@@ -62,7 +81,7 @@ adminRouter.get("/cities", verifyUserToken, getCities);
 // Add Airport To City
 adminRouter.post("/cities/add-airport", verifyUserToken, addAirportToCity);
 // Fetch City
-adminRouter.get("/cities/:cityId", verifyUserToken, getCity);
+adminRouter.get("/cities/:cityId", getCity);
 
 // USERS
 // Fetch Users
@@ -75,6 +94,8 @@ adminRouter.delete("/users/delete/:userId", verifyUserToken, deleteUserById);
 // DRIVERS
 // Fetch Drivers
 adminRouter.get("/drivers", verifyUserToken, getDrivers);
+// Fetch Approved Drivers
+adminRouter.get("/drivers/approved", verifyUserToken, getApprovedDrivers);
 // Fetch Driver by id
 adminRouter.get("/drivers/:driverId", verifyUserToken, getDriverById);
 // Approve Driver account
@@ -82,6 +103,12 @@ adminRouter.patch(
   "/drivers/:driverId/account/approve",
   verifyUserToken,
   approveDriverAccount
+);
+// Assign Driver to a booking
+adminRouter.patch(
+  "/assign-to-booking/:userType/:userId/:bookingId",
+  verifyUserToken,
+  assignDriverToJob
 );
 // Delete Driver by id
 adminRouter.delete(
@@ -192,7 +219,7 @@ adminRouter.post("/vehicle-classes", verifyUserToken, createVehicleClass);
 adminRouter.put("/vehicle-classes/:_id", verifyUserToken, updateVehicleClass);
 // DELETE vehicle class
 adminRouter.delete(
-  "/vehicle-classes/:_id",
+  "/vehicle-classes/:_id/:cityId",
   verifyUserToken,
   deleteVehicleClass
 );

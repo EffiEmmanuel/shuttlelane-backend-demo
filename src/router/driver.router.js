@@ -2,8 +2,12 @@ import express from "express";
 import { verifyUserToken } from "../util/auth.helper.js";
 import {
   deleteDriverById,
+  getDriverAssignedJobs,
   getDriverBookingsByDriverId,
   getDriverById,
+  getDriverCompletedJobs,
+  getDriverOngoingJobs,
+  getDriverUpcomingJobs,
   loginDriver,
   resetDriverPassword,
   signupDriver,
@@ -36,6 +40,30 @@ driverRouter.patch(
   "/reset-password/:driverId",
   verifyUserToken,
   resetDriverPassword
+);
+// GET DRIVER'S COMPLETED JOBS
+driverRouter.get(
+  "/bookings/completed/:driverId",
+  verifyUserToken,
+  getDriverCompletedJobs
+);
+// GET DRIVER'S ASSIGNED JOBS
+driverRouter.get(
+  "/bookings/assigned/:driverId",
+  verifyUserToken,
+  getDriverAssignedJobs
+);
+// GET DRIVER'S UPCOMING JOBS
+driverRouter.get(
+  "/bookings/upcoming/:driverId",
+  verifyUserToken,
+  getDriverUpcomingJobs
+);
+// GET DRIVER'S ONGOING JOBS
+driverRouter.get(
+  "/bookings/ongoing/:driverId",
+  verifyUserToken,
+  getDriverOngoingJobs
 );
 // DELETE DRIVER BY ID
 driverRouter.delete(

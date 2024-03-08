@@ -63,6 +63,16 @@ const driverSchema = new mongoose.Schema(
       required: true,
     },
 
+    carColor: {
+      type: String,
+      required: true,
+    },
+
+    carPlateNumber: {
+      type: String,
+      required: true,
+    },
+
     maritalStatus: {
       type: String,
       required: true,
@@ -157,7 +167,31 @@ const driverSchema = new mongoose.Schema(
       },
     ],
 
+    completedBookings: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Booking",
+      },
+    ],
+
+    upcomingBookings: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Booking",
+      },
+    ],
+
     phoneVerification: {
+      type: Boolean,
+      default: false,
+    },
+
+    isAccountApproved: {
+      type: Boolean,
+      default: false,
+    },
+
+    isAccountBlocked: {
       type: Boolean,
       default: false,
     },

@@ -19,14 +19,17 @@ export const createBooking = async (req, res) => {
 
     // return a response
     if (response?.status !== 201) {
+      console.log("ERROR:", response);
       return res.status(response?.status).json({ message: response?.message });
     }
 
     return res.status(response?.status).json({
       message: response?.message,
       booking: response?.booking,
+      status: response?.status,
     });
   } catch (error) {
+    console.log("ERROR:", error);
     return res.status(500).json({ message: internalServerError, error: error });
   }
 };
@@ -118,6 +121,26 @@ export const getStatistics = async (req, res) => {
   }
 };
 
+// Get booking by booking reference
+export const getBookingByBookingReference = async (req, res) => {
+  try {
+    // Fetch booking
+    const response = await bookingService.getBookingByBookingReference(
+      req.params?.bookingReference
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+      booking: response?.booking,
+    });
+  } catch (error) {
+    console.log("ERROR FROM TRACK BOOKING:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
 // Get admins
 // TO-DO: Transfer to admin controller
 export const getUsers = async (req, res) => {
@@ -134,29 +157,22 @@ export const getUsers = async (req, res) => {
   }
 };
 
-// Delete admin by email
-export const deleteUserByEmail = async (req, res) => {
-  const { email } = req.body;
+// Delete booking by id
+export const deleteBookingById = async (req, res) => {
+  const { bookingId } = req.params;
+  console.log("BOOKINGID:", bookingId);
   try {
-    // DELETE admin
-    const response = await bookingService.deleteUserByEmail(email);
+    // DELETE booking
+    const response = await bookingService.deleteBookingById(bookingId);
 
     // Return a response
-    return res.status(response?.status).json({ message: response?.message });
-  } catch (error) {
-    return res.status(500).json({ message: internalServerError });
-  }
-};
-
-// Delete admin by id
-export const deleteUserById = async (req, res) => {
-  const { adminId } = req.params;
-  try {
-    // DELETE admin
-    const response = await bookingService.deleteUserById(adminId);
-
-    // Return a response
-    return res.status(response?.status).json({ message: response?.message });
+    return res.status(response?.status).json({
+      message: response?.message,
+      status: response?.status,
+      bookings: response?.bookings,
+      bookingsAwaitingAssignment: response?.bookingsAwaitingAssignment,
+      upcomingBookings: response?.upcomingBookings,
+    });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
   }

@@ -3,6 +3,22 @@ import shortid from "shortid";
 
 // SCHEMA: This schema serves as a "Parent Class" for all bookings which includes Airport Transfers, Car Hire and Priority Pass Bookings
 const bookingSchema = new mongoose.Schema({
+  booking: {
+    type: mongoose.Types.ObjectId,
+    refPath: "bookingSchemaType", // Dynamically reference the model based on the bookingType
+  },
+
+  bookingSchemaType: {
+    type: String,
+    enum: [
+      "AirportTransferBooking",
+      "PriorityPassBooking",
+      "CarRentalBooking",
+      "VisaOnArrivalBooking",
+    ],
+    required: true,
+  },
+
   bookingType: {
     type: String,
     enum: ["Airport", "Car", "Priority", "Visa"],
@@ -11,11 +27,27 @@ const bookingSchema = new mongoose.Schema({
 
   bookingStatus: {
     type: String,
-    enum: ["Pending", "Approved", "Scheduled", "Cancelled", "Completed"],
-    default: "Pending",
+    enum: [
+      "Not yet assigned",
+      "Awaiting response",
+      "Scheduled",
+      "Cancelled",
+      "Completed",
+      "Ongoing",
+    ],
+    default: "Not yet assigned",
   },
 
   bookingReference: {
+    type: String,
+  },
+
+  bookingCurrency: {
+    type: mongoose.Types.ObjectId,
+    ref: "Currency",
+  },
+
+  bookingTotal: {
     type: String,
   },
 
@@ -50,7 +82,7 @@ const bookingSchema = new mongoose.Schema({
   // If booking was made by an authenticated user (From the mobile app)
   user: {
     type: mongoose.Types.ObjectId,
-    ref: "user",
+    ref: "User",
   },
 
   // THE FOLLOWING INFORMATION ARE NOT REQUIRED AT INITIAL DOCUMENT CREATION
@@ -110,6 +142,11 @@ const bookingSchema = new mongoose.Schema({
     model: String,
     color: String,
     plateNumber: String,
+  },
+
+  // This field holds how much the driver / vendor is being paid for a particular booking
+  bookingRate: {
+    type: String,
   },
 });
 

@@ -13,6 +13,13 @@ const citySchema = new mongoose.Schema(
         type: String,
       },
     ],
+
+    vehicleClasses: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "VehicleClass",
+      },
+    ],
   },
   { timestamps: true }
 );

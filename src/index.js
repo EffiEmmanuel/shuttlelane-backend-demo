@@ -14,9 +14,8 @@ import carRouter from "./router/car.router.js";
 import priorityPassRouter from "./router/priorityPass.router.js";
 import blogRouter from "./router/blog.router.js";
 import cityRouter from "./router/city.router.js";
-import shortid from "shortid";
-import { sendSMS } from "./util/twilio.js";
 import driverRouter from "./router/driver.router.js";
+
 // iscD1lQF1aB7gDxy
 
 async function startServer() {

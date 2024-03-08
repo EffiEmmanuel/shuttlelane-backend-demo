@@ -7,6 +7,7 @@ const routes = {
   API_VENDOR_LOGIN_ROUTE: `/vendor/login`,
   API_USER_LOGIN_ROUTE: `/user/login`,
   API_ADMIN_SIGNUP_ROUTE: `/admin/signup`,
+  API_ADMIN_COMPLETE_SIGNUP_ROUTE: `/admin/signup/complete-signup/:_id`,
   API_DRIVER_SIGNUP_ROUTE: `/driver/signup`,
   API_VENDOR_SIGNUP_ROUTE: `/vendor/signup`,
   API_USER_SIGNUP_ROUTE: `/user/signup`,

@@ -13,16 +13,16 @@ export function generateBookingReference(bookingType) {
   let reference = uid.rnd();
 
   switch (bookingType) {
-    case "Airport Transfer":
+    case "Airport":
       reference = `${AIRPORT_TRANSFER_BASE_REF}-${reference}`;
       break;
-    case "Car Rental":
+    case "Car":
       reference = `${CAR_RENTAL_BASE_REF}-${reference}`;
       break;
-    case "Priority Pass":
+    case "Priority":
       reference = `${PRIORITY_PASS_BASE_REF}-${reference}`;
       break;
-    case "Visa On Arrival":
+    case "Visa":
       reference = `${VISA_ON_ARRIVAL_BASE_REF}-${reference}`;
       break;
     default:

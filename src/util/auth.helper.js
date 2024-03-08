@@ -50,9 +50,7 @@ export const verifyJWT = (request, response) => {
     console.log("req.body token:", request.body.token);
     let result;
     if (authHeader) {
-      console.log("token:", authHeader);
       result = jwtVerify(authHeader);
-      console.log("result:", result);
       if (!result) {
         response
           .status(403)

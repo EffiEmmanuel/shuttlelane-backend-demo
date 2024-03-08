@@ -33,13 +33,11 @@ export const signupAdmin = async (req, res) => {
   try {
     // Create new admin
     const response = await adminService.signupAdmin({
-      image,
       firstName,
       lastName,
       email,
       username,
       role,
-      password,
     });
 
     // return a response
@@ -48,9 +46,48 @@ export const signupAdmin = async (req, res) => {
     }
 
     return res.status(response?.status).json({
+      status: response?.status,
       message: response?.message,
       token: response?.token,
       admin: response?.admin,
+      adminAccounts: response?.adminAccounts,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Complete admin account signup
+export const handleCompleteAdminAccountSignup = async (req, res) => {
+  try {
+    // Fetch admin accounts
+    const response = await adminService.completeAdminAccountSignup({
+      _id: req.params?._id,
+      image: req.body?.image,
+      password: req.body?.password,
+    });
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Get admin accounts
+export const getAdminAccounts = async (req, res) => {
+  try {
+    // Fetch admin accounts
+    const response = await adminService.fetchAdminAccounts();
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      adminAccounts: response?.adminAccounts,
+      message: response?.message,
     });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
@@ -153,7 +190,7 @@ export const getCities = async (req, res) => {
     // Fetch cities
     const response = await adminService.getCities();
 
-    console.log("HELLO:::", response);
+    console.log("HELLO:::", JSON.stringify(response?.cities));
 
     // Return a response
     return res.status(response?.status).json({
@@ -170,7 +207,10 @@ export const getCities = async (req, res) => {
 export const getCity = async (req, res) => {
   try {
     // Fetch city
-    const response = await adminService.getCity(req.params.cityId);
+    const response = await adminService.getCity(
+      req.params.cityId,
+      req.query.userCountry
+    );
 
     console.log("HELLO:::", response);
 
@@ -273,6 +313,24 @@ export const getDrivers = async (req, res) => {
       data: response?.data,
     });
   } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+// Get approved drivers
+export const getApprovedDrivers = async (req, res) => {
+  try {
+    // Fetch drivers
+    const response = await adminService.getApprovedDrivers();
+
+    // Return a response
+    return res.status(response?.status).json({
+      drivers: response?.drivers ?? null,
+      message: response?.message,
+      data: response?.data,
+    });
+  } catch (error) {
+    console.log("ERROR:", error);
     return res.status(500).json({ message: internalServerError });
   }
 };
@@ -301,10 +359,71 @@ export const approveDriverAccount = async (req, res) => {
     );
 
     // Return a response
-    return res
-      .status(response?.status)
-      .json({ driver: response?.driver ?? null, message: response?.message });
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+      drivers: response?.drivers,
+    });
   } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Assign driver to a job
+export const assignDriverToJob = async (req, res) => {
+  try {
+    // Assign driver to a job
+    const response = await adminService.assignDriverToJob(
+      req.params.userType,
+      req.params.userId,
+      req.params.bookingId,
+      req.body.bookingRate
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+      unassignedBookings: response?.updatedUnassignedBookings,
+    });
+  } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Fetch upcoming bookings / jobs
+export const fetchUpcomingBookings = async (req, res) => {
+  try {
+    // Fetch upcoming bookings
+    const response = await adminService.getUpcomingBookings();
+
+    // Return a response
+    return res.status(response?.status).json({
+      upcomingBookings: response?.bookings ?? null,
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Fetch bookings / jobs awaiting assignment to a driver / vendor
+export const fetchBookingsAwaitingAssignment = async (req, res) => {
+  try {
+    // Fetch bookings awaiting assignment
+    const response = await adminService.getBookingsAwaitingAssignment();
+
+    // Return a response
+    return res.status(response?.status).json({
+      bookings: response?.bookings ?? null,
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    console.log("ERROR FROM CONTROLLER:", error);
     return res.status(500).json({ message: internalServerError });
   }
 };
@@ -746,7 +865,8 @@ export const createVehicleClass = async (req, res) => {
       req.body?.description,
       req.body?.passengers,
       req.body?.luggages,
-      req.body?.basePrice
+      req.body?.basePrice,
+      req.body?.cityId
     );
 
     // Return a response
@@ -777,6 +897,7 @@ export const updateVehicleClass = async (req, res) => {
       message: response?.message,
       status: response?.status,
       vehicleClasses: response?.vehicleClasses,
+      cities: response?.cities,
     });
   } catch (error) {
     console.log(error);
@@ -788,7 +909,8 @@ export const deleteVehicleClass = async (req, res) => {
   console.log("VALUES::", req.body);
   try {
     // DELETE vehicle class
-    const response = await vehicleClassService.deleteVehicleClass(
+    const response = await vehicleClassService.deleteVehicleClassFromCity(
+      req.params?.cityId,
       req.params?._id
     );
 
@@ -995,12 +1117,14 @@ export const deleteAdminById = async (req, res) => {
   const { adminId } = req.params;
   try {
     // DELETE admin
-    const response = await adminService.deleteAdminById(adminId);
+    const response = await adminService.deleteAdminAccountById(adminId);
 
     // Return a response
-    return res
-      .status(response?.status)
-      .json({ message: response?.message, admins: response?.admins });
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+      adminAccounts: response?.adminAccounts,
+    });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
   }

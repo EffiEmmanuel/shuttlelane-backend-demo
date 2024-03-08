@@ -157,18 +157,77 @@ export const resetDriverPassword = async (req, res) => {
   }
 };
 
-// Get driver total spend by driver id
-export const getDriverTotalSpendByDriverId = async (req, res) => {
+// This service GETS all driver's completed jobs
+export const getDriverCompletedJobs = async (req, res) => {
   const { driverId } = req.params;
 
   try {
-    // Fetch driver
-    const response = await driverService.getDriverTotalSpendByDriverId(
-      driverId
-    );
+    // Fetch driver's completed jobs
+    const response = await driverService.getDriverCompletedJobs(driverId);
 
     // Return a response
-    return res.status(response?.status).json({ message: response?.message });
+    return res.status(response?.status).json({
+      message: response?.message,
+      bookings: response?.bookings,
+      status: response?.status,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// This service GETS all driver's assigned jobs
+export const getDriverAssignedJobs = async (req, res) => {
+  const { driverId } = req.params;
+
+  try {
+    // Fetch driver's assigned jobs
+    const response = await driverService.getDriverAssignedJobs(driverId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      bookings: response?.bookings,
+      status: response?.status,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// This service GETS all driver's upcoming jobs
+export const getDriverUpcomingJobs = async (req, res) => {
+  const { driverId } = req.params;
+
+  try {
+    // Fetch driver's upcoming jobs
+    const response = await driverService.getDriverUpcomingJobs(driverId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      bookings: response?.bookings,
+      status: response?.status,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// This service GETS all driver's ongoing jobs
+export const getDriverOngoingJobs = async (req, res) => {
+  const { driverId } = req.params;
+
+  try {
+    // Fetch driver's ongoing jobs
+    const response = await driverService.getDriverOngoingJobs(driverId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      bookings: response?.bookings,
+      status: response?.status,
+    });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
   }

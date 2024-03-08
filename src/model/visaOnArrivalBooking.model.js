@@ -7,14 +7,129 @@ const visaOnArrivalBookingSchema = new mongoose.Schema(
       type: String,
     },
 
-    bookingId: {
-      type: mongoose.Types.ObjectId,
-      ref: "Booking",
+    // GENERAL INFORMATION
+    nationality: {
+      type: String,
     },
 
-    paymentId: {
-      type: mongoose.Types.ObjectId,
-      ref: "Payment",
+    visaClass: {
+      type: String,
+    },
+
+    passportType: {
+      type: String,
+    },
+
+    // BIODATA
+    passportPhotograph: {
+      type: String,
+    },
+
+    title: {
+      type: String,
+    },
+
+    surname: {
+      type: String,
+    },
+
+    firstName: {
+      type: String,
+    },
+
+    middleName: {
+      type: String,
+    },
+
+    email: {
+      type: String,
+      trim: true,
+    },
+
+    dateOfBirth: {
+      type: String,
+    },
+
+    placeOfBirth: {
+      type: String,
+    },
+
+    gender: {
+      type: String,
+    },
+
+    maritalStatus: {
+      type: String,
+    },
+
+    passportNumber: {
+      type: String,
+    },
+
+    passportExpiryDate: {
+      type: String,
+    },
+
+    // TRAVEL INFORMATION
+    purposeOfJourney: {
+      type: String,
+    },
+
+    airline: {
+      type: String,
+    },
+
+    flightNumber: {
+      type: String,
+    },
+
+    countryOfDeparture: {
+      type: String,
+    },
+
+    departureDate: {
+      type: String,
+    },
+
+    arrivalDate: {
+      type: String,
+    },
+
+    portOfEntry: {
+      type: String,
+    },
+
+    durationOfStay: {
+      type: String,
+    },
+
+    // Contact / Hotel Details In Nigeria
+    contactName: {
+      type: String,
+    },
+
+    contactNumber: {
+      type: String,
+    },
+
+    contactAddress: {
+      type: String,
+    },
+
+    contactCity: {
+      type: String,
+    },
+
+    contactState: {
+      type: String,
+    },
+
+    contactEmail: {
+      type: String,
+    },
+
+    contactPostalCode: {
+      type: String,
     },
 
     status: {

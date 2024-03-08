@@ -14,6 +14,8 @@ import shortid from "shortid";
 import VerificationModel from "../model/verification.model.js";
 import { sendSMS } from "../util/twilio.js";
 import VerificationService from "./VerificationService.js";
+import DriverSignupConfirmationEmail from "../emailTemplates/driverEmailTemplates/DriverSignupEmail/index.js";
+import ReactDOMServer from "react-dom/server";
 
 const verificationService = new VerificationService(VerificationModel);
 
@@ -48,11 +50,16 @@ export default class DriverService {
     });
 
     // TO-DO: Send confirmation email here
+
+    const emailHTML = DriverSignupConfirmationEmail({
+      driver: newDriver,
+    });
+
     const message = {
       to: driver.email,
       from: process.env.SENGRID_EMAIL,
-      subject: "Welcome to Shuttlelane🎉",
-      html: `<h1>Sign up Successful!🎉</h1><p>Dear ${newDriver?.firstName}, Your driver account has been created successully. Our team will review your profile within the next 72 hours. You can log in to to view your account status <a href='https://www.shuttlelane.com/driver'>here</a>.`,
+      subject: "Driver Account Created Successfully🎉",
+      html: ReactDOMServer.renderToString(emailHTML),
     };
     await sendEmail(message);
 
@@ -268,21 +275,93 @@ export default class DriverService {
     };
   }
 
-  // This service GETS the driver's total spend by the driver id
-  async getDriverTotalSpendByDriverId(_id) {
+  // This service GETS all driver's completed jobs
+  async getDriverCompletedJobs(_id) {
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([_id]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
 
-    // Fetch all payments with the _id provided
-    const payments = await PaymentModel.find({ driverId: _id });
+    // Fetch all bookings with the _id provided
+    const driverCompletedBookings = await BookingModel.find({
+      assignedDriver: _id,
+      bookingStatus: "Completed",
+    });
 
     return {
       status: 200,
-      message: `All driver's payments have been fetched successfully.`,
-      payments: payments,
+      message: `All driver's completed bookings have been fetched successfully.`,
+      bookings: driverCompletedBookings,
+    };
+  }
+
+  // This service GETS all driver's assigned jobs
+  async getDriverAssignedJobs(_id) {
+    console.log("HI I AM HERE NOW:", _id);
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Fetch all bookings with the _id provided
+    const driverAssignedBookings = await BookingModel.find({
+      driverJobWasSentTo: _id,
+      hasDriverAccepted: false,
+      hasDriverDeclined: false,
+    });
+
+    return {
+      status: 200,
+      message: `All driver's assigned bookings have been fetched successfully.`,
+      bookings: driverAssignedBookings,
+    };
+  }
+
+  // This service GETS all driver's assigned jobs
+  async getDriverUpcomingJobs(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Fetch all bookings with the _id provided
+    const driverUpcomingBookings = await BookingModel.find({
+      driverJobWasSentTo: _id,
+      hasDriverAccepted: true,
+      hasDriverDeclined: false,
+      bookingStatus: "Scheduled",
+    });
+
+    return {
+      status: 200,
+      message: `All driver's upcoming bookings have been fetched successfully.`,
+      bookings: driverUpcomingBookings,
+    };
+  }
+
+  // This service GETS all driver's assigned jobs
+  async getDriverOngoingJobs(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Fetch all bookings with the _id provided
+    const driverOngoingBookings = await BookingModel.find({
+      driverJobWasSentTo: _id,
+      hasDriverAccepted: true,
+      hasDriverDeclined: false,
+      bookingStatus: "Ongoing",
+    });
+
+    return {
+      status: 200,
+      message: `All driver's upcoming bookings have been fetched successfully.`,
+      bookings: driverOngoingBookings,
     };
   }
 

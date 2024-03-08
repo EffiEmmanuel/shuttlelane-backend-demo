@@ -8,11 +8,6 @@ const PriorityPassBookingSchema = new mongoose.Schema(
       type: String,
     },
 
-    bookingId: {
-      type: mongoose.Types.ObjectId,
-      ref: "Booking",
-    },
-
     service: {
       type: String,
     },
@@ -40,11 +35,11 @@ const PriorityPassBookingSchema = new mongoose.Schema(
       type: String,
     },
 
-    date: {
+    pickupDate: {
       type: String,
     },
 
-    time: {
+    pickupTime: {
       type: String,
     },
 

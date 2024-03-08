@@ -13,6 +13,7 @@ import {
   getCities,
   getVisaOnArrivalRates,
   getVisaOnArrivalRatesWithNigerianVisa,
+  sendEnquiryEmail,
 } from "../controller/user.controller.js";
 
 const userRouter = express.Router();
@@ -53,5 +54,9 @@ userRouter.get(
   "/voaRatesWithNigerianVisa",
   getVisaOnArrivalRatesWithNigerianVisa
 );
+
+// ENQUIRIES
+// Send Enquiry Email
+userRouter.post("/enquiries/sendMessage", sendEnquiryEmail);
 
 export default userRouter;

@@ -74,7 +74,7 @@ export default class BlogService {
 
     const blogPost = await this.BlogModel.findOne({
       slug: slug,
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 }).populate("author");;
 
     // Return a response
     return {

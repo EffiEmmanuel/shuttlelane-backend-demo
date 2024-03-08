@@ -187,12 +187,17 @@ export const getUserBookingsByUserId = async (req, res) => {
 export const getCities = async (req, res) => {
   try {
     // Fetch cities
-    const response = await userService.getCities();
+    console.log("HI FROM THE GETCITIES CONTROLLER");
+    const response = await userService.getCities(req.query.userCountry);
 
     // Return a response
     return res
       .status(response?.status)
-      .json({ cities: response?.cities ?? null, message: response?.message });
+      .json({
+        currency: response?.currency,
+        cities: response?.cities ?? null,
+        message: response?.message,
+      });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
   }
@@ -227,6 +232,27 @@ export const getVisaOnArrivalRatesWithNigerianVisa = async (req, res) => {
       message: response?.message,
     });
   } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// ENQUIRIES
+// Send Enquiry Email
+export const sendEnquiryEmail = async (req, res) => {
+  try {
+    // Send Email
+    const response = await userService.sendEnquiryEmail(
+      req.body?.fullName,
+      req.body?.email,
+      req.body?.message
+    );
+
+    // Return a response
+    return res
+      .status(response?.status)
+      .json({ status: response?.status, message: response?.message });
+  } catch (error) {
+    console.log("ERROR:", error);
     return res.status(500).json({ message: internalServerError });
   }
 };

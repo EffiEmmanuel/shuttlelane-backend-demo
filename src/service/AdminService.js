@@ -3,7 +3,10 @@ import {
   validateFields,
   validateAdminLoginDetails,
 } from "../util/auth.helper.js";
-import { checkAdminEmailValidity } from "../util/db.helper.js";
+import {
+  checkAdminEmailValidity,
+  checkAdminUsernameValidity,
+} from "../util/db.helper.js";
 import PaymentModel from "../model/payment.model.js";
 import BookingModel from "../model/booking.model.js";
 import AirportTransferBookingModel from "../model/airportTransferBooking.model.js";
@@ -20,6 +23,14 @@ import CurrencyModel from "../model/currency.model.js";
 import RatePerMileModel from "../model/ratePerMile.model.js";
 import VisaOnArrivalRateModel from "../model/visaOnArrivalRate.model.js";
 import VoaBaseFeesModel from "../model/voaBaseFees.model.js";
+import ReactDOMServer from "react-dom/server";
+
+// Email templates
+import AssignToBookingEmailTemplate from "../emailTemplates/driverEmailTemplates/AssignToBookingEmail/index.js";
+import DriverAccountApprovalEmail from "../emailTemplates/driverEmailTemplates/DriverAccountApprovalEmail/index.js";
+import AdminAccountCreationEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminAccountCreationEmail/index.js";
+import AdminAccountCreationSuccessfulEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminAccountCreationSuccessfulEmail/index.js";
+import { convertAmountToUserCurrency } from "../util/index.js";
 
 export default class AdminService {
   constructor(ShuttlelaneAdminModel) {
@@ -28,15 +39,14 @@ export default class AdminService {
 
   // This service CREATES a new admin - Sign up service
   async signupAdmin(admin) {
+    console.log("HELLO FROM SIGNU ADMIN");
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([
-      admin.image,
       admin.firstName,
       admin.lastName,
       admin.email,
       admin.username,
       admin.role,
-      admin.password,
     ]);
 
     // areFieldsEmpty is an object that contains a status and message field
@@ -47,8 +57,8 @@ export default class AdminService {
       admin.email
     );
 
-    // Check if admin is already signed up
-    const adminAlreadyExistsWithUsername = await checkAdminEmailValidity(
+    // Check if admin is already signed up with username
+    const adminAlreadyExistsWithUsername = await checkAdminUsernameValidity(
       admin.username
     );
 
@@ -56,30 +66,135 @@ export default class AdminService {
     if (adminAlreadyExistsWithEmail.status === 409)
       return adminAlreadyExistsWithEmail;
 
+    // If admin email already exists
+    if (adminAlreadyExistsWithUsername.status === 409)
+      return adminAlreadyExistsWithUsername;
+
     // Hash password
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = await bcrypt.hash(admin.password, salt);
+    // const salt = bcrypt.genSaltSync(10);
+    // const hashedPassword = await bcrypt.hash(admin.password, salt);
 
     // If the email is available, then proceed to sign up the admin
     const newAdmin = await this.AdminModel.create({
       ...admin,
-      password: hashedPassword,
     });
 
     // TO-DO: Send confirmation email here
+    const fullName = `${newAdmin?.firstName} ${newAdmin?.lastName}`;
+    const emailHTML = AdminAccountCreationEmailTemplate({
+      fullName,
+      email: newAdmin?.email,
+      username: newAdmin?.username,
+      role: newAdmin?.role,
+      _id: newAdmin?._id,
+    });
+
     const message = {
-      to: admin.email,
+      to: newAdmin?.email,
       from: process.env.SENGRID_EMAIL,
-      subject: "This is a test subject",
-      text: "Therefore, this is a test body also",
-      html: `<h1>Sign up Success!</h1><p>Dear ${newAdmin?.firstName}, Your admin account has been created successully. You can proceed to log in to your admin account <p><a href='https://www.shuttlelane.com/admin'>here</a>.`,
+      subject: "⚠ Action Required",
+      html: ReactDOMServer.renderToString(emailHTML),
     };
-    await sendEmail(message);
+
+    sendEmail(message);
+
+    // Get admin accounts
+    const adminAccounts = await this.AdminModel.find({});
 
     return {
       status: 201,
       message: "Admin account has been created successfully!",
       admin: newAdmin,
+      adminAccounts: adminAccounts,
+    };
+  }
+
+  // This service CREATES a new admin - Sign up service
+  async completeAdminAccountSignup(admin) {
+    console.log("HELLO FROM COMPLETE SIGNU ADMIN");
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([
+      admin.image,
+      admin.password,
+      admin._id,
+    ]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Hash password
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = await bcrypt.hash(admin.password, salt);
+
+    // If the email is available, then proceed to sign up the admin
+    const newAdmin = await this.AdminModel.findOneAndUpdate(
+      {
+        _id: admin?._id,
+      },
+      {
+        image: admin?.image,
+        password: hashedPassword,
+      }
+    );
+
+    // TO-DO: Send confirmation email here
+    const fullName = `${newAdmin?.firstName} ${newAdmin?.lastName}`;
+    const emailHTML = AdminAccountCreationSuccessfulEmailTemplate({
+      role: newAdmin?.role,
+    });
+
+    const message = {
+      to: newAdmin?.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: "Admin Account Setup Completed!🎊",
+      html: ReactDOMServer.renderToString(emailHTML),
+    };
+
+    sendEmail(message);
+
+    return {
+      status: 201,
+      message: "Admin account setup completed!",
+      admin: newAdmin,
+    };
+  }
+
+  // This service DELETES an admin by id
+  async deleteAdminAccountById(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any admin exists with the _id
+    const admin = await this.AdminModel.findOneAndRemove({ _id: _id });
+
+    if (!admin) {
+      return {
+        status: 404,
+        message: `No admin with _id ${_id} exists.`,
+      };
+    }
+
+    const admins = await this.AdminModel.find({}).sort({ createdAt: -1 });
+
+    return {
+      status: 201,
+      message: `Admin deleted successfully.`,
+      adminAccounts: admins,
+    };
+  }
+
+  // This service GETS all admin accounts
+  async fetchAdminAccounts() {
+    // Get admin accounts
+    const adminAccounts = await this.AdminModel.find({});
+
+    return {
+      status: 200,
+      message: `Fetched admin accounts.`,
+      adminAccounts: adminAccounts,
     };
   }
 
@@ -211,7 +326,7 @@ export default class AdminService {
   // This service fetches all cities
   async getCities() {
     console.log("HELLO1");
-    const cities = await CityModel.find({});
+    const cities = await CityModel.find({}).populate("vehicleClasses");
 
     console.log("HELLO2:::", cities);
     // Return a response
@@ -223,17 +338,64 @@ export default class AdminService {
   }
 
   // This service fetches a city
-  async getCity(cityId) {
+  async getCity(cityId, userCountry) {
     console.log("HELLO1");
-    const city = await CityModel.findOne({ _id: cityId });
+    const city = await CityModel.findOne({ _id: cityId }).populate(
+      "vehicleClasses"
+    );
+    // Get currency (UPDATE LATER TO INCLUDE MORE THAN ONE COUNTRY) where the userCountry is listed
+    const allowedCurrency = await CurrencyModel.findOne({
+      supportedCountries: { $in: [userCountry] },
+    })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        console.log("ERROR:", err);
+      });
 
-    console.log("HELLO2:::", city);
-    // Return a response
-    return {
-      status: 200,
-      message: `City fetched`,
-      city: city,
-    };
+    console.log("ALLOWED CURRENCY:", allowedCurrency);
+
+    // Check if the user's country has been added to a currency
+    if (allowedCurrency) {
+      let vehicleClassesWithConvertedRates = [];
+      for (let i = 0; i < city?.vehicleClasses?.length; i++) {
+        let convertedRate = convertAmountToUserCurrency(
+          allowedCurrency,
+          city?.vehicleClasses[i]?.basePrice
+        );
+        city.vehicleClasses[i].basePrice = convertedRate;
+        vehicleClassesWithConvertedRates.push(city?.vehicleClasses[i]);
+      }
+
+      let cityWithConvertedRate = {
+        _id: city?._id,
+        cityName: city?.cityName,
+        airports: city?.airports,
+        vehicleClasses: vehicleClassesWithConvertedRates,
+      };
+
+      console.log("CITY:", cityWithConvertedRate);
+
+      // Return a response
+      return {
+        status: 200,
+        message: `Cities fetched`,
+        city: cityWithConvertedRate,
+        currency: allowedCurrency,
+      };
+    } else {
+      // Default to Naira
+      const userCurrency = await CurrencyModel.findOne({ symbol: "₦" });
+
+      // Return a response
+      return {
+        status: 200,
+        message: `City fetched`,
+        city: city,
+        currency: userCurrency,
+      };
+    }
   }
 
   // This service fetches all cities
@@ -372,7 +534,44 @@ export default class AdminService {
   async getDrivers() {
     // Get drivers
     const drivers = await DriverModel.find({}).populate({
-      path: "bookings",
+      path: "bookingsAssignedTo",
+    });
+
+    const data = await DriverModel.aggregate([
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+          count: { $sum: 1 },
+          drivers: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
+    ]);
+
+    console.log("drivers:", drivers);
+    console.log("data:", data);
+
+    return {
+      status: 200,
+      message: `Fetched drivers.`,
+      drivers: drivers,
+      data: data,
+    };
+  }
+
+  // This service GETS all drivers
+  async getApprovedDrivers() {
+    // Get drivers
+    const drivers = await DriverModel.find({
+      isAccountApproved: true,
     });
 
     const data = await DriverModel.aggregate([
@@ -449,9 +648,7 @@ export default class AdminService {
         _id: _id,
       },
       { isAccountApproved: true }
-    ).populate({
-      path: "bookings",
-    });
+    );
 
     if (!driver) {
       return {
@@ -462,11 +659,286 @@ export default class AdminService {
     }
 
     // TO-DO: Send driver a confirmation email here
+    const emailHTML = DriverAccountApprovalEmail({
+      driver,
+    });
+
+    const message = {
+      to: driver.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: "Driver Account Has Been Approved🎉",
+      html: ReactDOMServer.renderToString(emailHTML),
+    };
+    await sendEmail(message);
+
+    const drivers = await DriverModel.find({});
 
     return {
       status: 201,
       message: `Driver account has been approved`,
-      driver: driver,
+      drivers: drivers,
+    };
+  }
+
+  // This service ASSIGNS a driver to a job
+  async assignDriverToJob(userType, userId, bookingId, bookingRate) {
+    console.log("VALUES:", userType, userId, bookingId, bookingRate);
+
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([
+      userType,
+      userId,
+      bookingId,
+      bookingRate,
+    ]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    let vendor, driver;
+
+    if (userType == "Driver") {
+      // Check if any driver exists with the driver id
+      driver = await DriverModel.findOne({
+        _id: userId,
+        isAccountApproved: true,
+      }).populate({
+        path: "bookingsAssignedTo",
+      });
+
+      if (!driver) {
+        return {
+          status: 404,
+          message: "No driver exists with the id specified.",
+          driver: driver,
+        };
+      }
+
+      driver?.bookingsAssignedTo?.push(bookingId);
+      console.log("DBAT:", driver?.bookingsAssignedTo);
+
+      const updateDriver = await DriverModel.findOneAndUpdate(
+        { _id: driver?._id },
+        {
+          bookingsAssignedTo: driver?.bookingsAssignedTo,
+        }
+      );
+
+      const updateBooking = await BookingModel.findOneAndUpdate(
+        {
+          _id: bookingId,
+        },
+        {
+          driverJobWasSentTo: driver?._id,
+          hasDriverAccepted: false,
+          hasDriverDeclined: false,
+          bookingStatus: "Awaiting response",
+          bookingRate: bookingRate,
+        }
+      ).populate({
+        path: "booking",
+      });
+
+      // Sample booking data
+      const booking = {
+        "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
+        "Pickup Location": `${updateBooking?.booking?.pickupAddress}`,
+        Destination: `${updateBooking?.booking?.dropoffAddress}`,
+        "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
+          "en-US"
+        )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
+          "en-US",
+          {
+            hour12: true,
+          }
+        )}`,
+        "Booking Rate": `${
+          updateBooking?.bookingCurrency?.symbol ?? "₦"
+        }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
+      };
+
+      const emailHTML = AssignToBookingEmailTemplate({
+        booking,
+        driverId: driver?._id?.toString(),
+      });
+
+      //   console.log("EMAIL:", emailHTML);
+
+      const message = {
+        to: updateDriver?.email,
+        from: process.env.SENGRID_EMAIL,
+        subject: "🚨New Job Alert🚨",
+        html: ReactDOMServer.renderToString(emailHTML),
+      };
+      await sendEmail(message);
+
+      const bookingsAwaitingAssignment = await BookingModel.find({
+        bookingStatus: "Not yet assigned",
+      }).populate("booking");
+
+      const updatedUnassignedBookings = bookingsAwaitingAssignment?.filter(
+        (booking) => {
+          return booking?.bookingType !== "Visa";
+        }
+      );
+
+      return {
+        status: 201,
+        updatedUnassignedBookings,
+        message: `Booking has been successfully assigned to ${driver?.firstName} ${driver?.lastName}.`,
+      };
+    } else {
+      // Check if any vendor exists with the vendor id
+      vendor = await VendorModel.findOne({
+        _id: userId,
+        isAccountApproved: true,
+      }).populate({
+        path: "bookingsAssignedTo",
+      });
+
+      if (!vendor) {
+        return {
+          status: 404,
+          message:
+            "No vendor exists with the id specified or this account has ont been approved yet.",
+          vendor: vendor,
+        };
+      }
+
+      const updatedBookingsAssignedToList =
+        vendor?.bookingsAssignedTo?.push(bookingId);
+
+      const updateVendor = await VendorModel.findOneAndUpdate(
+        { _id: vendor?._id },
+        {
+          bookingsAssignedTo: updatedBookingsAssignedToList,
+        }
+      );
+
+      const updateBooking = await BookingModel.findOneAndUpdate(
+        {
+          _id: bookingId,
+        },
+        {
+          vendorJobWasSentTo: vendor?._id,
+          hasVendorAccepted: false,
+          hasVendorDeclined: false,
+          bookingStatus: "Awaiting response",
+          bookingRate: bookingRate,
+        }
+      ).populate({
+        path: "booking",
+      });
+
+      // Sample booking data
+      const booking = {
+        _id: updateBooking?._id,
+        "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
+        "Pickup Location": `${updateBooking?.booking?.pickupLocation}`,
+        Destination: `${updateBooking?.booking?.dropoffLocation}`,
+        "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
+          "en-US"
+        )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
+          "en-US",
+          {
+            hour12: true,
+          }
+        )}`,
+        "Booking Rate": `${
+          updateBooking?.bookingCurrency?.symbol ?? "₦"
+        }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
+      };
+
+      const emailHTML = AssignToBookingEmailTemplate({
+        booking: booking,
+        driverId: updateVendor?._id,
+      });
+
+      const message = {
+        to: updateVendor?.email,
+        from: process.env.SENGRID_EMAIL,
+        subject: "🚨New Job Alert🚨",
+        html: ReactDOMServer.renderToString(emailHTML),
+      };
+      sendEmail(message);
+
+      return {
+        status: 201,
+        message: `Booking has been successfully assigned to ${vendor?.companyName}`,
+      };
+    }
+  }
+
+  // This service GETS upcoming bookings i.e Bookings that have been assigned to a driver but have not been completed
+  async getUpcomingBookings() {
+    // Fetch upcoming bookings
+    const upcomingBookings = await BookingModel.find({
+      bookingStatus: "Scheduled",
+    }).populate({
+      path: "booking",
+    });
+
+    return {
+      status: 200,
+      message: `Fetched upcoming bookings.`,
+      bookings: upcomingBookings,
+    };
+  }
+
+  // This service GETS bookings that have not been assigned to a driver / vendor
+  async getVisaOnArrivalBookings() {
+    // Fetch upcoming bookings
+    const visaOnArrivalBookings = await BookingModel.find({
+      bookingType: "Visa",
+    }).populate("booking");
+
+    return {
+      status: 200,
+      message: `Fetched visa on arrival bookings.`,
+      bookings: visaOnArrivalBookings,
+    };
+  }
+
+  // This service GETS bookings that have not been assigned to a driver / vendor
+  async getBookingsAwaitingAssignment() {
+    console.log("OVER HERE 1");
+    // Fetch upcoming bookings
+    const bookingsAwaitingAssignment = await BookingModel.find({
+      bookingStatus: "Not yet assigned",
+    })
+      .populate({
+        path: "booking",
+      })
+      .populate({
+        path: "bookingCurrency",
+      })
+      .populate({
+        path: "assignedDriver",
+      })
+      .populate({
+        path: "assignedVendor",
+      })
+      .populate({
+        path: "paymentId",
+      })
+      .populate({
+        path: "assignedDriver",
+      })
+      .populate({
+        path: "user",
+      });
+
+    console.log("OVER HERE 2:", bookingsAwaitingAssignment);
+    // Remove Visa On Arrival Bookings
+    const filteredBookings = bookingsAwaitingAssignment?.filter((booking) => {
+      return booking?.bookingType !== "Visa";
+    });
+    console.log("OVER HERE 3:", filteredBookings);
+
+    return {
+      status: 200,
+      message: `Fetched all bookings awaiting assignment.`,
+      bookings: filteredBookings,
     };
   }
 
@@ -521,7 +993,7 @@ export default class AdminService {
   async getVendors() {
     // Get vendors
     const vendors = await VendorModel.find({}).populate({
-      path: "bookings",
+      path: "bookingsAssignedTo",
     });
 
     const data = await VendorModel.aggregate([
@@ -1354,33 +1826,6 @@ export default class AdminService {
     return {
       status: 201,
       message: `Admin with email ${email} has been deleted successfully.`,
-    };
-  }
-
-  // This service DELETES admin by id
-  async deleteAdminById(_id) {
-    // Validate if fields are empty
-    const areFieldsEmpty = validateFields([_id]);
-
-    // areFieldsEmpty is an object that contains a status and message field
-    if (areFieldsEmpty) return areFieldsEmpty;
-
-    // Check if any admin exists with the _id
-    const admin = await this.AdminModel.findOneAndRemove({ _id: _id });
-
-    if (!admin) {
-      return {
-        status: 404,
-        message: `No admin with _id ${_id} exists.`,
-      };
-    }
-
-    const admins = await this.AdminModel.find({}).sort({ createdAt: -1 });
-
-    return {
-      status: 201,
-      message: `Admin account deleted successfully.`,
-      admins: admins,
     };
   }
 
