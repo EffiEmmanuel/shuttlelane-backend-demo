@@ -1,16 +1,21 @@
 import express from "express";
 import { verifyUserToken } from "../util/auth.helper.js";
 import {
+  acceptBooking,
+  declineBooking,
   deleteDriverById,
+  endBooking,
   getDriverAssignedJobs,
   getDriverBookingsByDriverId,
   getDriverById,
   getDriverCompletedJobs,
+  getDriverEarnings,
   getDriverOngoingJobs,
   getDriverUpcomingJobs,
   loginDriver,
   resetDriverPassword,
   signupDriver,
+  startBooking,
   updateDriverById,
 } from "../controller/driver.controller.js";
 
@@ -71,5 +76,34 @@ driverRouter.delete(
   verifyUserToken,
   deleteDriverById
 );
+
+// BOOKINGS
+// ACCEPT BOOKING
+driverRouter.patch(
+  "/booking/accept/:driverId/:bookingId",
+  verifyUserToken,
+  acceptBooking
+);
+// DECLINE BOOKING
+driverRouter.patch(
+  "/booking/decline/:driverId/:bookingId",
+  verifyUserToken,
+  declineBooking
+);
+// START BOOKING
+driverRouter.patch(
+  "/booking/start/:driverId/:bookingId",
+  verifyUserToken,
+  startBooking
+);
+// END BOOKING
+driverRouter.patch(
+  "/booking/end/:driverId/:bookingId",
+  verifyUserToken,
+  endBooking
+);
+
+// FETCH EARNINGS
+driverRouter.get("/earnings/:driverId", verifyUserToken, getDriverEarnings);
 
 export default driverRouter;

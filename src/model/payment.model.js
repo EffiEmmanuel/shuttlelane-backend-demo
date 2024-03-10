@@ -7,7 +7,8 @@ const paymentSchema = new mongoose.Schema({
   },
 
   currency: {
-    type: String,
+    type: mongoose.Types.ObjectId,
+    ref: "Currency",
   },
 
   paymentId: {
@@ -24,7 +25,7 @@ const paymentSchema = new mongoose.Schema({
     default: "Pending",
   },
 
-  bookingId: {
+  booking: {
     type: mongoose.Types.ObjectId,
     ref: "Booking",
   },
@@ -32,6 +33,18 @@ const paymentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Types.ObjectId,
     ref: "User",
+  },
+
+  gateway: {
+    type: String,
+  },
+
+  firstName: {
+    type: String,
+  },
+
+  lastName: {
+    type: String,
   },
 
   email: {

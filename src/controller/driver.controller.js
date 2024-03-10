@@ -247,3 +247,110 @@ export const getDriverBookingsByDriverId = async (req, res) => {
     return res.status(500).json({ message: internalServerError });
   }
 };
+
+// Accept booking
+export const acceptBooking = async (req, res) => {
+  const { driverId, bookingId } = req.params;
+
+  try {
+    // Accept booking
+    const response = await driverService.acceptJob(driverId, bookingId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      upcomingBookings: response?.upcomingBookings,
+      assignedBookings: response?.assignedBookings,
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    console.log("ERROR FROM ACCEPT BOOKING:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Reject booking
+export const declineBooking = async (req, res) => {
+  const { driverId, bookingId } = req.params;
+
+  try {
+    // Reject booking
+    const response = await driverService.declineJob(driverId, bookingId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      upcomingBookings: response?.upcomingBookings,
+      assignedBookings: response?.assignedBookings,
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    console.log("ERROR FROM DECLINE BOOKING:", error);
+    return res.status(500).json({ message: internalServerError, error });
+  }
+};
+
+// GET driver earnings
+export const getDriverEarnings = async (req, res) => {
+  const { driverId } = req.params;
+
+  try {
+    // Reject booking
+    const response = await driverService.getDriverEarnings(driverId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      earnings: response?.earnings,
+      expectedEarnings: response?.expectedEarnings,
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Start booking
+export const startBooking = async (req, res) => {
+  const { driverId, bookingId } = req.params;
+
+  try {
+    // Start booking
+    const response = await driverService.startBooking(driverId, bookingId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      upcomingBookings: response?.upcomingBookings,
+      assignedBookings: response?.assignedBookings,
+      ongoingBookings: response?.ongoingBookings,
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    console.log("ERROR FROM ACCEPT BOOKING:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// End booking
+export const endBooking = async (req, res) => {
+  const { driverId, bookingId } = req.params;
+
+  try {
+    // End booking
+    const response = await driverService.endBooking(driverId, bookingId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      upcomingBookings: response?.upcomingBookings,
+      assignedBookings: response?.assignedBookings,
+      ongoingBookings: response?.ongoingBookings,
+      completedBookings: response?.completedBookings,
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    console.log("ERROR FROM ACCEPT BOOKING:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};

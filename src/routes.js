@@ -21,6 +21,7 @@ const routes = {
   API_PASS_ROUTE: `${API_PREFIX}/passes`,
   API_BLOG_ROUTE: `${API_PREFIX}/blog-posts`,
   API_CITY_ROUTE: `${API_PREFIX}/cities`,
+  API_PAYMENTS_ROUTE: `${API_PREFIX}/payments`,
 };
 
 export default routes;

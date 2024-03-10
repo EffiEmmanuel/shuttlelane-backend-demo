@@ -1,11 +1,13 @@
 import AdminModel from "../model/admin.model.js";
 import BlogModel from "../model/blog.model.js";
 import CarModel from "../model/car.model.js";
+import PaymentModel from "../model/payment.model.js";
 import PriorityPassModel from "../model/priorityPass.model.js";
 import VehicleClassModel from "../model/vehicleClass.model.js";
 import AdminService from "../service/AdminService.js";
 import BlogService from "../service/BlogService.js";
 import CarService from "../service/CarService.js";
+import PaymentService from "../service/PaymentService.js";
 import PriorityPassService from "../service/PriorityPassService.js";
 import VehicleClassService from "../service/VehicleClassService.js";
 
@@ -24,6 +26,8 @@ const carService = new CarService(CarModel);
 const priorityPassService = new PriorityPassService(PriorityPassModel);
 // Create a new blogService instance
 const blogService = new BlogService(BlogModel);
+// Create a new paymentService instance
+const paymentService = new PaymentService(PaymentModel);
 
 // Sign up admin
 export const signupAdmin = async (req, res) => {
@@ -1172,5 +1176,38 @@ export const getUserBookingsByUserId = async (req, res) => {
     return res.status(response?.status).json({ message: response?.message });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// PAYMENTS
+// Get Payments
+export const getPayments = async (req, res) => {
+  try {
+    // Fetch payments
+    const response = await paymentService.getPayments();
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      payments: response?.payments,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError, error: error });
+  }
+};
+
+// Get Payment
+export const getPayment = async (req, res) => {
+  try {
+    // Fetch payment
+    const response = await paymentService.getPayment(req.params.paymentId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      payment: response?.payment,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError, error: error });
   }
 };

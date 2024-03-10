@@ -1,3 +1,4 @@
+// @ts-nocheck
 import bcrypt from "bcryptjs";
 import {
   validateFields,
@@ -16,6 +17,16 @@ import { sendSMS } from "../util/twilio.js";
 import VerificationService from "./VerificationService.js";
 import DriverSignupConfirmationEmail from "../emailTemplates/driverEmailTemplates/DriverSignupEmail/index.js";
 import ReactDOMServer from "react-dom/server";
+import AdminRejectedBookingEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminRejectedBookingEmail/index.js";
+import AdminAcceptedBookingEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminAcceptedBookingEmail/index.js";
+import UserBookingScheduledConfirmation from "../emailTemplates/userEmailTemplates/UserBookingScheduledEmail/index.js";
+import DriverAcceptedBookingEmailTemplate from "../emailTemplates/driverEmailTemplates/DriverAcceptedBookingEmail/index.js";
+import DriverFirstTimeBookingEmailTemplate from "../emailTemplates/driverEmailTemplates/DriverFirstTimeBookingEmail/index.js";
+import moment from "moment";
+import AdminDriverEnRouteEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminDriverEnrouteEmail/index.js";
+import UserDriverStartedBookingEmailTemplate from "../emailTemplates/userEmailTemplates/UserDriverStartedBookingEmail/index.js";
+import AdminBookingEndedEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminBookingEndedEmail/index.js";
+import UserBookingCompletedEmailTemplate from "../emailTemplates/userEmailTemplates/UserBookingCompletedEmail/index.js";
 
 const verificationService = new VerificationService(VerificationModel);
 
@@ -287,7 +298,9 @@ export default class DriverService {
     const driverCompletedBookings = await BookingModel.find({
       assignedDriver: _id,
       bookingStatus: "Completed",
-    });
+    })
+      .populate("booking")
+      .sort({ createdAt: -1 });
 
     return {
       status: 200,
@@ -310,7 +323,7 @@ export default class DriverService {
       driverJobWasSentTo: _id,
       hasDriverAccepted: false,
       hasDriverDeclined: false,
-    });
+    }).populate("booking");
 
     return {
       status: 200,
@@ -333,7 +346,7 @@ export default class DriverService {
       hasDriverAccepted: true,
       hasDriverDeclined: false,
       bookingStatus: "Scheduled",
-    });
+    }).populate("booking");
 
     return {
       status: 200,
@@ -356,7 +369,9 @@ export default class DriverService {
       hasDriverAccepted: true,
       hasDriverDeclined: false,
       bookingStatus: "Ongoing",
-    });
+    })
+      .populate("booking")
+      .sort({ createdAt: -1 });
 
     return {
       status: 200,
@@ -380,6 +395,613 @@ export default class DriverService {
       status: 200,
       message: `All driver's bookings have been fetched successfully.`,
       bookings: bookings,
+    };
+  }
+
+  async acceptJob(driverId, bookingId) {
+    console.log("BOOKIGNS ASSIGNED TO 1:");
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([driverId, bookingId]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any driver exists with the _id
+    const driver = await this.DriverModel.findOne({ _id: driverId }).populate(
+      "bookingsAssignedTo"
+    );
+    if (!driver) {
+      return {
+        status: 404,
+        message: `No driver with _id ${driverId} exists.`,
+      };
+    }
+
+    console.log("BOOKIGNS ASSIGNED TO 2:");
+
+    // Check if any booking exists with the _id
+    const bookingExists = await BookingModel.findOne({
+      _id: bookingId,
+    }).populate("booking");
+    if (!bookingExists) {
+      return {
+        status: 404,
+        message: `No booking with _id ${bookingId} exists.`,
+      };
+    }
+
+    console.log("BOOKIGNS ASSIGNED TO 3:");
+
+    // Check if any driver exists with the _id
+    const driverExists = await this.DriverModel.findOne({
+      _id: driverId,
+    }).populate("bookingsAssignedTo");
+    if (!driverExists) {
+      return {
+        status: 404,
+        message: `No driver with _id ${driverId} exists.`,
+      };
+    }
+
+    console.log("BOOKIGNS ASSIGNED TO 4:");
+    // Update booking to "ACCEPT" job
+    const acceptBooking = await BookingModel.findOneAndUpdate(
+      { _id: bookingId },
+      {
+        bookingStatus: "Scheduled",
+        isAssignedToDriver: true,
+        assignedDriver: driverId,
+        hasDriverAccepted: true,
+      }
+    )
+      .populate("assignedDriver")
+      .populate("driverJobWasSentTo")
+      .populate("user");
+
+    console.log("BOOKIGNS ASSIGNED TO 5:", driverExists);
+    // Update driver schema
+    driverExists?.bookingsAssignedTo?.push(bookingId);
+    await driverExists.save();
+
+    console.log("BOOKIGNS ASSIGNED TO 6:");
+
+    // Send a notification to the admin
+    const adminEmailHTML = AdminAcceptedBookingEmailTemplate({
+      bookingReference: bookingExists?.booking?.bookingReference,
+      pickupDate: moment(bookingExists?.booking?.pickupDate).format(
+        "MMM DD, YYYY"
+      ),
+      pickupTime: moment(bookingExists?.booking?.pickupTime).format("H:MM A"),
+      pickupLocation: bookingExists?.booking?.pickupAddress,
+      driverName: `${
+        bookingExists?.assignedDriver?.firstName ??
+        bookingExists?.driverJobWasSentTo?.firstName
+      } ${
+        bookingExists?.assignedDriver?.lastName ??
+        bookingExists?.driverJobWasSentTo?.lastName
+      }`,
+      driverMobile:
+        bookingExists?.assignedDriver?.mobile ??
+        bookingExists?.driverJobWasSentTo?.mobile,
+      passengerName: `${
+        bookingExists?.user?.firstName ?? bookingExists?.firstName
+      } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+      passengerMobile: bookingExists?.user?.mobile ?? bookingExists?.mobile,
+    });
+
+    const adminMessage = {
+      to: "info@shuttlelane.com",
+      //   to: "effiemmanuel.n@gmail.com",
+      from: process.env.SENGRID_EMAIL,
+      subject: `Booking Confirmation: ${bookingExists?.bookingReference}`,
+      html: ReactDOMServer.renderToString(adminEmailHTML),
+    };
+    sendEmail(adminMessage);
+
+    console.log("BOOKIGNS ASSIGNED TO 7:");
+    // Send a notification to the user
+    const userEmailHTML = UserBookingScheduledConfirmation({
+      bookingReference: bookingExists?.booking?.bookingReference,
+      pickupDate: moment(bookingExists?.booking?.pickupDate).format(
+        "MMM DD, YYYY"
+      ),
+      pickupTime: moment(bookingExists?.booking?.pickupTime).format("H:MM A"),
+      pickupLocation: bookingExists?.booking?.pickupAddress,
+      driverName: `${
+        bookingExists?.assignedDriver?.firstName ??
+        bookingExists?.driverJobWasSentTo?.firstName
+      } ${
+        bookingExists?.assignedDriver?.lastName ??
+        bookingExists?.driverJobWasSentTo?.lastName
+      }`,
+      driverMobile:
+        bookingExists?.assignedDriver?.mobile ??
+        bookingExists?.driverJobWasSentTo?.mobile,
+      carName:
+        bookingExists?.booking?.assignedDriver?.carName ??
+        bookingExists?.booking?.driverJobWasSentTo?.carName,
+      carType:
+        bookingExists?.booking?.assignedDriver?.carType ??
+        bookingExists?.booking?.driverJobWasSentTo?.carType,
+      carModel:
+        bookingExists?.booking?.assignedDriver?.carModel ??
+        bookingExists?.booking?.driverJobWasSentTo?.carModel,
+      carColor:
+        bookingExists?.booking?.assignedDriver?.carColor ??
+        bookingExists?.booking?.driverJobWasSentTo?.carModel,
+      carPlateNumber:
+        bookingExists?.booking?.assignedDriver?.carPlateNumber ??
+        bookingExists?.booking?.driverJobWasSentTo?.carModel,
+    });
+
+    console.log("BOOKIGNS ASSIGNED TO 7.1:");
+
+    const userMessage = {
+      to: bookingExists?.user?.email ?? bookingExists?.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: `Your booking has been scheduled: ${bookingExists?.bookingReference}`,
+      html: ReactDOMServer.renderToString(userEmailHTML),
+    };
+
+    console.log("BOOKIGNS ASSIGNED TO 7.2:");
+    sendEmail(userMessage);
+
+    console.log("BOOKIGNS ASSIGNED TO 8:");
+    // Send a notification to the driver
+    const driverEmailHTML = DriverAcceptedBookingEmailTemplate({
+      pickupDate: moment(bookingExists?.booking?.pickupDate).format(
+        "MMM DD, YYYY"
+      ),
+      pickupTime: moment(bookingExists?.booking?.pickupTime).format("H:MM A"),
+      pickupLocation: bookingExists?.booking?.pickupAddress,
+      passengerName: `${
+        bookingExists?.user?.firstName ?? bookingExists?.firstName
+      } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+      passengerMobile: bookingExists?.user?.mobile ?? bookingExists?.mobile,
+    });
+
+    const driverMessage = {
+      to:
+        bookingExists?.assignedDriver?.email ??
+        bookingExists?.driverJobWasSentTo?.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: `Booking Confirmation: ${bookingExists?.bookingReference}`,
+      html: ReactDOMServer.renderToString(driverEmailHTML),
+    };
+    sendEmail(driverMessage);
+
+    console.log("BOOKIGNS ASSIGNED TO 9:");
+    // Send a notification to the driver if this is his first booking on shuttlelane
+    if (driverExists?.bookingsAssignedTo?.length === 1) {
+      const driverFirstTimeEmailHTML = DriverFirstTimeBookingEmailTemplate({
+        driverName: `${
+          bookingExists?.assignedDriver?.firstName ??
+          bookingExists?.driverJobWasSentTo?.firstName
+        } ${
+          bookingExists?.assignedDriver?.lastName ??
+          bookingExists?.driverJobWasSentTo?.lastName
+        }`,
+      });
+
+      const driverFirstTimeMessage = {
+        to: driverExists?.email,
+        from: process.env.SENGRID_EMAIL,
+        subject: `Congratulations on accepting your first booking!🎉`,
+        html: ReactDOMServer.renderToString(driverFirstTimeEmailHTML),
+      };
+      sendEmail(driverFirstTimeMessage);
+    }
+
+    // Fetch all upcoming bookings with the _id provided
+    const driverUpcomingBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      hasDriverAccepted: true,
+      hasDriverDeclined: false,
+      bookingStatus: "Scheduled",
+    }).populate("booking");
+
+    // Fetch all bookings with the _id provided
+    const driverAssignedBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      hasDriverAccepted: false,
+      hasDriverDeclined: false,
+    }).populate("booking");
+
+    return {
+      status: 201,
+      assignedBookings: driverAssignedBookings,
+      upcomingBookings: driverUpcomingBookings,
+      message:
+        "Booking has been accepted! Be sure to arrive on time and drive safely.",
+    };
+  }
+
+  async declineJob(driverId, bookingId) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([driverId, bookingId]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any driver exists with the _id
+    const driver = await this.DriverModel.findOne({ _id: driverId });
+    if (!driver) {
+      return {
+        status: 404,
+        message: `No driver with _id ${driverId} exists.`,
+      };
+    }
+
+    // Check if any booking exists with the _id
+    const bookingExists = await BookingModel.findOne({
+      _id: bookingId,
+    }).populate("booking");
+    if (!bookingExists) {
+      return {
+        status: 404,
+        message: `No booking with _id ${bookingId} exists.`,
+      };
+    }
+
+    // Update booking to "ACCEPT" job
+    const acceptBooking = await BookingModel.findOneAndUpdate(
+      { _id: bookingId },
+      {
+        bookingStatus: "Not yet assigned",
+        isAssignedToDriver: false,
+        hasDriverAccepted: false,
+        hasDriverDeclined: true,
+      }
+    );
+
+    // Send a notification to the admin
+    const emailHTML = AdminRejectedBookingEmailTemplate({
+      bookingReference: bookingExists?.booking?.bookingReference,
+      pickupDate: moment(bookingExists?.booking?.pickupDate).format(
+        "MMM DD, YYYY"
+      ),
+      pickupTime: moment(bookingExists?.booking?.pickupTime).format("H:MM A"),
+      pickupLocation: bookingExists?.booking?.pickupAddress,
+      passengerName: `${
+        bookingExists?.user?.firstName ?? bookingExists?.firstName
+      } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+      passengerMobile: bookingExists?.user?.mobile ?? bookingExists?.mobile,
+    });
+
+    const message = {
+      to: "info@shuttlelane.com",
+      //   to: "effiemmanuel.n@gmail.com",
+      from: process.env.SENGRID_EMAIL,
+      subject: `Booking Rejected: ${bookingExists?.bookingReference}`,
+      html: ReactDOMServer.renderToString(emailHTML),
+    };
+    sendEmail(message);
+
+    // Fetch all upcoming bookings with the _id provided
+    const driverUpcomingBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      hasDriverAccepted: true,
+      hasDriverDeclined: false,
+      bookingStatus: "Scheduled",
+    }).populate("booking");
+
+    // Fetch all bookings with the _id provided
+    const driverAssignedBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      hasDriverAccepted: false,
+      hasDriverDeclined: false,
+    }).populate("booking");
+
+    return {
+      status: 201,
+      assignedBookings: driverAssignedBookings,
+      upcomingBookings: driverUpcomingBookings,
+      message: "Booking has been successfully rejected.",
+    };
+  }
+
+  // This service GETS a driver's earnings
+  async getDriverEarnings(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Fetch all ONGOING bookings with the _id provided
+    const driverOngoingBookings = await BookingModel.find({
+      driverJobWasSentTo: _id,
+      hasDriverAccepted: true,
+      hasDriverDeclined: false,
+      bookingStatus: "Ongoing",
+    });
+
+    // Fetch all SCHEDULED bookings with the _id provided
+    const driverScheduledBookings = await BookingModel.find({
+      driverJobWasSentTo: _id,
+      hasDriverAccepted: true,
+      hasDriverDeclined: false,
+      bookingStatus: "Scheduled",
+    });
+
+    // Fetch all COMPLETED bookings with the _id provided
+    const driverCompletedBookings = await BookingModel.find({
+      driverJobWasSentTo: _id,
+      hasDriverAccepted: true,
+      hasDriverDeclined: false,
+      bookingStatus: "Completed",
+    });
+
+    // Calculate Ongoing + Scheduled as the "Expected earnings"
+    let expectedEarnings;
+    driverOngoingBookings?.forEach((booking) => {
+      expectedEarnings = +booking?.bookingRate + +expectedEarnings;
+    });
+    driverScheduledBookings?.forEach((booking) => {
+      expectedEarnings = +booking?.bookingRate + +expectedEarnings;
+    });
+
+    // Calculate Completed as "Earned"
+    let earnings;
+    driverCompletedBookings?.forEach((booking) => {
+      earnings = +booking?.bookingRate + +earnings;
+    });
+
+    return {
+      status: 200,
+      message: `All driver's earnings have been fetched successfully.`,
+      expectedEarnings,
+      earnings,
+    };
+  }
+
+  async startBooking(driverId, bookingId) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([driverId, bookingId]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    console.log("BOOKIGNS ASSIGNED TO 2:");
+
+    // Check if any booking exists with the _id
+    const bookingExists = await BookingModel.findOne({
+      _id: bookingId,
+    }).populate("booking");
+    if (!bookingExists) {
+      return {
+        status: 404,
+        message: `No booking with _id ${bookingId} exists.`,
+      };
+    }
+
+    console.log("BOOKIGNS ASSIGNED TO 3:");
+
+    // Check if any driver exists with the _id
+    const driverExists = await this.DriverModel.findOne({
+      _id: driverId,
+    }).populate("bookingsAssignedTo");
+    if (!driverExists) {
+      return {
+        status: 404,
+        message: `No driver with _id ${driverId} exists.`,
+      };
+    }
+
+    console.log("BOOKIGNS ASSIGNED TO 4:");
+    // Update booking to "ONGOING"
+    const updateBooking = await BookingModel.findOneAndUpdate(
+      { _id: bookingId },
+      {
+        bookingStatus: "Ongoing",
+      }
+    )
+      .populate("assignedDriver")
+      .populate("driverJobWasSentTo")
+      .populate("user");
+
+    console.log("BOOKIGNS ASSIGNED TO 6:");
+
+    // Send a notification to the admin
+    const adminEmailHTML = AdminDriverEnRouteEmailTemplate({
+      bookingReference: bookingExists?.booking?.bookingReference,
+      driverName: `${
+        bookingExists?.assignedDriver?.firstName ??
+        bookingExists?.driverJobWasSentTo?.firstName
+      } ${
+        bookingExists?.assignedDriver?.lastName ??
+        bookingExists?.driverJobWasSentTo?.lastName
+      }`,
+      driverContact:
+        bookingExists?.assignedDriver?.mobile ??
+        bookingExists?.driverJobWasSentTo?.mobile,
+    });
+
+    const adminMessage = {
+      //   to: 'info@shuttlelane.com',
+      to: "effiemmanuel.n@gmail.com",
+      from: process.env.SENGRID_EMAIL,
+      subject: `Driver En Route: ${bookingExists?.bookingReference}`,
+      html: ReactDOMServer.renderToString(adminEmailHTML),
+    };
+    sendEmail(adminMessage);
+
+    // Send a notification to the user
+    const userEmailHTML = UserDriverStartedBookingEmailTemplate({
+      bookingReference: bookingExists?.booking?.bookingReference,
+      firstName: `${
+        bookingExists?.user?.firstName ?? bookingExists?.firstName
+      }`,
+      driverName: `${
+        bookingExists?.assignedDriver?.firstName ??
+        bookingExists?.driverJobWasSentTo?.firstName
+      } ${
+        bookingExists?.assignedDriver?.lastName ??
+        bookingExists?.driverJobWasSentTo?.lastName
+      }`,
+      driverContact:
+        bookingExists?.assignedDriver?.mobile ??
+        bookingExists?.driverJobWasSentTo?.mobile,
+    });
+
+    const userMessage = {
+      to: bookingExists?.user?.email ?? bookingExists?.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: `Your trip has started: ${bookingExists?.bookingReference}`,
+      html: ReactDOMServer.renderToString(userEmailHTML),
+    };
+
+    sendEmail(userMessage);
+
+    // Fetch all upcoming bookings with the _id provided
+    const driverUpcomingBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      hasDriverAccepted: true,
+      hasDriverDeclined: false,
+      bookingStatus: "Scheduled",
+    })
+      .populate("booking")
+      .sort({ createdAt: -1 });
+
+    // Fetch all bookings with the _id provided
+    const driverAssignedBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      hasDriverAccepted: false,
+      hasDriverDeclined: false,
+    })
+      .populate("booking")
+      .sort({ createdAt: -1 });
+
+    // Fetch all bookings with the _id provided
+    const driverOngoingBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      bookingStatus: "Ongoing",
+    })
+      .populate("booking")
+      .sort({ createdAt: -1 });
+
+    return {
+      status: 201,
+      assignedBookings: driverAssignedBookings,
+      upcomingBookings: driverUpcomingBookings,
+      ongoingBookings: driverOngoingBookings,
+      message:
+        "Booking has started! Be sure to arrive on time and drive safely.",
+    };
+  }
+
+  async endBooking(driverId, bookingId) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([driverId, bookingId]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    console.log("BOOKIGNS ASSIGNED TO 2:");
+
+    // Check if any booking exists with the _id
+    const bookingExists = await BookingModel.findOne({
+      _id: bookingId,
+    }).populate("booking");
+    if (!bookingExists) {
+      return {
+        status: 404,
+        message: `No booking with _id ${bookingId} exists.`,
+      };
+    }
+
+    console.log("BOOKIGNS ASSIGNED TO 3:");
+
+    // Check if any driver exists with the _id
+    const driverExists = await this.DriverModel.findOne({
+      _id: driverId,
+    }).populate("bookingsAssignedTo");
+    if (!driverExists) {
+      return {
+        status: 404,
+        message: `No driver with _id ${driverId} exists.`,
+      };
+    }
+
+    console.log("BOOKIGNS ASSIGNED TO 4:");
+    // Update booking to "ONGOING"
+    const updateBooking = await BookingModel.findOneAndUpdate(
+      { _id: bookingId },
+      {
+        bookingStatus: "Completed",
+      }
+    )
+      .populate("assignedDriver")
+      .populate("driverJobWasSentTo")
+      .populate("user");
+
+    console.log("BOOKIGNS ASSIGNED TO 6:");
+
+    // Send a notification to the admin
+    const adminEmailHTML = AdminBookingEndedEmailTemplate({
+      bookingReference: bookingExists?.booking?.bookingReference,
+    });
+
+    const adminMessage = {
+      //   to: 'info@shuttlelane.com',
+      to: "effiemmanuel.n@gmail.com",
+      from: process.env.SENGRID_EMAIL,
+      subject: `Trip Ended: ${bookingExists?.bookingReference}`,
+      html: ReactDOMServer.renderToString(adminEmailHTML),
+    };
+    sendEmail(adminMessage);
+
+    // Send a notification to the user
+    const userEmailHTML = UserBookingCompletedEmailTemplate({
+      bookingReference: bookingExists?.booking?.bookingReference,
+      firstName: `${
+        bookingExists?.user?.firstName ?? bookingExists?.firstName
+      }`,
+    });
+
+    const userMessage = {
+      to: bookingExists?.user?.email ?? bookingExists?.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: `Trip Ended: ${bookingExists?.bookingReference}`,
+      html: ReactDOMServer.renderToString(userEmailHTML),
+    };
+
+    sendEmail(userMessage);
+
+    // Fetch all upcoming bookings with the _id provided
+    const driverUpcomingBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      hasDriverAccepted: true,
+      hasDriverDeclined: false,
+      bookingStatus: "Scheduled",
+    }).populate("booking");
+
+    // Fetch all bookings with the _id provided
+    const driverAssignedBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      hasDriverAccepted: false,
+      hasDriverDeclined: false,
+    }).populate("booking");
+
+    // Fetch all bookings with the _id provided
+    const driverOngoingBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      bookingStatus: "Ongoing",
+    }).populate("booking");
+
+    // Fetch all bookings with the _id provided
+    const driverCompletedBookings = await BookingModel.find({
+      driverJobWasSentTo: driverId,
+      bookingStatus: "Completed",
+    }).populate("booking");
+
+    return {
+      status: 201,
+      assignedBookings: driverAssignedBookings,
+      upcomingBookings: driverUpcomingBookings,
+      ongoingBookings: driverOngoingBookings,
+      completedBookings: driverCompletedBookings,
+      message: "Booking ended successfully",
     };
   }
 }
