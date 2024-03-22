@@ -33,24 +33,47 @@ export default class VerificationService {
 
     // Send sms
     const smsMessage = `An OTP was requested to verify your account with Shuttlelane. Use this code to verify your phone number: ${smsVerificationCode}. If this was not initiated by you, please contact support at info@shuttlelane.com.`;
-    const response = await sendSMS(user?.mobile, smsMessage)
-      .then((res) => {
-        console.log("TWILIO RESPONSE:", res);
-        return {
-          status: 200,
-          message:
-            "An OTP was sent to your registered phone number. Use it to verify your account.",
-        };
-      })
-      .catch((err) => {
-        console.log("ERROR:", err);
-        // Send a 500 status code back to the frontend
-        return {
-          status: 500,
-          message:
-            "An error occured while processing your request for a new One Time Password (OTP). Please, try again.",
-        };
-      });
+    let response;
+    if (user?.contactMobile) {
+      // If it's a vendor account
+      response = await sendSMS(user?.contactMobile, smsMessage)
+        .then((res) => {
+          console.log("TWILIO RESPONSE:", res);
+          return {
+            status: 200,
+            message:
+              "An OTP was sent to your registered phone number. Use it to verify your account.",
+          };
+        })
+        .catch((err) => {
+          console.log("ERROR:", err);
+          // Send a 500 status code back to the frontend
+          return {
+            status: 500,
+            message:
+              "An error occured while processing your request for a new One Time Password (OTP). Please, try again.",
+          };
+        });
+    } else {
+      response = await sendSMS(user?.mobile, smsMessage)
+        .then((res) => {
+          console.log("TWILIO RESPONSE:", res);
+          return {
+            status: 200,
+            message:
+              "An OTP was sent to your registered phone number. Use it to verify your account.",
+          };
+        })
+        .catch((err) => {
+          console.log("ERROR:", err);
+          // Send a 500 status code back to the frontend
+          return {
+            status: 500,
+            message:
+              "An error occured while processing your request for a new One Time Password (OTP). Please, try again.",
+          };
+        });
+    }
 
     return response;
   }

@@ -635,7 +635,9 @@ export default class DriverService {
     // Check if any booking exists with the _id
     const bookingExists = await BookingModel.findOne({
       _id: bookingId,
-    }).populate("booking");
+    })
+      .populate("booking")
+      .populate("driverJobWasSentTo");
     if (!bookingExists) {
       return {
         status: 404,
@@ -666,6 +668,8 @@ export default class DriverService {
         bookingExists?.user?.firstName ?? bookingExists?.firstName
       } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
       passengerMobile: bookingExists?.user?.mobile ?? bookingExists?.mobile,
+      isVendor: false,
+      driverName: `${bookingExists?.driverJobWasSentTo?.firstName} ${bookingExists?.driverJobWasSentTo?.lastName}`,
     });
 
     const message = {
@@ -733,19 +737,29 @@ export default class DriverService {
     });
 
     // Calculate Ongoing + Scheduled as the "Expected earnings"
-    let expectedEarnings;
+    let expectedEarnings = 0;
     driverOngoingBookings?.forEach((booking) => {
-      expectedEarnings = +booking?.bookingRate + +expectedEarnings;
-    });
-    driverScheduledBookings?.forEach((booking) => {
-      expectedEarnings = +booking?.bookingRate + +expectedEarnings;
+      expectedEarnings =
+        Number(booking?.bookingRate) + Number(expectedEarnings);
     });
 
-    // Calculate Completed as "Earned"
-    let earnings;
-    driverCompletedBookings?.forEach((booking) => {
-      earnings = +booking?.bookingRate + +earnings;
+    console.log("EXPECTED EARNINGS 1:", expectedEarnings);
+
+    driverScheduledBookings?.forEach((booking) => {
+      console.log("EE FUNC 2:", booking?.bookingRate);
+      expectedEarnings =
+        Number(booking?.bookingRate) + Number(expectedEarnings);
     });
+
+    console.log("EXPECTED EARNINGS 2:", expectedEarnings);
+
+    // Calculate Completed as "Earned"
+    let earnings = 0;
+    driverCompletedBookings?.forEach((booking) => {
+      earnings = Number(booking?.bookingRate) + Number(earnings);
+    });
+
+    console.log("EARNINGS 1:", earnings);
 
     return {
       status: 200,
@@ -818,8 +832,8 @@ export default class DriverService {
     });
 
     const adminMessage = {
-      //   to: 'info@shuttlelane.com',
-      to: "effiemmanuel.n@gmail.com",
+      to: "info@shuttlelane.com",
+      //   to: "effiemmanuel.n@gmail.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Driver En Route: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(adminEmailHTML),
@@ -943,8 +957,8 @@ export default class DriverService {
     });
 
     const adminMessage = {
-      //   to: 'info@shuttlelane.com',
-      to: "effiemmanuel.n@gmail.com",
+      to: "info@shuttlelane.com",
+      //   to: "effiemmanuel.n@gmail.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Trip Ended: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(adminEmailHTML),

@@ -1,6 +1,8 @@
 import AdminModel from "../model/admin.model.js";
 import DriverModel from "../model/driver.model.js";
 import UserModel from "../model/user.model.js";
+import VendorModel from "../model/vendor.model.js";
+import VendorDriverModel from "../model/vendorDriver.model.js";
 
 // This method checks if a user email is valid - if it exists in the DB or not
 export async function checkUserEmailValidity(email) {
@@ -26,6 +28,38 @@ export async function checkDriverEmailValidity(email) {
       message: "An account is already associated with the email provided.",
       status: 409,
       config: driverExists,
+    };
+
+  return {
+    message: "Available",
+    status: 200,
+  };
+}
+
+// This method checks if a vendor email is valid - if it exists in the DB or not
+export async function checkVendorEmailValidity(email) {
+  const vendorExists = await VendorModel.findOne({ companyEmail: email });
+  if (vendorExists)
+    return {
+      message: "An account is already associated with the email provided.",
+      status: 409,
+      config: vendorExists,
+    };
+
+  return {
+    message: "Available",
+    status: 200,
+  };
+}
+
+// This method checks if a vendor driver email is valid - if it exists in the DB or not
+export async function checkVendorDriverEmailValidity(email) {
+  const vendorDriverExists = await VendorDriverModel.findOne({ email: email });
+  if (vendorDriverExists)
+    return {
+      message: "An account is already associated with the email provided.",
+      status: 409,
+      config: vendorDriverExists,
     };
 
   return {

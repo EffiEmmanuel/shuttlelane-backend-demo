@@ -137,11 +137,16 @@ const bookingSchema = new mongoose.Schema({
     default: false,
   },
 
-  //   The following fields contain information about the car assigned to a particular booking
+  vendorAssignedDriver: {
+    type: mongoose.Types.ObjectId,
+    ref: "VendorDriver",
+  },
+
+  // The following fields contain information about the car assigned to a particular booking
+  // Usually for situations where a VENDOR is assigned to a booking ONLY
   assignedCar: {
-    model: String,
-    color: String,
-    plateNumber: String,
+    type: mongoose.Types.ObjectId,
+    ref: "VendorFleet",
   },
 
   // This field holds how much the driver / vendor is being paid for a particular booking

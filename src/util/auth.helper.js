@@ -4,7 +4,7 @@ import routes from "../routes.js";
 import bcrypt from "bcryptjs";
 import DriverModel from "../model/driver.model.js";
 import AdminModel from "../model/admin.model.js";
-import SupplierModel from "../model/vendor.model.js";
+import VendorModel from "../model/vendor.model.js";
 import config from "../config/index.js";
 import { sendEmail } from "./sendgrid.js";
 
@@ -200,10 +200,12 @@ export async function validateAdminLoginDetails(username, password) {
   };
 }
 
-// This function validates a supplier's login details provided
-export async function validateSupplierLoginDetails(email, password) {
-  const supplierExists = await SupplierModel.findOne({ email });
-  if (!supplierExists)
+// This function validates a vendor's login details provided
+export async function validateVendorLoginDetails(email, password) {
+  const vendorExists = await VendorModel.findOne({
+    companyEmail: email,
+  }).populate("operatingCities");
+  if (!vendorExists)
     return {
       message: "Invalid email provided",
       status: 409,
@@ -211,8 +213,10 @@ export async function validateSupplierLoginDetails(email, password) {
 
   const isPasswordCorrect = bcrypt.compareSync(
     password,
-    supplierExists?.password
+    vendorExists?.password
   );
+
+  console.log("isPasswordCorrect:", isPasswordCorrect);
 
   if (!isPasswordCorrect)
     return {
@@ -220,11 +224,11 @@ export async function validateSupplierLoginDetails(email, password) {
       status: 403,
     };
 
-  const token = jwtSign(supplierExists);
+  const token = jwtSign(vendorExists);
 
   return {
     message: "Log in successful!",
-    supplier: supplierExists,
+    vendor: vendorExists,
     token: token,
     status: 200,
   };

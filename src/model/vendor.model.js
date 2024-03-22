@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 // SCHEMA: This schema is for Suppliers (Vendors)
 const vendorSchema = new mongoose.Schema(
   {
+    // Company info
     image: {
       type: String,
     },
@@ -12,17 +13,28 @@ const vendorSchema = new mongoose.Schema(
       required: true,
     },
 
-    mobile: {
-      type: String,
+    openingHours: {
+      type: Date,
       required: true,
     },
 
-    alternateMobile: {
+    isOpen24Hours: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+
+    closingHours: {
+      type: Date,
+    },
+
+    companyEmail: {
       type: String,
+      trim: true,
+      match: /.+\@.+\..+/,
       required: true,
     },
 
-    // Additional information
     address: {
       type: String,
       required: true,
@@ -33,18 +45,48 @@ const vendorSchema = new mongoose.Schema(
       required: true,
     },
 
-    state: {
+    country: {
       type: String,
       required: true,
     },
 
-    email: {
+    operatingCities: [
+      {
+        type: mongoose.Types?.ObjectId,
+        ref: "City",
+      },
+    ],
+
+    fleetSize: {
+      type: String,
+      required: true,
+    },
+
+    fleetType: [
+      {
+        type: String,
+      },
+    ],
+
+    // Contact Information
+    contactName: {
+      type: String,
+      required: true,
+    },
+
+    contactEmail: {
       type: String,
       trim: true,
       match: /.+\@.+\..+/,
       required: true,
     },
 
+    contactMobile: {
+      type: String,
+      required: true,
+    },
+
+    // Account Security
     password: {
       type: String,
       required: true,
@@ -57,20 +99,51 @@ const vendorSchema = new mongoose.Schema(
       },
     ],
 
+    completedBookings: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Booking",
+      },
+    ],
+
+    upcomingBookings: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Booking",
+      },
+    ],
+
     phoneVerification: {
-      type: mongoose.Types.ObjectId,
-      ref: "Verification",
-      required: true,
+      type: Boolean,
+      default: false,
     },
+
+    isAccountApproved: {
+      type: Boolean,
+      default: false,
+    },
+
+    isAccountBlocked: {
+      type: Boolean,
+      default: false,
+    },
+
+    fleet: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "VendorFleet",
+      },
+    ],
+
+    drivers: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "VendorDriver",
+      },
+    ],
   },
   { timestamps: true }
 );
-
-vendorSchema.virtual("verification", {
-  ref: "Verification",
-  localField: "_id",
-  foreignField: "userId",
-});
 
 const VendorModel = mongoose.model("Vendor", vendorSchema);
 

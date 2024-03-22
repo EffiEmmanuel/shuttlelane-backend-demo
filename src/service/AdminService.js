@@ -31,6 +31,7 @@ import DriverAccountApprovalEmail from "../emailTemplates/driverEmailTemplates/D
 import AdminAccountCreationEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminAccountCreationEmail/index.js";
 import AdminAccountCreationSuccessfulEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminAccountCreationSuccessfulEmail/index.js";
 import { convertAmountToUserCurrency } from "../util/index.js";
+import VendorAccountApprovalEmail from "../emailTemplates/vendorEmailTemplates/VendorAccountApprovalEmail/index.js";
 
 export default class AdminService {
   constructor(ShuttlelaneAdminModel) {
@@ -869,6 +870,366 @@ export default class AdminService {
     }
   }
 
+  // This service GETS all drivers
+  async getDrivers() {
+    // Get drivers
+    const drivers = await DriverModel.find({}).populate({
+      path: "bookingsAssignedTo",
+    });
+
+    const data = await DriverModel.aggregate([
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+          count: { $sum: 1 },
+          drivers: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
+    ]);
+
+    console.log("drivers:", drivers);
+    console.log("data:", data);
+
+    return {
+      status: 200,
+      message: `Fetched drivers.`,
+      drivers: drivers,
+      data: data,
+    };
+  }
+
+  // This service GETS all drivers
+  async getApprovedDrivers() {
+    // Get drivers
+    const drivers = await DriverModel.find({
+      isAccountApproved: true,
+    });
+
+    const data = await DriverModel.aggregate([
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+          count: { $sum: 1 },
+          drivers: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
+    ]);
+
+    console.log("drivers:", drivers);
+    console.log("data:", data);
+
+    return {
+      status: 200,
+      message: `Fetched drivers.`,
+      drivers: drivers,
+      data: data,
+    };
+  }
+
+  // This service GETS a driver by their id
+  async getDriverById(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any driver exists with the driver id
+    const driver = await DriverModel.findOne({
+      _id: _id,
+    }).populate({
+      path: "bookings",
+    });
+
+    if (!driver) {
+      return {
+        status: 404,
+        message: "No driver exists with the id specified.",
+        driver: driver,
+      };
+    }
+
+    return {
+      status: 200,
+      message: `Fetched driver with id ${_id}.`,
+      driver: driver,
+    };
+  }
+
+  // This service APPROVES a driver account by their id
+  async approveDriverAccount(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any driver exists with the driver id
+    const driver = await DriverModel.findOneAndUpdate(
+      {
+        _id: _id,
+      },
+      { isAccountApproved: true }
+    );
+
+    if (!driver) {
+      return {
+        status: 404,
+        message: "No driver exists with the id specified.",
+        driver: driver,
+      };
+    }
+
+    // TO-DO: Send driver a confirmation email here
+    const emailHTML = DriverAccountApprovalEmail({
+      driver,
+    });
+
+    const message = {
+      to: driver.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: "Driver Account Has Been Approved🎉",
+      html: ReactDOMServer.renderToString(emailHTML),
+    };
+    await sendEmail(message);
+
+    const drivers = await DriverModel.find({});
+
+    return {
+      status: 201,
+      message: `Driver account has been approved`,
+      drivers: drivers,
+    };
+  }
+
+  // This service ASSIGNS a driver to a job
+  async assignDriverToJob(userType, userId, bookingId, bookingRate) {
+    console.log("VALUES:", userType, userId, bookingId, bookingRate);
+
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([
+      userType,
+      userId,
+      bookingId,
+      bookingRate,
+    ]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    let vendor, driver;
+
+    if (userType == "Driver") {
+      // Check if any driver exists with the driver id
+      driver = await DriverModel.findOne({
+        _id: userId,
+        isAccountApproved: true,
+      }).populate({
+        path: "bookingsAssignedTo",
+      });
+
+      if (!driver) {
+        return {
+          status: 404,
+          message: "No driver exists with the id specified.",
+          driver: driver,
+        };
+      }
+
+      driver?.bookingsAssignedTo?.push(bookingId);
+      console.log("DBAT:", driver?.bookingsAssignedTo);
+
+      const updateDriver = await DriverModel.findOneAndUpdate(
+        { _id: driver?._id },
+        {
+          bookingsAssignedTo: driver?.bookingsAssignedTo,
+        }
+      );
+
+      const updateBooking = await BookingModel.findOneAndUpdate(
+        {
+          _id: bookingId,
+        },
+        {
+          driverJobWasSentTo: driver?._id,
+          hasDriverAccepted: false,
+          hasDriverDeclined: false,
+          bookingStatus: "Awaiting response",
+          bookingRate: bookingRate,
+        }
+      ).populate({
+        path: "booking",
+      });
+
+      // Sample booking data
+      const booking = {
+        "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
+        "Pickup Location": `${updateBooking?.booking?.pickupAddress}`,
+        Destination: `${updateBooking?.booking?.dropoffAddress}`,
+        "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
+          "en-US"
+        )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
+          "en-US",
+          {
+            hour12: true,
+          }
+        )}`,
+        "Booking Rate": `${
+          updateBooking?.bookingCurrency?.symbol ?? "₦"
+        }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
+      };
+
+      const emailHTML = AssignToBookingEmailTemplate({
+        booking,
+        driverId: driver?._id?.toString(),
+      });
+
+      //   console.log("EMAIL:", emailHTML);
+
+      const message = {
+        to: updateDriver?.email,
+        from: process.env.SENGRID_EMAIL,
+        subject: "🚨New Job Alert🚨",
+        html: ReactDOMServer.renderToString(emailHTML),
+      };
+      await sendEmail(message);
+
+      const bookingsAwaitingAssignment = await BookingModel.find({
+        bookingStatus: "Not yet assigned",
+      }).populate("booking");
+
+      const updatedUnassignedBookings = bookingsAwaitingAssignment?.filter(
+        (booking) => {
+          return booking?.bookingType !== "Visa";
+        }
+      );
+
+      return {
+        status: 201,
+        updatedUnassignedBookings,
+        message: `Booking has been successfully assigned to ${driver?.firstName} ${driver?.lastName}.`,
+      };
+    } else {
+      console.log("HELLO 1111");
+      // Check if any vendor exists with the vendor id
+      vendor = await VendorModel.findOne({
+        _id: userId,
+        isAccountApproved: true,
+      }).populate({
+        path: "bookingsAssignedTo",
+      });
+
+      console.log("HELLO 2222");
+
+      if (!vendor) {
+        return {
+          status: 404,
+          message:
+            "No vendor exists with the id specified or this account has ont been approved yet.",
+          vendor: vendor,
+        };
+      }
+
+      console.log("HELLO 3333");
+
+      vendor?.bookingsAssignedTo?.push(bookingId);
+      console.log("DBAT:", vendor?.bookingsAssignedTo);
+
+      const updateVendor = await VendorModel.findOneAndUpdate(
+        { _id: vendor?._id },
+        {
+          bookingsAssignedTo: vendor?.bookingsAssignedTo,
+        }
+      );
+
+      console.log("HELLO 4444");
+
+      const updateBooking = await BookingModel.findOneAndUpdate(
+        {
+          _id: bookingId,
+        },
+        {
+          vendorJobWasSentTo: vendor?._id,
+          hasVendorAccepted: false,
+          hasVendorDeclined: false,
+          bookingStatus: "Awaiting response",
+          bookingRate: bookingRate,
+        }
+      ).populate({
+        path: "booking",
+      });
+
+      console.log("HELLO 5555");
+
+      // Sample booking data
+      const booking = {
+        "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
+        "Pickup Location": `${updateBooking?.booking?.pickupAddress}`,
+        Destination: `${updateBooking?.booking?.dropoffAddress}`,
+        "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
+          "en-US"
+        )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
+          "en-US",
+          {
+            hour12: true,
+          }
+        )}`,
+        "Booking Rate": `${
+          updateBooking?.bookingCurrency?.symbol ?? "₦"
+        }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
+      };
+
+      console.log("HELLO 6666:", typeof updateVendor?._id?.toString());
+
+      const emailHTML = AssignToBookingEmailTemplate({
+        booking,
+        driverId: updateVendor?._id?.toString(),
+      });
+
+      const message = {
+        to: updateVendor?.companyEmail,
+        from: process.env.SENGRID_EMAIL,
+        subject: "🚨New Job Alert🚨",
+        html: ReactDOMServer.renderToString(emailHTML),
+      };
+      sendEmail(message);
+
+      const bookingsAwaitingAssignment = await BookingModel.find({
+        bookingStatus: "Not yet assigned",
+      }).populate("booking");
+
+      const updatedUnassignedBookings = bookingsAwaitingAssignment?.filter(
+        (booking) => {
+          return booking?.bookingType !== "Visa";
+        }
+      );
+
+      return {
+        status: 201,
+        updatedUnassignedBookings,
+        message: `Booking has been successfully assigned to ${vendor?.companyName}`,
+      };
+    }
+  }
+
   // This service GETS upcoming bookings i.e Bookings that have been assigned to a driver but have not been completed
   async getUpcomingBookings() {
     // Fetch upcoming bookings
@@ -992,9 +1353,13 @@ export default class AdminService {
   // This service GETS all vendors
   async getVendors() {
     // Get vendors
-    const vendors = await VendorModel.find({}).populate({
-      path: "bookingsAssignedTo",
-    });
+    const vendors = await VendorModel.find({})
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
 
     const data = await VendorModel.aggregate([
       {
@@ -1026,6 +1391,49 @@ export default class AdminService {
     };
   }
 
+  // This service GETS all approved Vendors
+  async getApprovedVendors() {
+    // Get vendors
+    const vendors = await VendorModel.find({
+      isAccountApproved: true,
+    })
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
+
+    const data = await VendorModel.aggregate([
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+          count: { $sum: 1 },
+          vendors: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
+    ]);
+
+    console.log("vendors:", vendors);
+    console.log("data:", data);
+
+    return {
+      status: 200,
+      message: `Fetched approved vendors.`,
+      vendors: vendors,
+      data: data,
+    };
+  }
+
   // This service GETS a vendor by their id
   async getVendorById(_id) {
     // Validate if fields are empty
@@ -1037,9 +1445,13 @@ export default class AdminService {
     // Check if any vendor exists with the vendor id
     const vendor = await VendorModel.findOne({
       _id: _id,
-    }).populate({
-      path: "bookings",
-    });
+    })
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
 
     if (!vendor) {
       return {
@@ -1070,9 +1482,13 @@ export default class AdminService {
         _id: _id,
       },
       { isAccountApproved: true }
-    ).populate({
-      path: "bookings",
-    });
+    )
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
 
     if (!vendor) {
       return {
@@ -1083,11 +1499,24 @@ export default class AdminService {
     }
 
     // TO-DO: Send vendor a confirmation email here
+    const emailHTML = VendorAccountApprovalEmail({
+      vendor,
+    });
+
+    const message = {
+      to: vendor.companyEmail,
+      from: process.env.SENGRID_EMAIL,
+      subject: "Vendor Account Has Been Approved🎉",
+      html: ReactDOMServer.renderToString(emailHTML),
+    };
+    await sendEmail(message);
+
+    const vendors = await VendorModel.find({});
 
     return {
       status: 201,
       message: `Vendor account has been approved`,
-      vendor: vendor,
+      vendors: vendors,
     };
   }
 
@@ -1109,7 +1538,14 @@ export default class AdminService {
       };
     }
 
-    const vendors = await VendorModel.find({}).sort({ createdAt: -1 });
+    const vendors = await VendorModel.find({})
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
     const data = await VendorModel.aggregate([
       {
         $group: {

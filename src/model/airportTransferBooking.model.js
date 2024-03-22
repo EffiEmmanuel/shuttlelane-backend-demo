@@ -49,6 +49,11 @@ const airportTransferBookingSchema = new mongoose.Schema(
       type: String,
     },
 
+    pickupCoordinates: {
+      lat: String,
+      lng: String,
+    },
+
     pickupDate: {
       type: Date,
     },
@@ -60,6 +65,11 @@ const airportTransferBookingSchema = new mongoose.Schema(
     dropoffAddress: {
       type: String,
       trim: true,
+    },
+
+    dropoffCoordinates: {
+      lat: Number,
+      lng: Number,
     },
 
     returnDate: {

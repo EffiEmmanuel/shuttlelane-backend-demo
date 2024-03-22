@@ -16,6 +16,7 @@ import blogRouter from "./router/blog.router.js";
 import cityRouter from "./router/city.router.js";
 import driverRouter from "./router/driver.router.js";
 import paymentRouter from "./router/payment.router.js";
+import vendorRouter from "./router/vendor.router.js";
 
 async function startServer() {
   const app = express();
@@ -27,6 +28,7 @@ async function startServer() {
   app.use(routes.API_USER_ROUTE, userRouter); // user router
   app.use(routes.API_ADMIN_ROUTE, adminRouter); // admin router
   app.use(routes.API_DRIVER_ROUTE, driverRouter); // driver router
+  app.use(routes.API_VENDOR_ROUTE, vendorRouter); // vendor router
   app.use(routes.API_BOOKING_ROUTE, bookingRouter); // booking router
   app.use(routes.API_VEHICLE_CLASS_ROUTE, vehicleClassRouter); // vehicle class router
   app.use(routes.API_CARS_ROUTE, carRouter); // cars router

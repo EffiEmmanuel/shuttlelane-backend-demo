@@ -22,6 +22,11 @@ const PriorityPassBookingSchema = new mongoose.Schema(
       required: true,
     },
 
+    pickupCoordinates: {
+      lat: String,
+      lng: String,
+    },
+
     passengers: {
       type: Number,
     },

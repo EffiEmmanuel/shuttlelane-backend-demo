@@ -5,10 +5,13 @@ const AdminAcceptedBookingEmailTemplate = _ref => {
     pickupDate,
     pickupTime,
     pickupLocation,
+    vendorName,
+    vendorMobile,
     driverName,
     driverMobile,
     passengerName,
-    passengerMobile
+    passengerMobile,
+    isVendor
   } = _ref;
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -45,7 +48,7 @@ const AdminAcceptedBookingEmailTemplate = _ref => {
       color: "#333",
       marginBottom: "20px"
     }
-  }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Booking ID:"), " ", bookingReference), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Pickup Location:"), " ", pickupLocation), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Pickup Date:"), " ", pickupDate), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Pickup Time:"), " ", pickupTime), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Passenger Name:"), " ", passengerName), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Passenger Contact:"), " ", passengerMobile), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Driver Name:"), " ", driverName), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Driver Contact:"), " ", driverMobile)), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Booking ID:"), " ", bookingReference), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Pickup Location:"), " ", pickupLocation), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Pickup Date:"), " ", pickupDate), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Pickup Time:"), " ", pickupTime), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Passenger Name:"), " ", passengerName), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Passenger Contact:"), " ", passengerMobile), isVendor && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Vendor:"), " ", vendorName), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Vendor Mobile:"), " ", vendorMobile)), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Driver Name:"), " ", driverName), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, "Driver Contact:"), " ", driverMobile)), /*#__PURE__*/React.createElement("p", {
     style: {
       color: "#333",
       marginBottom: "20px"

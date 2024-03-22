@@ -14,6 +14,7 @@ const routes = {
   API_VERIFICATON_ROUTE: `/verification`,
   API_USER_ROUTE: `${API_PREFIX}/users`,
   API_DRIVER_ROUTE: `${API_PREFIX}/drivers`,
+  API_VENDOR_ROUTE: `${API_PREFIX}/vendors`,
   API_ADMIN_ROUTE: `${API_PREFIX}/admin`,
   API_BOOKING_ROUTE: `${API_PREFIX}/booking`,
   API_VEHICLE_CLASS_ROUTE: `${API_PREFIX}/vehicle-classes`,

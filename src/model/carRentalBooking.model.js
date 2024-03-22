@@ -25,6 +25,11 @@ const carRentalBookingSchema = new mongoose.Schema(
       type: String,
     },
 
+    pickupCoordinates: {
+      lat: String,
+      lng: String,
+    },
+
     pickupDate: {
       type: String,
     },

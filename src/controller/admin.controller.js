@@ -469,6 +469,24 @@ export const getVendors = async (req, res) => {
   }
 };
 
+// Get approved vendors
+export const getApprovedVendors = async (req, res) => {
+  try {
+    // Fetch approved vendors
+    const response = await adminService.getApprovedVendors();
+
+    // Return a response
+    return res.status(response?.status).json({
+      vendors: response?.vendors ?? null,
+      message: response?.message,
+      data: response?.data,
+    });
+  } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
 // Get vendor by id
 export const getVendorById = async (req, res) => {
   try {
@@ -495,7 +513,7 @@ export const approveVendorAccount = async (req, res) => {
     // Return a response
     return res
       .status(response?.status)
-      .json({ vendor: response?.vendor ?? null, message: response?.message });
+      .json({ vendors: response?.vendors ?? null, message: response?.message });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
   }

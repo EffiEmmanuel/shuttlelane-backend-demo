@@ -52,6 +52,7 @@ import {
   getApprovedDrivers,
   getAdminAccounts,
   deleteAdminById,
+  getApprovedVendors,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
@@ -120,6 +121,8 @@ adminRouter.delete(
 // VENDORS
 // Fetch vendors
 adminRouter.get("/vendors", verifyUserToken, getVendors);
+// Fetch Approved Vendors
+adminRouter.get("/vendors/approved", verifyUserToken, getApprovedVendors);
 // Fetch Vendor by id
 adminRouter.get("/vendors/:vendorId", verifyUserToken, getVendorById);
 // Approve Vendor account
