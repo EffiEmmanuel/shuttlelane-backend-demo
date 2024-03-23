@@ -1052,14 +1052,17 @@ export default class VendorService {
     // Update Vendor document to include the verification
     const vendor = await this.VendorModel.findOne({
       _id: vendorDriver?.vendor,
-    });
-    const vendorDrivers = vendor?.drivers;
+    }).populate("drivers");
+
+    vendor?.drivers?.push(newVendorDriver?._id);
+
     const updateVendor = await this.VendorModel.findOneAndUpdate(
       { _id: vendor?._id },
       {
-        drivers: vendorDrivers?.push(newVendorDriver?._id),
+        drivers: vendor?.drivers,
       }
     );
+    console.log("HELLO:", updateVendor);
 
     // Get Updated Vendor drivers
     const updatedVendorAccount = await this.VendorModel.findOne({
