@@ -53,6 +53,7 @@ import {
   getAdminAccounts,
   deleteAdminById,
   getApprovedVendors,
+  getAllBookings,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
@@ -65,6 +66,8 @@ adminRouter.delete("/:adminId", verifyUserToken, deleteAdminById);
 
 // GET STATISTICS
 adminRouter.get("/statistics", verifyUserToken, getStatistics);
+// GET ALL BOOKINGS
+adminRouter.get("/bookings", verifyUserToken, getAllBookings);
 // GET UPCOMING BOOKINGS
 adminRouter.get("/bookings/upcoming", verifyUserToken, fetchUpcomingBookings);
 // GET BOOKINGS AWAITING ASSIGNMENT

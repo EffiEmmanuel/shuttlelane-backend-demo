@@ -954,11 +954,14 @@ export default class DriverService {
     // Send a notification to the admin
     const adminEmailHTML = AdminBookingEndedEmailTemplate({
       bookingReference: bookingExists?.booking?.bookingReference,
+      isVendor: false,
+      driver: driverExists,
+      bookingRate: `₦${bookingExists?.booking?.bookingRate}`,
     });
 
     const adminMessage = {
-      to: "info@shuttlelane.com",
-      //   to: "effiemmanuel.n@gmail.com",
+      //   to: "info@shuttlelane.com",
+      to: "effiemmanuel.n@gmail.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Trip Ended: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(adminEmailHTML),

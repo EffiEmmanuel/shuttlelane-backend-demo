@@ -1,4 +1,6 @@
+import PaymentModel from "../model/payment.model.js";
 import UserModel from "../model/user.model.js";
+import PaymentService from "../service/PaymentService.js";
 import UserService from "../service/UserService.js";
 
 // Generic messages
@@ -8,6 +10,7 @@ const internalServerError =
 // SERVICE INSTANCES
 // Create a new UserService instance
 const userService = new UserService(UserModel);
+const paymentService = new PaymentService(PaymentModel);
 
 // Sign up user
 export const signupUser = async (req, res) => {
@@ -191,13 +194,11 @@ export const getCities = async (req, res) => {
     const response = await userService.getCities(req.query.userCountry);
 
     // Return a response
-    return res
-      .status(response?.status)
-      .json({
-        currency: response?.currency,
-        cities: response?.cities ?? null,
-        message: response?.message,
-      });
+    return res.status(response?.status).json({
+      currency: response?.currency,
+      cities: response?.cities ?? null,
+      message: response?.message,
+    });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
   }
@@ -251,6 +252,36 @@ export const sendEnquiryEmail = async (req, res) => {
     return res
       .status(response?.status)
       .json({ status: response?.status, message: response?.message });
+  } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// PAYMENTS
+// Create payment (Shuttlelane Payment)
+export const createPayment = async (req, res) => {
+  try {
+    const response = await paymentService.createPayment(req.body);
+    return res.status(response?.status).json({ message: response?.message });
+  } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Create payment intent - Stripe
+export const createStripePaymentIntent = async (req, res) => {
+  const { products, bookingId } = req.body;
+  try {
+    // Send Email
+    const response = await paymentService.createStripePaymentIntent(
+      products,
+      bookingId
+    );
+
+    // Return a response
+    return res.status(200).json({ id: response?.id, url: response?.url });
   } catch (error) {
     console.log("ERROR:", error);
     return res.status(500).json({ message: internalServerError });

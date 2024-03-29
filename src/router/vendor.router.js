@@ -6,6 +6,8 @@ import {
   createVendorDriver,
   declineBooking,
   deleteVendorById,
+  deleteVendorDriverById,
+  deleteVendorFleetById,
   endBooking,
   getVendorAssignedJobs,
   getVendorBookingsByVendorId,
@@ -21,6 +23,8 @@ import {
   signupVendor,
   startBooking,
   updateVendorById,
+  updateVendorDriverById,
+  updateVendorFleetById,
 } from "../controller/vendor.controller.js";
 
 const vendorRouter = express.Router();
@@ -117,11 +121,35 @@ vendorRouter.get("/earnings/:vendorId", verifyUserToken, getVendorEarnings);
 vendorRouter.get("/drivers", verifyUserToken, getVendorDrivers);
 // CREATE DRIVER
 vendorRouter.post("/drivers", verifyUserToken, createVendorDriver);
+// UPDATE DRIVER
+vendorRouter.patch(
+  "/drivers/:vendorDriverId/:vendorId",
+  verifyUserToken,
+  updateVendorDriverById
+);
+// DELETE DRIVER
+vendorRouter.delete(
+  "/drivers/:vendorId/:driverId",
+  verifyUserToken,
+  deleteVendorDriverById
+);
 
 // VENDOR FLEET
 // GET VENDOR FLEET
 vendorRouter.get("/fleet", verifyUserToken, getVendorFleet);
-// CREATE CAR
+// CREATE FLEET
 vendorRouter.post("/fleet", verifyUserToken, createVendorCar);
+// UPDATE FLEET
+vendorRouter.patch(
+  "/fleet/update/:fleetId/:vendorId",
+  verifyUserToken,
+  updateVendorFleetById
+);
+// DELETE FLEET
+vendorRouter.delete(
+  "/fleet/:vendorId/:fleetId",
+  verifyUserToken,
+  deleteVendorFleetById
+);
 
 export default vendorRouter;

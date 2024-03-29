@@ -23,8 +23,8 @@ import ReactDOMServer from "react-dom/server";
 import AdminRejectedBookingEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminRejectedBookingEmail/index.js";
 import AdminAcceptedBookingEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminAcceptedBookingEmail/index.js";
 import UserBookingScheduledConfirmation from "../emailTemplates/userEmailTemplates/UserBookingScheduledEmail/index.js";
-import DriverAcceptedBookingEmailTemplate from "../emailTemplates/driverEmailTemplates/DriverAcceptedBookingEmail/index.js";
-import DriverFirstTimeBookingEmailTemplate from "../emailTemplates/driverEmailTemplates/DriverFirstTimeBookingEmail/index.js";
+import VendorAcceptedBookingEmailTemplate from "../emailTemplates/vendorEmailTemplates/VendorAcceptedBookingEmail/index.js";
+import VendorFirstTimeBookingEmailTemplate from "../emailTemplates/vendorEmailTemplates/VendorFirstTimeBookingEmail/index.js";
 import moment from "moment";
 import AdminDriverEnRouteEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminDriverEnrouteEmail/index.js";
 import UserDriverStartedBookingEmailTemplate from "../emailTemplates/userEmailTemplates/UserDriverStartedBookingEmail/index.js";
@@ -33,6 +33,7 @@ import UserBookingCompletedEmailTemplate from "../emailTemplates/userEmailTempla
 import VendorDriverModel from "../model/vendorDriver.model.js";
 import DriverSignupConfirmationEmail from "../emailTemplates/driverEmailTemplates/DriverSignupEmail/index.js";
 import VendorFleetModel from "../model/vendorFleet.model.js";
+import mongoose from "mongoose";
 
 const verificationService = new VerificationService(VerificationModel);
 
@@ -46,7 +47,7 @@ export default class VendorService {
     console.log("VENDOR:", vendor);
     // Check if vendor is already signed up
     const vendorAlreadyExistsWithEmail = await checkVendorEmailValidity(
-      vendor.contactEmail
+      vendor.companyEmail
     );
 
     // If vendor email already exists
@@ -782,7 +783,10 @@ export default class VendorService {
     // Check if any booking exists with the _id
     const bookingExists = await BookingModel.findOne({
       _id: bookingId,
-    }).populate("booking");
+    })
+      .populate("booking")
+      .populate("vendorAssignedDriver")
+      .populate("assignedVendor");
     if (!bookingExists) {
       return {
         status: 404,
@@ -818,18 +822,15 @@ export default class VendorService {
     console.log("BOOKIGNS ASSIGNED TO 6:");
 
     // Send a notification to the admin
-    const adminEmailHTML = AdminVendorEnRouteEmailTemplate({
+    const adminEmailHTML = AdminDriverEnRouteEmailTemplate({
       bookingReference: bookingExists?.booking?.bookingReference,
-      vendorName: `${
-        bookingExists?.assignedVendor?.firstName ??
-        bookingExists?.vendorJobWasSentTo?.firstName
-      } ${
-        bookingExists?.assignedVendor?.lastName ??
-        bookingExists?.vendorJobWasSentTo?.lastName
-      }`,
-      vendorContact:
-        bookingExists?.assignedVendor?.mobile ??
-        bookingExists?.vendorJobWasSentTo?.mobile,
+      driverName: `${
+        bookingExists?.vendorAssignedDriver?.firstName ??
+        bookingExists?.vendorJobWasSentTo?.companyName
+      } ${bookingExists?.vendorAssignedDriver?.lastName}`,
+      driverContact:
+        bookingExists?.vendorAssignedDriver?.mobile ??
+        bookingExists?.vendorJobWasSentTo?.contactMobile,
     });
 
     const adminMessage = {
@@ -842,21 +843,18 @@ export default class VendorService {
     sendEmail(adminMessage);
 
     // Send a notification to the user
-    const userEmailHTML = UserVendorStartedBookingEmailTemplate({
+    const userEmailHTML = UserDriverStartedBookingEmailTemplate({
       bookingReference: bookingExists?.booking?.bookingReference,
       firstName: `${
         bookingExists?.user?.firstName ?? bookingExists?.firstName
       }`,
-      vendorName: `${
-        bookingExists?.assignedVendor?.firstName ??
-        bookingExists?.vendorJobWasSentTo?.firstName
-      } ${
-        bookingExists?.assignedVendor?.lastName ??
-        bookingExists?.vendorJobWasSentTo?.lastName
-      }`,
-      vendorContact:
-        bookingExists?.assignedVendor?.mobile ??
-        bookingExists?.vendorJobWasSentTo?.mobile,
+      driverName: `${
+        bookingExists?.vendorAssignedDriver?.firstName ??
+        bookingExists?.assignedVendor?.companyName
+      } ${bookingExists?.vendorAssignedDriver?.lastName}`,
+      driverContact:
+        bookingExists?.vendorAssignedDriver?.mobile ??
+        bookingExists?.assignedVendor?.contactMobile,
     });
 
     const userMessage = {
@@ -917,7 +915,10 @@ export default class VendorService {
     // Check if any booking exists with the _id
     const bookingExists = await BookingModel.findOne({
       _id: bookingId,
-    }).populate("booking");
+    })
+      .populate("booking")
+      .populate("vendorAssignedDriver")
+      .populate("assignedVendor");
     if (!bookingExists) {
       return {
         status: 404,
@@ -955,6 +956,9 @@ export default class VendorService {
     // Send a notification to the admin
     const adminEmailHTML = AdminBookingEndedEmailTemplate({
       bookingReference: bookingExists?.booking?.bookingReference,
+      isVendor: false,
+      vendor: vendorExists,
+      bookingRate: `₦${bookingExists?.booking?.bookingRate}`,
     });
 
     const adminMessage = {
@@ -1067,7 +1071,10 @@ export default class VendorService {
     // Get Updated Vendor drivers
     const updatedVendorAccount = await this.VendorModel.findOne({
       _id: vendorDriver?.vendor,
-    }).populate("drivers");
+    }).populate({
+      path: "drivers",
+      sort: { createdAt: -1 },
+    });
     const updatedVendorDrivers = updatedVendorAccount?.drivers;
 
     return {
@@ -1081,55 +1088,254 @@ export default class VendorService {
   // This service CREATES a new vendor fleet
   async createFleet(fleet) {
     // If the email is available, then proceed to sign up the vendor
-    const newFleet = await VendorDriverModel.create({
+    const newFleet = await VendorFleetModel.create({
       ...fleet,
     });
 
     // Update Vendor fleet to include the new car
     const vendor = await this.VendorModel.findOne({
-      _id: vendorDriver?.vendor,
+      _id: fleet?.vendor,
     });
-    const vendorFleet = vendor?.fleet;
+
+    vendor?.fleet?.push(newFleet?._id);
 
     const updateVendor = await this.VendorModel.findOneAndUpdate(
-      { _id: newVendor?._id },
+      { _id: fleet?.vendor },
       {
-        fleet: vendorFleet?.push(newFleet?._id),
+        fleet: vendor?.fleet,
       }
     );
 
     // Get Updated Vendor fleet
     const updatedVendorAccount = await this.VendorModel.findOne({
-      _id: vendorDriver?.vendor,
+      _id: fleet?.vendor,
+    }).populate({
+      path: "fleet",
+      sort: { createdAt: -1 },
     });
+
+    console.log("UPDATED VENDOR::", updatedVendorAccount);
+
     const updatedVendorFleet = updatedVendorAccount?.fleet;
 
     return {
       status: 201,
-      message: `${newFleet?.carName} has been added to your fleet`,
+      message: `${newFleet?.carName} ${newFleet?.carModel} has been added to your fleet`,
       newFleet: newFleet,
       vendorFleet: updatedVendorFleet,
     };
   }
 
   // This service GETS all vendor drivers
-  async getVendorDrivers() {
+  async getVendorDrivers(vendorId) {
     // Fetch all vendor drivers
-    const vendorDrivers = await VendorDriverModel.find().sort({
-      createdAt: -1,
+    const vendor = await this.VendorModel.findOne({
+      _id: vendorId,
+    }).populate({
+      path: "drivers",
+      sort: {
+        createdAt: -1,
+      },
     });
 
     return {
       status: 200,
       message: `All vendor drivers have been fetched successfully.`,
-      vendorDrivers: vendorDrivers,
+      vendorDrivers: vendor?.drivers,
+    };
+  }
+
+  // This service deletes a vendor driver
+  async deleteVendorDriver(vendorId, driverId) {
+    // Find the vendor
+    const vendor = await this.VendorModel.findById(vendorId);
+    if (!vendor) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    // Check if the driver exists in the vendor's list of drivers
+    const driverIndex = vendor.drivers.findIndex((driver) =>
+      driver.equals(driverId)
+    );
+    if (driverIndex === -1) {
+      return res
+        .status(404)
+        .json({ message: "Driver not found for this vendor" });
+    }
+
+    // Remove the driver from the vendor's list of drivers
+    vendor.drivers.splice(driverIndex, 1);
+    await vendor.save();
+
+    const deleteDriver = await VendorDriverModel.findOneAndDelete({
+      _id: driverId,
+    });
+
+    const updatedVendor = await this.VendorModel.findOne({
+      _id: vendorId,
+    }).populate({
+      path: "drivers",
+      sort: { createdAt: -1 },
+    });
+
+    console.log("VENDOR:", updatedVendor);
+    console.log("VENDOR DRIVERS:", updatedVendor?.drivers);
+
+    return {
+      status: 201,
+      message: `Driver deleted from ${vendor?.companyName} successfully.`,
+      vendorDrivers: updatedVendor?.drivers,
+    };
+  }
+
+  // This service UPDATES a vendor driver by id
+  async updateVendorDriverById(_id, updatedVendorDriver, vendorId) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id, updatedVendorDriver]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any vendor driver exists with the _id
+    const vendorDriver = await VendorDriverModel.findOne({ _id: _id });
+    if (!vendorDriver) {
+      return {
+        status: 404,
+        message: `No vendor driver with _id ${_id} exists.`,
+      };
+    }
+
+    let updatedVendorDriverDoc;
+    let isMobileDifferent = false;
+
+    updatedVendorDriverDoc = await VendorDriverModel.findOneAndUpdate(
+      { _id: _id },
+      { ...updatedVendorDriver }
+    );
+
+    const updatedVendor = await this.VendorModel.findOne({
+      _id: vendorId,
+    }).populate({
+      path: "drivers",
+      sort: { createdAt: -1 },
+    });
+
+    return {
+      status: 201,
+      message: `Driver account has been updated successfully.`,
+      vendorDrivers: updatedVendor?.drivers,
+    };
+  }
+
+  // This service deletes a vendor car / fleet
+  async deleteVendorFleet(vendorId, fleetId) {
+    console.log("HII HII HIII");
+
+    // Find the vendor
+    const vendor = await this.VendorModel.findById(vendorId);
+    if (!vendor) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    // Check if the fleet exists in the vendor's list of fleets
+    const fleetIndex = vendor?.fleet?.forEach((fleet) => {
+      if (fleet.equals(new mongoose.Types.ObjectId(fleetId))) {
+        return fleet.equals(new mongoose.Types.ObjectId(fleetId));
+      }
+    });
+
+    console.log("FLEET INDEX:", fleetIndex);
+
+    if (fleetIndex === -1) {
+      return {
+        status: 404,
+        message: "Fleet not found for this vendor",
+      };
+    }
+
+    // Remove the fleet from the vendor's list of fleet
+    vendor.fleet.splice(fleetIndex, 1);
+    await vendor.save();
+
+    // Delete fleet
+    await VendorFleetModel.findOneAndDelete({
+      _id: fleetId,
+    });
+
+    // Get updated vendor fleet list
+    const updatedVendorAccount = await this.VendorModel.findOne({
+      _id: vendorId,
+    }).populate({
+      path: "fleet",
+      sort: { createdAt: -1 },
+    });
+
+    console.log("VENDOR:", updatedVendorAccount);
+    const updatedFleetList = updatedVendorAccount?.fleet;
+    console.log("FLEET LIST:", updatedFleetList);
+
+    return {
+      status: 201,
+      message: `Car successfully deleted from your fleet.`,
+      vendorFleet: updatedFleetList,
+    };
+  }
+
+  // This service UPDATES a vendor fleet by id
+  async updateVendorFleetById(_id, updatedVendorFleet, vendorId) {
+    console.log("HII HII HIII");
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id, updatedVendorFleet]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any vendor fleet exists with the _id
+    const vendorFleet = await VendorFleetModel.findOne({ _id: _id });
+    if (!vendorFleet) {
+      return {
+        status: 404,
+        message: `No vendor fleet with _id ${_id} exists.`,
+      };
+    }
+
+    let updatedVendorFleetDoc;
+    let isMobileDifferent = false;
+
+    updatedVendorFleetDoc = await VendorFleetModel.findOneAndUpdate(
+      { _id: _id },
+      { ...updatedVendorFleet }
+    );
+
+    const updatedVendor = await this.VendorModel.findOne({
+      _id: vendorId,
+    }).populate({
+      path: "fleet",
+      sort: { createdAt: -1 },
+    });
+    const updatedVendorFleets = updatedVendor?.fleet;
+
+    console.log("UPDATED VENDOR:", updatedVendor);
+    console.log("UPDATED VENDOR FLEET:", updatedVendorFleets);
+
+    return {
+      status: 201,
+      message: `Fleet has been updated successfully.`,
+      vendorFleet: updatedVendorFleets,
     };
   }
 
   // This service GETS all vendor drivers
-  async getVendorFleet() {
+  async getVendorFleet(vendorId) {
     // Fetch all vendor fleet
-    const vendorFleet = await VendorFleetModel.find().sort({ createdAt: -1 });
+    const vendor = await this.VendorModel.findOne({ _id: vendorId }).populate({
+      path: "fleet",
+      sort: { createdAt: -1 },
+    });
+
+    console.log("VENDOR FROM VENDOR FLEET SERVICE::::::::", vendor);
+
+    const vendorFleet = vendor?.fleet;
 
     return {
       status: 200,

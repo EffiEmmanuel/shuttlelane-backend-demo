@@ -11,14 +11,6 @@ const paymentSchema = new mongoose.Schema({
     ref: "Currency",
   },
 
-  paymentId: {
-    type: String,
-  },
-
-  paymentReceiptLink: {
-    type: String,
-  },
-
   paymentStatus: {
     type: String,
     enum: ["Successful", "Pending", "Failed"],
@@ -28,11 +20,6 @@ const paymentSchema = new mongoose.Schema({
   booking: {
     type: mongoose.Types.ObjectId,
     ref: "Booking",
-  },
-
-  userId: {
-    type: mongoose.Types.ObjectId,
-    ref: "User",
   },
 
   gateway: {
@@ -49,7 +36,11 @@ const paymentSchema = new mongoose.Schema({
 
   email: {
     type: String,
-    trim: true,
+  },
+
+  user: {
+    type: mongoose.Types.ObjectId,
+    ref: "User",
   },
 });
 

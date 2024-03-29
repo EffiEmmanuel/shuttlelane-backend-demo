@@ -775,7 +775,9 @@ export default class AdminService {
 
       const bookingsAwaitingAssignment = await BookingModel.find({
         bookingStatus: "Not yet assigned",
-      }).populate("booking");
+      })
+        .populate("booking")
+        .populate("paymentId");
 
       const updatedUnassignedBookings = bookingsAwaitingAssignment?.filter(
         (booking) => {
@@ -1114,7 +1116,9 @@ export default class AdminService {
 
       const bookingsAwaitingAssignment = await BookingModel.find({
         bookingStatus: "Not yet assigned",
-      }).populate("booking");
+      })
+        .populate("booking")
+        .populate("paymentId");
 
       const updatedUnassignedBookings = bookingsAwaitingAssignment?.filter(
         (booking) => {
@@ -1177,7 +1181,7 @@ export default class AdminService {
         path: "booking",
       });
 
-      console.log("HELLO 5555");
+      console.log("HELLO 5555:", updateBooking);
 
       // Sample booking data
       const booking = {

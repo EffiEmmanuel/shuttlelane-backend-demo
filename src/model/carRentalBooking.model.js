@@ -31,11 +31,11 @@ const carRentalBookingSchema = new mongoose.Schema(
     },
 
     pickupDate: {
-      type: String,
+      type: Date,
     },
 
     pickupTime: {
-      type: String,
+      type: Date,
     },
 
     car: {

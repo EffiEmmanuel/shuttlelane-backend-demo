@@ -15,7 +15,6 @@ const vendorSchema = new mongoose.Schema(
 
     openingHours: {
       type: Date,
-      required: true,
     },
 
     isOpen24Hours: {
@@ -88,6 +87,22 @@ const vendorSchema = new mongoose.Schema(
 
     // Account Security
     password: {
+      type: String,
+      required: true,
+    },
+
+    // Account details
+    bank: {
+      type: String,
+      required: true,
+    },
+
+    accountName: {
+      type: String,
+      required: true,
+    },
+
+    accountNumber: {
       type: String,
       required: true,
     },

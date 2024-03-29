@@ -160,6 +160,22 @@ const driverSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Account details
+    bank: {
+      type: String,
+      required: true,
+    },
+
+    accountName: {
+      type: String,
+      required: true,
+    },
+
+    accountNumber: {
+      type: String,
+      required: true,
+    },
+
     bookingsAssignedTo: [
       {
         type: mongoose.Types.ObjectId,

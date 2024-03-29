@@ -393,10 +393,79 @@ export const createVendorCar = async (req, res) => {
       status: response?.status,
       message: response?.message,
       newFleet: response?.newFleet,
-      vendorFleet: response?.updatedVendorFleet,
+      vendorFleet: response?.vendorFleet,
     });
   } catch (error) {
     console.log("ERROR FROM ACCEPT BOOKING:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// GET vendor fleet
+export const getVendorFleet = async (req, res) => {
+  try {
+    // Fetch vendor fleet
+    const response = await vendorService.getVendorFleet(req.query?.vendorId);
+
+    console.log("RESPONSE FROM GET VENDOR FLEET:", response);
+
+    // Return a response
+    return res.status(response?.status).json({
+      vendorFleet: response?.vendorFleet,
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Delete vendor fleet by id
+export const deleteVendorFleetById = async (req, res) => {
+  const { vendorId, fleetId } = req.params;
+  try {
+    // DELETE vendor fleet
+    const response = await vendorService.deleteVendorFleet(vendorId, fleetId);
+
+    console.log("DELETEEEEEE:", response);
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      vendorFleet: response?.vendorFleet,
+      status: response?.status,
+    });
+  } catch (error) {
+    console.log("ERROR FROM DELETE DRIVER:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Update a vendor fleet / car
+export const updateVendorFleetById = async (req, res) => {
+  const { fleetId, vendorId } = req.params;
+
+  try {
+    // UPDATE vendor fleet / car    1
+    const response = await vendorService.updateVendorFleetById(
+      fleetId,
+      {
+        ...req.body,
+      },
+      vendorId
+    );
+
+    console.log("VENDOR FLEET FORM CONTROLLER::", response?.vendorFleet);
+    console.log("VENDOR STATUS FORM CONTROLLER::", response?.status);
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+      vendorFleet: response?.vendorFleet,
+    });
+  } catch (error) {
+    console.log("ERROR FROM UPDATE VENDOR FLEET:", error);
     return res.status(500).json({ message: internalServerError });
   }
 };
@@ -405,7 +474,7 @@ export const createVendorCar = async (req, res) => {
 export const getVendorDrivers = async (req, res) => {
   try {
     // Fetch vendor drivers
-    const response = await vendorService.getVendorDrivers();
+    const response = await vendorService.getVendorDrivers(req.query?.vendorId);
 
     // Return a response
     return res.status(response?.status).json({
@@ -418,19 +487,53 @@ export const getVendorDrivers = async (req, res) => {
   }
 };
 
-// GET vendor fleet
-export const getVendorFleet = async (req, res) => {
+// Delete vendor driver by id
+export const deleteVendorDriverById = async (req, res) => {
+  const { vendorId, driverId } = req.params;
+  console.log("VENDORID:", vendorId);
+  console.log("DRIVERID:", driverId);
   try {
-    // Fetch vendor fleet
-    const response = await vendorService.getVendorFleet();
+    // DELETE vendor driver
+    const response = await vendorService.deleteVendorDriver(vendorId, driverId);
 
     // Return a response
     return res.status(response?.status).json({
-      vendorFleet: response?.vendorFleet,
-      status: response?.status,
       message: response?.message,
+      vendorDrivers: response?.vendorDrivers,
+      status: response?.status,
     });
   } catch (error) {
+    console.log("ERROR FROM DELETE DRIVER:", error);
+    return res
+      .status(500)
+      .json({ message: internalServerError, error: JSON.stringify(error) });
+  }
+};
+
+// Update a vendor driver
+export const updateVendorDriverById = async (req, res) => {
+  const { vendorDriverId, vendorId } = req.params;
+
+  console.log("HI FROM THE CONTROLLER MOD:", req.body);
+
+  try {
+    // UPDATE vendor
+    const response = await vendorService.updateVendorDriverById(
+      vendorDriverId,
+      {
+        ...req.body,
+      },
+      vendorId
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+      vendorDrivers: response?.vendorDrivers,
+    });
+  } catch (error) {
+    console.log("ERROR FROM UPDATE VENDOR DRIVER:", error);
     return res.status(500).json({ message: internalServerError });
   }
 };

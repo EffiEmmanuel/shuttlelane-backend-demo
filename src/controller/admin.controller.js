@@ -1,11 +1,13 @@
 import AdminModel from "../model/admin.model.js";
 import BlogModel from "../model/blog.model.js";
+import BookingModel from "../model/booking.model.js";
 import CarModel from "../model/car.model.js";
 import PaymentModel from "../model/payment.model.js";
 import PriorityPassModel from "../model/priorityPass.model.js";
 import VehicleClassModel from "../model/vehicleClass.model.js";
 import AdminService from "../service/AdminService.js";
 import BlogService from "../service/BlogService.js";
+import BookingService from "../service/BookingService.js";
 import CarService from "../service/CarService.js";
 import PaymentService from "../service/PaymentService.js";
 import PriorityPassService from "../service/PriorityPassService.js";
@@ -28,6 +30,8 @@ const priorityPassService = new PriorityPassService(PriorityPassModel);
 const blogService = new BlogService(BlogModel);
 // Create a new paymentService instance
 const paymentService = new PaymentService(PaymentModel);
+// Create a new bookingService instance
+const bookingService = new BookingService(BookingModel);
 
 // Sign up admin
 export const signupAdmin = async (req, res) => {
@@ -513,7 +517,11 @@ export const approveVendorAccount = async (req, res) => {
     // Return a response
     return res
       .status(response?.status)
-      .json({ vendors: response?.vendors ?? null, message: response?.message });
+      .json({
+        status: response?.status,
+        vendors: response?.vendors ?? null,
+        message: response?.message,
+      });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
   }
@@ -1227,5 +1235,25 @@ export const getPayment = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: internalServerError, error: error });
+  }
+};
+
+// BOOKINGS
+// GET ALL BOOKINGS
+export const getAllBookings = async (req, res) => {
+  try {
+    // Fetch all bookings
+    const response = await bookingService.getBookings();
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      airportTransferBookings: response?.airportTransferBookings,
+      carRentalBookings: response?.carRentalBookings,
+      priorityPassBookings: response?.priorityPassBookings,
+      visaOnArrivalBookings: response?.visaOnArrivalBookings,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
   }
 };

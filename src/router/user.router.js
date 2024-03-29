@@ -14,6 +14,7 @@ import {
   getVisaOnArrivalRates,
   getVisaOnArrivalRatesWithNigerianVisa,
   sendEnquiryEmail,
+  createPayment,
 } from "../controller/user.controller.js";
 
 const userRouter = express.Router();
@@ -58,5 +59,9 @@ userRouter.get(
 // ENQUIRIES
 // Send Enquiry Email
 userRouter.post("/enquiries/sendMessage", sendEnquiryEmail);
+
+// PAYMENTS
+// Create payment
+userRouter.post("/payments", createPayment);
 
 export default userRouter;

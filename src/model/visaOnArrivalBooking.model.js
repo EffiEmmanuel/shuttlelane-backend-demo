@@ -67,7 +67,7 @@ const visaOnArrivalBookingSchema = new mongoose.Schema(
     },
 
     passportExpiryDate: {
-      type: String,
+      type: Date,
     },
 
     // TRAVEL INFORMATION
@@ -88,11 +88,11 @@ const visaOnArrivalBookingSchema = new mongoose.Schema(
     },
 
     departureDate: {
-      type: String,
+      type: Date,
     },
 
     arrivalDate: {
-      type: String,
+      type: Date,
     },
 
     portOfEntry: {

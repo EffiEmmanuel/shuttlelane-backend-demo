@@ -41,11 +41,11 @@ const PriorityPassBookingSchema = new mongoose.Schema(
     },
 
     pickupDate: {
-      type: String,
+      type: Date,
     },
 
     pickupTime: {
-      type: String,
+      type: Date,
     },
 
     airline: {

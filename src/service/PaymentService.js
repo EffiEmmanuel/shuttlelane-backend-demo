@@ -1,3 +1,6 @@
+import Stripe from "stripe";
+const stripeInstance = Stripe(process.env.STRIPE_SECRET_KEY);
+import BookingModel from "../model/booking.model.js";
 import CurrencyModel from "../model/currency.model.js";
 import { validateFields } from "../util/auth.helper.js";
 import { convertAmountToUserCurrency } from "../util/index.js";
@@ -13,6 +16,11 @@ export default class PaymentService {
       booking: payment?.booking,
       paymentStatus: "Successful",
     });
+    const bookingExists = await BookingModel.findOne({
+      _id: payment?.booking,
+    })
+      .populate("user")
+      .populate("bookingCurrency");
 
     if (paymentExists) {
       return {
@@ -22,9 +30,29 @@ export default class PaymentService {
       };
     }
 
+    if (!bookingExists) {
+      return {
+        status: 409,
+        message: "Invalid booking id provided.",
+      };
+    }
+
     const newPayment = await this.PaymentModel.create({
-      ...payment,
+      amount: bookingExists?.bookingTotal,
+      currency: bookingExists?.bookingCurrency?._id,
+      paymentStatus: payment?.paymentStatus,
+      booking: payment?.booking,
+      gateway: payment?.gateway,
+      firstName: bookingExists?.user?.firstName ?? bookingExists?.firstName,
+      lastName: bookingExists?.user?.lastName ?? bookingExists?.lastName,
+      email: bookingExists?.user?.email ?? bookingExists?.email,
     });
+
+    // Update booking payment status
+    await BookingModel.findOneAndUpdate(
+      { _id: payment?.booking },
+      { paymentId: newPayment?._id }
+    );
 
     // Fetch all payments (So the frontend can be update without having to refresh the page & to prevent making another request to get them)
     const payments = await this.PaymentModel.find().sort({
@@ -68,68 +96,43 @@ export default class PaymentService {
     };
   }
 
-  // This service UPDATES a payment ** NOT NEEDED
-  //   async updatePayment(paymentId, values) {
-  //     // Validate if fields are empty
-  //     const areFieldsEmpty = validateFields([paymentId]);
+  // This service handles creating a Stripe payment intent
+  async createStripePaymentIntent(products, bookingRef) {
+    const booking = await BookingModel.findOne({
+      bookingReference: bookingRef,
+    }).populate("bookingCurrency");
 
-  //     // areFieldsEmpty is an object that contains a status and message field
-  //     if (areFieldsEmpty) return areFieldsEmpty;
+    console.log("BOOKING REF:", bookingRef);
+    console.log("BOOKING:", booking);
 
-  //     // Check if any payment exists with the _id
-  //     const payment = await this.PaymentModel.findOneAndUpdate(
-  //       {
-  //         _id: paymentId,
-  //       },
-  //       { ...values }
-  //     );
+    console.log("PRODUCTS:", products);
 
-  //     if (!payment) {
-  //       return {
-  //         status: 404,
-  //         message: `No payment with _id ${paymentId} exists.`,
-  //       };
-  //     }
+    const lineItems = products?.map((product) => ({
+      price_data: {
+        currency: booking?.bookingCurrency?.alias?.toLowerCase(),
+        product_data: {
+          name: product?.name,
+          images: [product?.image],
+        },
+        unit_amount: Math.round(product?.price * 100),
+      },
+      quantity: product?.quantity,
+    }));
 
-  //     const payments = await this.PaymentModel.find({}).sort({
-  //       createdAt: -1,
-  //     });
+    // Create checkout session with Stripe
+    const session = await stripeInstance.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: lineItems,
+      mode: "payment",
+      success_url: "http://localhost:3000/payment_successful",
+      cancel_url: "http://localhost:3000/payment_failed",
+    });
 
-  //     return {
-  //       status: 201,
-  //       message: `Payment updated successfully.`,
-  //       payments: payments,
-  //     };
-  //   }
+    console.log("SESSION:", session);
 
-  // This service DELETES a payment ** NOT NEEDED
-  //   async deletePayment(paymentId) {
-  //     // Validate if fields are empty
-  //     const areFieldsEmpty = validateFields([paymentId]);
-
-  //     // areFieldsEmpty is an object that contains a status and message field
-  //     if (areFieldsEmpty) return areFieldsEmpty;
-
-  //     // Check if any payment exists with the _id
-  //     const payment = await this.PaymentModel.findOneAndRemove({
-  //       _id: paymentId,
-  //     });
-
-  //     if (!payment) {
-  //       return {
-  //         status: 404,
-  //         message: `No payment with _id ${paymentId} exists.`,
-  //       };
-  //     }
-
-  //     const payments = await this.PaymentModel.find({}).sort({
-  //       createdAt: -1,
-  //     });
-
-  //     return {
-  //       status: 201,
-  //       message: `Payment deleted successfully.`,
-  //       payments: payments,
-  //     };
-  //   }
+    return {
+      id: session?.id,
+      url: session.url,
+    };
+  }
 }

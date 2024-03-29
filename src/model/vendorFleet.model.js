@@ -32,6 +32,12 @@ const vendorFleetSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    vendor: {
+      type: mongoose.Types.ObjectId,
+      ref: "Vendor",
+      required: true,
+    },
   },
   { timestamps: true }
 );

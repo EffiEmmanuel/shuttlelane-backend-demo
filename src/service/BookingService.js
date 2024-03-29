@@ -39,7 +39,7 @@ export default class BookingService {
     let shuttlelaneBooking;
 
     try {
-      let newBooking;
+      let newBooking, justCreatedBooking;
 
       switch (booking?.bookingType) {
         case "Airport":
@@ -65,7 +65,7 @@ export default class BookingService {
               priorityPassCount: booking?.priorityPassCount ?? null,
             });
 
-          console.log("NATBid:", newAirportTransferBooking?._id);
+          console.log("NATBid:", newAirportTransferBooking);
           newBooking = await this.BookingModel.create({
             booking: newAirportTransferBooking?._id,
             bookingType: booking?.bookingType,
@@ -82,7 +82,14 @@ export default class BookingService {
             bookingSchemaType: "AirportTransferBooking",
           });
 
-          shuttlelaneBooking = newAirportTransferBooking;
+          justCreatedBooking = await this.BookingModel.findOne({
+            _id: newBooking?._id,
+          })
+            .populate("booking")
+            .populate("bookingCurrency")
+            .populate("user");
+
+          shuttlelaneBooking = justCreatedBooking;
           break;
         case "Car":
           console.log("HELLO FROM THIS PART OF THE CODE:", booking);
@@ -114,7 +121,14 @@ export default class BookingService {
             bookingSchemaType: "CarRentalBooking",
           });
 
-          shuttlelaneBooking = newCarBooking;
+          justCreatedBooking = await this.BookingModel.findOne({
+            _id: newBooking?._id,
+          })
+            .populate("booking")
+            .populate("bookingCurrency")
+            .populate("user");
+
+          shuttlelaneBooking = justCreatedBooking;
           break;
         case "Priority":
           console.log("HELLO FROM THIS PART OF THE CODE:", booking);
@@ -150,9 +164,14 @@ export default class BookingService {
             bookingSchemaType: "PriorityPassBooking",
           });
 
-          console.log("NB:", newBooking);
+          justCreatedBooking = await this.BookingModel.findOne({
+            _id: newBooking?._id,
+          })
+            .populate("booking")
+            .populate("bookingCurrency")
+            .populate("user");
 
-          shuttlelaneBooking = newPriorityBooking;
+          shuttlelaneBooking = justCreatedBooking;
           break;
         case "Visa":
           console.log("HELLO FROM THIS PART OF THE CODE::", booking);
@@ -197,7 +216,8 @@ export default class BookingService {
           console.log("NATBid:", newVisaBooking?._id);
           newBooking = await this.BookingModel.create({
             booking: newVisaBooking?._id,
-            bookingType: "Ongoing",
+            bookingType: "Visa",
+            bookingStatus: "Ongoing",
             bookingReference,
             bookingCurrency: booking?.bookingCurrency,
             bookingTotal: booking?.bookingTotal,
@@ -211,13 +231,19 @@ export default class BookingService {
             bookingSchemaType: "VisaOnArrivalBooking",
           });
 
-          console.log("NB:", newBooking);
+          justCreatedBooking = await this.BookingModel.findOne({
+            _id: newBooking?._id,
+          })
+            .populate("booking")
+            .populate("bookingCurrency")
+            .populate("user");
 
-          shuttlelaneBooking = newVisaBooking;
+          shuttlelaneBooking = justCreatedBooking;
           break;
 
         default:
           break;
+          king;
       }
     } catch (error) {
       console.log(
@@ -303,6 +329,54 @@ export default class BookingService {
       drivers: drivers,
       users: users,
       upcomingBookings: upcomingBookings,
+    };
+  }
+
+  async getBookings() {
+    // Fetch the number of airport transfer bookings
+    const airportTransferBookings = await this.BookingModel.find({
+      bookingType: "Airport",
+    })
+      .populate("booking")
+      .populate("bookingCurrency")
+      .populate("paymentId")
+      .populate("user")
+      .sort({ createdAt: -1 });
+    // Fetch the number of car rental bookings
+    const carRentalBookings = await this.BookingModel.find({
+      bookingType: "Car",
+    })
+      .populate("booking")
+      .populate("bookingCurrency")
+      .populate("paymentId")
+      .populate("user")
+      .sort({ createdAt: -1 });
+    // Fetch the number of priority pass bookings
+    const priorityPassBookings = await this.BookingModel.find({
+      bookingType: "Priority",
+    })
+      .populate("booking")
+      .populate("bookingCurrency")
+      .populate("paymentId")
+      .populate("user")
+      .sort({ createdAt: -1 });
+    // Fetch the number of visa on arrival bookings
+    const visaOnArrivalBookings = await this.BookingModel.find({
+      bookingType: "Visa",
+    })
+      .populate("booking")
+      .populate("bookingCurrency")
+      .populate("paymentId")
+      .populate("user")
+      .sort({ createdAt: -1 });
+
+    return {
+      status: 200,
+      message: `Fetched bookings`,
+      airportTransferBookings: airportTransferBookings,
+      carRentalBookings: carRentalBookings,
+      priorityPassBookings: priorityPassBookings,
+      visaOnArrivalBookings: visaOnArrivalBookings,
     };
   }
 
@@ -451,11 +525,19 @@ export default class BookingService {
       };
     }
 
-    const allBookings = await this.BookingModel.find().populate("booking");
+    const allBookings = await this.BookingModel.find()
+      .populate("booking")
+      .populate("paymentId")
+      .populate("user")
+      .populate("bookingCurrency");
     // Fetch upcoming bookings
     const bookingsAwaitingAssignment = await BookingModel.find({
       bookingStatus: "Not yet assigned",
-    }).populate("booking");
+    })
+      .populate("booking")
+      .populate("paymentId")
+      .populate("user")
+      .populate("bookingCurrency");
 
     // Remove Visa On Arrival Bookings
     const filteredVoaBookings = bookingsAwaitingAssignment?.filter(
@@ -467,9 +549,13 @@ export default class BookingService {
     // Fetch upcoming bookings
     const upcomingBookings = await BookingModel.find({
       bookingStatus: "Scheduled",
-    }).populate({
-      path: "booking",
-    });
+    })
+      .populate({
+        path: "booking",
+      })
+      .populate("paymentId")
+      .populate("user")
+      .populate("bookingCurrency");
 
     return {
       status: 201,
