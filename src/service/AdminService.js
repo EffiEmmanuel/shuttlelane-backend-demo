@@ -274,6 +274,26 @@ export default class AdminService {
     // Fetch the total revenue
     const totalPayments = await PaymentModel.find({});
 
+    // Fetch all bookings from all months
+    const data = await BookingModel.aggregate([
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+          count: { $sum: 1 },
+          users: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
+    ]);
+
     return {
       status: 200,
       message: `Fetched statistics`,
@@ -284,6 +304,7 @@ export default class AdminService {
       drivers: drivers,
       users: users,
       upcomingBookings: upcomingBookings,
+      bookingData: data,
     };
   }
 

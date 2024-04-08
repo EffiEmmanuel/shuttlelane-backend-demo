@@ -38,8 +38,7 @@ async function startServer() {
   app.use(routes.API_CITY_ROUTE, cityRouter); // city router
   app.use(routes.API_PAYMENTS_ROUTE, paymentRouter); // payment router
 
-
-  app.listen(3001,'0.0.0.0', () => {
+  app.listen(3001, "0.0.0.0", () => {
     console.log(`Server listening on port ${config.server.port}`);
   });
 }

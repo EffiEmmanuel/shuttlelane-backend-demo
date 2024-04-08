@@ -166,6 +166,7 @@ export const getStatistics = async (req, res) => {
       users: response?.users,
       drivers: response?.drivers,
       upcomingBookings: response?.upcomingBookings,
+      bookingData: response?.bookingData,
     });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
@@ -515,13 +516,11 @@ export const approveVendorAccount = async (req, res) => {
     );
 
     // Return a response
-    return res
-      .status(response?.status)
-      .json({
-        status: response?.status,
-        vendors: response?.vendors ?? null,
-        message: response?.message,
-      });
+    return res.status(response?.status).json({
+      status: response?.status,
+      vendors: response?.vendors ?? null,
+      message: response?.message,
+    });
   } catch (error) {
     return res.status(500).json({ message: internalServerError });
   }
