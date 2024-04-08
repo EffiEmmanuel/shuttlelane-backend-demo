@@ -4,8 +4,7 @@ import cors from "cors";
 export default async function expressLoader(app) {
   app.use(
     cors({
-      origin: "https://shuttlelane-frontend-demo.vercel.app/", // Replace with your Vercel frontend URL
-      optionsSuccessStatus: 200, // optional
+      origin: "https://shuttlelane.com/",
     })
   );
   app.enable("trust proxy");

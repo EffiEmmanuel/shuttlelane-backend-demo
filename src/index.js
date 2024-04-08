@@ -20,6 +20,7 @@ import vendorRouter from "./router/vendor.router.js";
 
 async function startServer() {
   const app = express();
+
   // Express middlewares
   await initLoaders(app);
 
@@ -37,7 +38,8 @@ async function startServer() {
   app.use(routes.API_CITY_ROUTE, cityRouter); // city router
   app.use(routes.API_PAYMENTS_ROUTE, paymentRouter); // payment router
 
-  app.listen(config.server.port, () => {
+
+  app.listen(3001,'0.0.0.0', () => {
     console.log(`Server listening on port ${config.server.port}`);
   });
 }
