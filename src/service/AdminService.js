@@ -40,7 +40,6 @@ export default class AdminService {
 
   // This service CREATES a new admin - Sign up service
   async signupAdmin(admin) {
-    console.log("HELLO FROM SIGNU ADMIN");
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([
       admin.firstName,
@@ -72,13 +71,13 @@ export default class AdminService {
       return adminAlreadyExistsWithUsername;
 
     // Hash password
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = await bcrypt.hash(admin.password, salt);
+    // const salt = bcrypt.genSaltSync(10);
+    // const hashedPassword = await bcrypt.hash(admin.password, salt);
 
     // If the email is available, then proceed to sign up the admin
     const newAdmin = await this.AdminModel.create({
       ...admin,
-      password: hashedPassword,
+    //   password: hashedPassword,
     });
 
     // TO-DO: Send confirmation email here
