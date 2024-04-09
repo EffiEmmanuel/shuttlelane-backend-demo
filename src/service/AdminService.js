@@ -71,13 +71,13 @@ export default class AdminService {
       return adminAlreadyExistsWithUsername;
 
     // Hash password
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = await bcrypt.hash(admin.password, salt);
+    // const salt = bcrypt.genSaltSync(10);
+    // const hashedPassword = await bcrypt.hash(admin.password, salt);
 
     // If the email is available, then proceed to sign up the admin
     const newAdmin = await this.AdminModel.create({
       ...admin,
-      password: hashedPassword,
+      //   password: hashedPassword,
     });
 
     // TO-DO: Send confirmation email here

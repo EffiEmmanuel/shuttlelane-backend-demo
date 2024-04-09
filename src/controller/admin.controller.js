@@ -46,7 +46,7 @@ export const signupAdmin = async (req, res) => {
       email,
       username,
       role,
-      password,
+      //   password,
     });
 
     // return a response
