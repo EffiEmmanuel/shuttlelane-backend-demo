@@ -133,6 +133,7 @@ export const loginAdmin = async (req, res) => {
       admin: response?.admin,
     });
   } catch (error) {
+    console.log("ERROR:", error);
     return res.status(500).json({ message: internalServerError });
   }
 };
