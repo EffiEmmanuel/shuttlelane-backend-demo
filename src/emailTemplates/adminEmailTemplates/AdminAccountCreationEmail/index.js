@@ -54,7 +54,7 @@ const AdminAccountCreationEmailTemplate = _ref => {
       marginBottom: "20px"
     }
   }, "Complete your account creation by clicking the button below:"), /*#__PURE__*/React.createElement("a", {
-    href: "http://localhost:3000/admin/complete-signup?adminId=".concat(_id),
+    href: "https://www.shuttlelane.com/admin/complete-signup?adminId=".concat(_id),
     style: {
       display: "inline-block",
       padding: "10px 20px",
@@ -64,7 +64,7 @@ const AdminAccountCreationEmailTemplate = _ref => {
       cursor: "pointer",
       fontSize: "16px",
       transition: "background-color 0.3s",
-      backgroundColor: "#28a745",
+      backgroundColor: "#262471",
       color: "#fff",
       textDecoration: "none"
     },

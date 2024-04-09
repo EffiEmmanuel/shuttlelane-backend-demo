@@ -22,7 +22,7 @@ const AssignToBookingEmailTemplate = _ref => {
     title: "New Booking Assignment"
   }), /*#__PURE__*/React.createElement(BookingDetails, {
     details: booking,
-    endNote: "We are pleased to inform you that you have been assigned to this new\r booking. Please arrive on time and ensure a smooth transfer for our\r valued customer."
+    endNote: "We are pleased to inform you that you have been assigned to this new\r booking. Please arrive on time and ensure a smooth transfer for our\r valued customer. Log in to accept or decline booking."
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
@@ -31,7 +31,7 @@ const AssignToBookingEmailTemplate = _ref => {
     },
     className: "footer"
   }, /*#__PURE__*/React.createElement("a", {
-    href: "http://localhost:3000/driver/accept-booking?driverId=".concat(driverId),
+    href: "https://www.shuttlelane.com/driver/login",
     style: {
       display: "inline-block",
       padding: "10px 20px",
@@ -41,28 +41,12 @@ const AssignToBookingEmailTemplate = _ref => {
       cursor: "pointer",
       fontSize: "16px",
       transition: "background-color 0.3s",
-      backgroundColor: "#28a745",
+      backgroundColor: "#262471",
       color: "#fff",
       textDecoration: "none"
     },
     className: "action-button accept-button"
-  }, "Accept"), /*#__PURE__*/React.createElement("a", {
-    href: "http://localhost:3000/driver/accept-booking?driverId=".concat(driverId),
-    style: {
-      display: "inline-block",
-      padding: "10px 20px",
-      margin: "0 10px",
-      border: "none",
-      borderRadius: "5px",
-      cursor: "pointer",
-      fontSize: "16px",
-      transition: "background-color 0.3s",
-      backgroundColor: "#dc3545",
-      color: "#fff",
-      textDecoration: "none"
-    },
-    className: "action-button decline-button"
-  }, "Decline"), /*#__PURE__*/React.createElement("p", {
+  }, "Log in"), /*#__PURE__*/React.createElement("p", {
     style: {
       textAlign: "center",
       color: "#333"
