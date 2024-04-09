@@ -182,6 +182,7 @@ export async function validateAdminLoginDetails(username, password) {
       status: 409,
     };
 
+  console.log("ADMIN EXISTS:", adminExists);
   const isPasswordCorrect = bcrypt.compareSync(password, adminExists?.password);
 
   if (!isPasswordCorrect)
