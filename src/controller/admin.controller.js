@@ -62,7 +62,7 @@ export const signupAdmin = async (req, res) => {
     });
   } catch (error) {
     console.log("ERROR:", error);
-    return res.status(500).json({ message: internalServerError });
+    return res.status(500).json({ message: internalServerError, error: error });
   }
 };
 
