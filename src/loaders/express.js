@@ -4,7 +4,13 @@ import cors from "cors";
 export default async function expressLoader(app) {
   app.use(
     cors({
-      origin: ["https://shuttlelane.com", "https://www.shuttlelane.com"],
+      origin: [
+        "https://shuttlelane.com",
+        "https://www.shuttlelane.com",
+        "http://192.168.8.149",
+        "http://192.168.8.149:3000",
+        "http://localhost:3000",
+      ],
     })
   );
   app.enable("trust proxy");
