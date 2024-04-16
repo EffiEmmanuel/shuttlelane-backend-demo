@@ -269,7 +269,10 @@ export default class AdminService {
     const today = new Date(); // Get today's date
     const upcomingBookings = await BookingModel.find({
       pickupDate: { $gt: today },
-    });
+    })
+      .populate("paymentId")
+      .populate("user")
+      .populate("booking");
 
     // Fetch the total revenue
     const totalPayments = await PaymentModel.find({});
@@ -1260,9 +1263,10 @@ export default class AdminService {
     // Fetch upcoming bookings
     const upcomingBookings = await BookingModel.find({
       bookingStatus: "Scheduled",
-    }).populate({
-      path: "booking",
-    });
+    })
+      .populate("paymentId")
+      .populate("user")
+      .populate("booking");
 
     return {
       status: 200,
@@ -1276,7 +1280,10 @@ export default class AdminService {
     // Fetch upcoming bookings
     const visaOnArrivalBookings = await BookingModel.find({
       bookingType: "Visa",
-    }).populate("booking");
+    })
+      .populate("paymentId")
+      .populate("user")
+      .populate("booking");
 
     return {
       status: 200,
