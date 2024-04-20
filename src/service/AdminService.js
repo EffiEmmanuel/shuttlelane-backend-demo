@@ -463,9 +463,12 @@ export default class AdminService {
       };
     }
 
+    const cities = await CityModel.find({});
+
     return {
       status: 201,
       message: `City updated successfully.`,
+      cities: cities,
     };
   }
 
@@ -487,7 +490,7 @@ export default class AdminService {
       };
     }
 
-    const cities = await CityModel.find({}).sort({ createdAt: -1 });
+    const cities = await CityModel.find({});
 
     return {
       status: 201,
