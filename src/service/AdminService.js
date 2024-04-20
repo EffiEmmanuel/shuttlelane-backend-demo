@@ -442,6 +442,60 @@ export default class AdminService {
     };
   }
 
+  // This service UPDATES a city by id
+  async updateCityById(_id, updatedCity) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id, updatedCity]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any city exists with the _id
+    const city = await CityModel.findOneAndUpdate(
+      { _id: _id },
+      { ...updatedCity }
+    );
+
+    if (!city) {
+      return {
+        status: 404,
+        message: `No city with _id ${_id} exists.`,
+      };
+    }
+
+    return {
+      status: 201,
+      message: `City updated successfully.`,
+    };
+  }
+
+  // This service DELETES a city by id
+  async deleteCityById(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any city exists with the _id
+    const city = await CityModel.findOneAndRemove({ _id: _id });
+
+    if (!city) {
+      return {
+        status: 404,
+        message: `No city with _id ${_id} exists.`,
+      };
+    }
+
+    const cities = await CityModel.find({}).sort({ createdAt: -1 });
+
+    return {
+      status: 201,
+      message: `City deleted successfully.`,
+      cities: cities,
+    };
+  }
+
   // This service GETS all users
   async getUsers() {
     // Get users

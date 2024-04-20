@@ -259,6 +259,43 @@ export const addAirportToCity = async (req, res) => {
   }
 };
 
+// Update city
+export const updateCity = async (req, res) => {
+  try {
+    // update city
+    const response = await adminService.updateCityById(
+      req.params?.cityId,
+      req.body?.city
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      cities: response?.cities,
+    });
+  } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError, error: error });
+  }
+};
+
+// Delete city
+export const deleteCity = async (req, res) => {
+  try {
+    // delete city
+    const response = await adminService.deleteCityById(req.params?.cityId);
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      cities: response?.cities,
+    });
+  } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError, error: error });
+  }
+};
+
 // USERS
 // Get users
 export const getUsers = async (req, res) => {

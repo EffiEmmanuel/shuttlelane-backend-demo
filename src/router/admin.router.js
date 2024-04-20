@@ -54,6 +54,8 @@ import {
   deleteAdminById,
   getApprovedVendors,
   getAllBookings,
+  updateCity,
+  deleteCity,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
@@ -86,6 +88,10 @@ adminRouter.get("/cities", verifyUserToken, getCities);
 adminRouter.post("/cities/add-airport", verifyUserToken, addAirportToCity);
 // Fetch City
 adminRouter.get("/cities/:cityId", getCity);
+// Update City
+adminRouter.patch("/cities/update/:cityId", updateCity);
+// Delete City
+adminRouter.delete("/cities/delete/:cityId", deleteCity);
 
 // USERS
 // Fetch Users
