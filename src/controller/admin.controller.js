@@ -263,10 +263,10 @@ export const addAirportToCity = async (req, res) => {
 export const updateCity = async (req, res) => {
   try {
     // update city
-    const response = await adminService.updateCityById(
-      req.params?.cityId,
-      req.body?.city
-    );
+    const response = await adminService.updateCityById(req.params?.cityId, {
+      cityName: req.body?.cityName,
+      airports: req.body?.cityAirports,
+    });
 
     // Return a response
     return res.status(response?.status).json({
