@@ -270,6 +270,7 @@ export const updateCity = async (req, res) => {
 
     // Return a response
     return res.status(response?.status).json({
+      status: response?.status,
       message: response?.message,
       cities: response?.cities,
     });
@@ -287,6 +288,7 @@ export const deleteCity = async (req, res) => {
 
     // Return a response
     return res.status(response?.status).json({
+      status: response?.status,
       message: response?.message,
       cities: response?.cities,
     });
