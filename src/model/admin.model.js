@@ -39,7 +39,7 @@ const adminSchema = new mongoose.Schema(
       type: String,
       required: true,
       default: "Blogger",
-      enum: ["Super Admin", "Blogger"],
+      enum: ["Super Admin", "Admin", "Blogger"],
     },
   },
   { timestamps: true }
