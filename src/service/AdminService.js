@@ -2023,12 +2023,18 @@ export default class AdminService {
     };
   }
   // This service creates a new visa on arrival rate
-  async createNewVisaOnArrivalRate(country, visaFee, isNigerianVisaRequired) {
+  async createNewVisaOnArrivalRate(
+    country,
+    visaFee,
+    isNigerianVisaRequired,
+    isBiometricsRequired
+  ) {
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([
       country,
       visaFee,
       isNigerianVisaRequired,
+      isBiometricsRequired,
     ]);
 
     // areFieldsEmpty is an object that contains a status and message field
@@ -2057,12 +2063,21 @@ export default class AdminService {
     }
 
     // Calculate total fees
-    const totalFees = Number(
-      +voaBaseFees[0]?.transactionFee +
-        +voaBaseFees[0]?.processingFee +
-        +voaBaseFees[0]?.biometricFee +
-        +visaFee
-    ).toFixed(2);
+    let totalFees;
+    if (isBiometricsRequired == true) {
+      totalFees = Number(
+        +voaBaseFees[0]?.transactionFee +
+          +voaBaseFees[0]?.processingFee +
+          +voaBaseFees[0]?.biometricFee +
+          +visaFee
+      ).toFixed(2);
+    } else {
+      totalFees = Number(
+        +voaBaseFees[0]?.transactionFee +
+          +voaBaseFees[0]?.processingFee +
+          +visaFee
+      ).toFixed(2);
+    }
 
     // Calculate VAT - 7.5%
     const vat = Number((7.5 / 100) * totalFees).toFixed(2);
@@ -2073,6 +2088,7 @@ export default class AdminService {
     const newVisaOnArrivalRate = await VisaOnArrivalRateModel.create({
       country,
       isNigerianVisaRequired,
+      isBiometricsRequired,
       voaBaseFees: voaBaseFees[0]?._id,
       visaFee,
       vat,
@@ -2098,6 +2114,7 @@ export default class AdminService {
     country,
     visaFee,
     isNigerianVisaRequired,
+    isBiometricsRequired,
     voaBaseFeeId
   ) {
     // Validate if fields are empty
@@ -2106,6 +2123,7 @@ export default class AdminService {
       country,
       visaFee,
       isNigerianVisaRequired,
+      isBiometricsRequired,
       voaBaseFeeId,
     ]);
 
@@ -2135,12 +2153,21 @@ export default class AdminService {
     }
 
     // Calculate total fees
-    const totalFees = Number(
-      +voaBaseFees?.transactionFee +
-        +voaBaseFees?.processingFee +
-        +voaBaseFees?.biometricFee +
-        +visaFee
-    ).toFixed(2);
+    let totalFees;
+    if (isBiometricsRequired == true) {
+      totalFees = Number(
+        +voaBaseFees[0]?.transactionFee +
+          +voaBaseFees[0]?.processingFee +
+          +voaBaseFees[0]?.biometricFee +
+          +visaFee
+      ).toFixed(2);
+    } else {
+      totalFees = Number(
+        +voaBaseFees[0]?.transactionFee +
+          +voaBaseFees[0]?.processingFee +
+          +visaFee
+      ).toFixed(2);
+    }
 
     // Calculate VAT - 7.5%
     const vat = Number((7.5 / 100) * totalFees).toFixed(2);
@@ -2157,6 +2184,7 @@ export default class AdminService {
           vat,
           total,
           isNigerianVisaRequired,
+          isBiometricsRequired,
         }
       );
 

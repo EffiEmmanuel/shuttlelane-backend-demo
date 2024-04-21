@@ -13,6 +13,11 @@ const visaOnArrivalRateSchema = new mongoose.Schema(
       required: true,
     },
 
+    isBiometricsRequired: {
+      type: Boolean,
+      required: true,
+    },
+
     visaFee: {
       type: String,
       required: true,
