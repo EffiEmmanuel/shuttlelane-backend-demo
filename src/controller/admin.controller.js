@@ -824,7 +824,7 @@ export const createVisaOnArrivalRate = async (req, res) => {
     const response = await adminService.createNewVisaOnArrivalRate(
       req.body?.country,
       req.body?.visaFee,
-      req.body?.isNigerianVisaRequired
+      req.body?.isNigerianVisaRequired,
       req.body?.isBiometricsRequired
     );
 
