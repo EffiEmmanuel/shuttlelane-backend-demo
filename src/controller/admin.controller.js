@@ -849,6 +849,7 @@ export const updateVisaOnArrivalRate = async (req, res) => {
       req.body?.country,
       req.body?.visaFee,
       req.body?.isNigerianVisaRequired,
+      req.body?.isBiometricsRequired,
       req.body?.voaBaseFeeId
     );
 
