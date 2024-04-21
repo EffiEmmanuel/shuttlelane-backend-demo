@@ -708,19 +708,34 @@ export default class BookingService {
         }
 
         if (isCountrySupported?.isNigerianVisaRequired) {
-          // Return a response
-          returnObject = {
-            status: 200,
-            message: `Support successfully confirmed. You can now proceed to make a visa on arrival booking.`,
-            visaFee: isCountrySupported?.visaFee,
-            transactionFee: isCountrySupported?.voaBaseFees?.transactionFee,
-            processingFee: isCountrySupported?.voaBaseFees?.processingFee,
-            biometricFee: isCountrySupported?.voaBaseFees?.biometricFee,
-            vat: isCountrySupported?.vat,
-            total: isCountrySupported?.total,
-            userCurrency: userCurrency,
-            voaVerificationStatus: "visaRequired",
-          };
+          if (isCountrySupported?.isBiometricsRequired) {
+            // Return a response
+            returnObject = {
+              status: 200,
+              message: `Support successfully confirmed. You can now proceed to make a visa on arrival booking.`,
+              visaFee: isCountrySupported?.visaFee,
+              transactionFee: isCountrySupported?.voaBaseFees?.transactionFee,
+              processingFee: isCountrySupported?.voaBaseFees?.processingFee,
+              biometricFee: isCountrySupported?.voaBaseFees?.biometricFee,
+              vat: isCountrySupported?.vat,
+              total: isCountrySupported?.total,
+              userCurrency: userCurrency,
+              voaVerificationStatus: "visaRequired",
+            };
+          } else {
+            // Return a response
+            returnObject = {
+              status: 200,
+              message: `Support successfully confirmed. You can now proceed to make a visa on arrival booking.`,
+              visaFee: isCountrySupported?.visaFee,
+              transactionFee: isCountrySupported?.voaBaseFees?.transactionFee,
+              processingFee: isCountrySupported?.voaBaseFees?.processingFee,
+              vat: isCountrySupported?.vat,
+              total: isCountrySupported?.total,
+              userCurrency: userCurrency,
+              voaVerificationStatus: "visaRequired",
+            };
+          }
         } else {
           // Return a response
           returnObject = {
