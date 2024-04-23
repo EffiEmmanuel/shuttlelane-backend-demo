@@ -265,7 +265,7 @@ export const updateCity = async (req, res) => {
     // update city
     const response = await adminService.updateCityById(req.params?.cityId, {
       cityName: req.body?.cityName,
-      airports: req.body?.cityAirports,
+      airports: req.body?.airports,
     });
 
     // Return a response
