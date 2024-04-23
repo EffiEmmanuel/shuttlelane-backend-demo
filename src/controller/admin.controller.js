@@ -962,7 +962,8 @@ export const updateVehicleClass = async (req, res) => {
       req.params?._id,
       {
         ...req.body,
-      }
+      },
+      req.params.cityId
     );
 
     // Return a response

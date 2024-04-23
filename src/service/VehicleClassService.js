@@ -153,7 +153,7 @@ export default class VehicleClassService {
   }
 
   // This service UPDATES a vehicle class
-  async updateVehicleClass(vehicleClassId, values) {
+  async updateVehicleClass(vehicleClassId, values, cityId) {
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([vehicleClassId]);
 

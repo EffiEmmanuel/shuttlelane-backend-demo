@@ -228,7 +228,7 @@ adminRouter.post(
 // CREATE vehicle class
 adminRouter.post("/vehicle-classes", verifyUserToken, createVehicleClass);
 // UPDATE vehicle class
-adminRouter.put("/vehicle-classes/:_id", verifyUserToken, updateVehicleClass);
+adminRouter.put("/vehicle-classes/:_id/:cityId", verifyUserToken, updateVehicleClass);
 // DELETE vehicle class
 adminRouter.delete(
   "/vehicle-classes/:_id/:cityId",
