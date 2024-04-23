@@ -216,6 +216,9 @@ export default class VehicleClassService {
     );
     await city.save();
 
+    // delete vehicle class from vehicle class schema
+    await this.VehicleClassModel.findOneAndRemove({ _id: vehicleClassId })
+
     const vehicleClasses = await this.VehicleClassModel.find({}).sort({
       createdAt: -1,
     });
