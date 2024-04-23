@@ -219,14 +219,14 @@ export default class VehicleClassService {
     // delete vehicle class from vehicle class schema
     await this.VehicleClassModel.findOneAndRemove({ _id: vehicleClassId })
 
-    const vehicleClasses = await this.VehicleClassModel.find({}).sort({
+    const updatedCity = await CityModel.find({ _id: cityId }).sort({
       createdAt: -1,
-    });
+    }).populate("vehicleClasses");
 
     return {
       status: 201,
       message: `Vehicle class deleted successfully.`,
-      vehicleClasses: vehicleClasses,
+      updatedCity: updatedCity,
     };
   }
 }
