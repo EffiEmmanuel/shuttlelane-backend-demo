@@ -63,14 +63,14 @@ export default class VehicleClassService {
     await cityExists.save();
 
     // Fetch all vehicle classes (So the frontend can be update without having to refresh the page & to prevent making another request to get them)
-    const vehicleClasses = await this.VehicleClassModel.find().sort({
-      createdAt: -1,
-    });
+    const updatedCity = await CityModel.findOne({ _id: cityId }).sort({
+        createdAt: -1,
+      }).populate("vehicleClasses");
 
     return {
       status: 201,
       message: `Vehicle class created and added to city successfully!`,
-      vehicleClasses: vehicleClasses,
+      updatedCity: updatedCity,
     };
   }
 

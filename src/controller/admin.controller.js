@@ -946,7 +946,7 @@ export const createVehicleClass = async (req, res) => {
     return res.status(response?.status).json({
       message: response?.message,
       status: response?.status,
-      vehicleClasses: response?.vehicleClasses,
+      updatedCity: response?.updatedCity,
     });
   } catch (error) {
     console.log(error);
