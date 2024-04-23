@@ -175,16 +175,15 @@ export default class VehicleClassService {
       };
     }
 
-    const vehicleClasses = await this.VehicleClassModel.find({}).sort({
-      createdAt: -1,
-    });
-
+    const updatedCity = await CityModel.findOne({ _id: cityId }).sort({
+        createdAt: -1,
+      }).populate("vehicleClasses");
     const cities = await CityModel.find({}).populate('vehicleClasses');
 
     return {
       status: 201,
       message: `Vehicle class updated successfully.`,
-      vehicleClasses: vehicleClasses,
+      updatedCity: updatedCity,
       cities: cities,
     };
   }

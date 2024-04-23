@@ -969,7 +969,7 @@ export const updateVehicleClass = async (req, res) => {
     return res.status(response?.status).json({
       message: response?.message,
       status: response?.status,
-      vehicleClasses: response?.vehicleClasses,
+      updatedCity: response?.updatedCity,
       cities: response?.cities,
     });
   } catch (error) {
