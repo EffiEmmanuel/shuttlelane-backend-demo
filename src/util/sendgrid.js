@@ -35,7 +35,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const apiKey = `${process.env.SENDGRID_API_KEY}`;
 
 export const sendEmail = async (message) => {
-  console.log("RECIPIENT:", message);
   const data = {
     personalizations: [
       {

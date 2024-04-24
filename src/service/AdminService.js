@@ -78,6 +78,7 @@ export default class AdminService {
     // If the email is available, then proceed to sign up the admin
     const newAdmin = await this.AdminModel.create({
       ...admin,
+      accessRights: { ...admin.accessRights },
       //   password: hashedPassword,
     });
 
