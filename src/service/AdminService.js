@@ -47,6 +47,7 @@ export default class AdminService {
       admin.email,
       admin.username,
       admin.role,
+      admin.accessRights
     ]);
 
     // areFieldsEmpty is an object that contains a status and message field

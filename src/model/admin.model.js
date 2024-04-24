@@ -41,6 +41,29 @@ const adminSchema = new mongoose.Schema(
       default: "Blogger",
       enum: ["Super Admin", "Admin", "Blogger"],
     },
+
+    accessRights: [
+        {
+            overview: Boolean,
+            assignPartner: Boolean,
+            deleteBooking: Boolean,
+            addBooking: Boolean,
+            airportTransfer: Boolean,
+            carRental: Boolean,
+            priorityPass: Boolean,
+            visaOnArrival: Boolean,
+            citiesAndAirports: Boolean,
+            manageAdminAccounts: Boolean,
+            manageUsers: Boolean,
+            manageDrivers: Boolean,
+            manageVendors: Boolean,
+            pushNotifications: Boolean,
+            bulkEmail: Boolean,
+            bookingRates: Boolean,
+            exchangeRates: Boolean,
+            blog: Boolean,
+        }
+    ]
   },
   { timestamps: true }
 );
