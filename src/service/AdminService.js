@@ -47,7 +47,7 @@ export default class AdminService {
       admin.email,
       admin.username,
       admin.role,
-      admin.accessRights
+      admin.accessRights,
     ]);
 
     // areFieldsEmpty is an object that contains a status and message field
@@ -74,7 +74,7 @@ export default class AdminService {
     // Hash password
     // const salt = bcrypt.genSaltSync(10);
     // const hashedPassword = await bcrypt.hash(admin.password, salt);
-
+    console.log("ADMIN:", admin);
     // If the email is available, then proceed to sign up the admin
     const newAdmin = await this.AdminModel.create({
       ...admin,
