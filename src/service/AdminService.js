@@ -74,7 +74,7 @@ export default class AdminService {
     // Hash password
     // const salt = bcrypt.genSaltSync(10);
     // const hashedPassword = await bcrypt.hash(admin.password, salt);
-    console.log("ADMIN:", admin);
+
     // If the email is available, then proceed to sign up the admin
     const newAdmin = await this.AdminModel.create({
       ...admin,
@@ -103,6 +103,7 @@ export default class AdminService {
     // Get admin accounts
     const adminAccounts = await this.AdminModel.find({});
 
+    console.log("ADMIN:", newAdmin);
     return {
       status: 201,
       message: "Admin account has been created successfully!",
