@@ -35,8 +35,16 @@ const bookingService = new BookingService(BookingModel);
 
 // Sign up admin
 export const signupAdmin = async (req, res) => {
-  const { image, firstName, lastName, email, username, role, password, accessRights } =
-    req.body;
+  const {
+    image,
+    firstName,
+    lastName,
+    email,
+    username,
+    role,
+    password,
+    accessRights,
+  } = req.body;
 
   try {
     // Create new admin
@@ -47,7 +55,7 @@ export const signupAdmin = async (req, res) => {
       username,
       role,
       //   password,
-      accessRights
+      accessRights,
     });
 
     // return a response
@@ -55,6 +63,7 @@ export const signupAdmin = async (req, res) => {
       return res.status(response?.status).json({ message: response?.message });
     }
 
+    console.log("ADMIN:", response?.admin);
     return res.status(response?.status).json({
       status: response?.status,
       message: response?.message,
