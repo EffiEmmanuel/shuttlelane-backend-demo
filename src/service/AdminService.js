@@ -47,7 +47,24 @@ export default class AdminService {
       admin.email,
       admin.username,
       admin.role,
-      admin.accessRights,
+      admin.overview,
+      admin.assignPartner,
+      admin.deleteBooking,
+      admin.addBooking,
+      admin.airportTransfer,
+      admin.carRental,
+      admin.priorityPass,
+      admin.visaOnArrival,
+      admin.citiesAndAirports,
+      admin.manageAdminAccounts,
+      admin.manageUsers,
+      admin.manageDrivers,
+      admin.manageVendors,
+      admin.pushNotifications,
+      admin.bulkEmail,
+      admin.bookingRates,
+      admin.exchangeRates,
+      admin.blog,
     ]);
 
     // areFieldsEmpty is an object that contains a status and message field
@@ -78,7 +95,6 @@ export default class AdminService {
     // If the email is available, then proceed to sign up the admin
     const newAdmin = await this.AdminModel.create({
       ...admin,
-      accessRights: { ...admin.accessRights },
       //   password: hashedPassword,
     });
 
