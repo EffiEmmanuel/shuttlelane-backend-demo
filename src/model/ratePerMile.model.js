@@ -13,6 +13,12 @@ const ratePerMileSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    city: {
+      type: mongoose.Types.ObjectId,
+      ref: "City",
+      required: true,
+    },
   },
   { timestamps: true }
 );

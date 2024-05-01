@@ -56,6 +56,8 @@ import {
   getAllBookings,
   updateCity,
   deleteCity,
+  fetchRatesPerMile,
+  deleteRatePerMile,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
@@ -183,6 +185,8 @@ adminRouter.delete("/currencies/:_id", verifyUserToken, deleteCurrency);
 // RATE PER MILE
 // Set rate per mile
 adminRouter.post("/rate-per-mile", verifyUserToken, setRatePerMile);
+adminRouter.delete("/rate-per-mile/:_id", verifyUserToken, deleteRatePerMile);
+adminRouter.get("/rate-per-mile", verifyUserToken, fetchRatesPerMile);
 
 // VISA ON ARRIVAL RATES
 // Get all visa on arrival rates / countries
@@ -228,7 +232,11 @@ adminRouter.post(
 // CREATE vehicle class
 adminRouter.post("/vehicle-classes", verifyUserToken, createVehicleClass);
 // UPDATE vehicle class
-adminRouter.put("/vehicle-classes/:_id/:cityId", verifyUserToken, updateVehicleClass);
+adminRouter.put(
+  "/vehicle-classes/:_id/:cityId",
+  verifyUserToken,
+  updateVehicleClass
+);
 // DELETE vehicle class
 adminRouter.delete(
   "/vehicle-classes/:_id/:cityId",

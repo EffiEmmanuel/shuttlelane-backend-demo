@@ -795,7 +795,8 @@ export const setRatePerMile = async (req, res) => {
     // SET rate per mile
     const response = await adminService.setRatePerMile(
       req.body?.rate,
-      req.body?.mile
+      req.body?.mile,
+      req.body?.city
     );
 
     // Return a response
@@ -803,10 +804,45 @@ export const setRatePerMile = async (req, res) => {
       status: response?.status,
       message: response?.message,
       ratePerMile: response?.ratePerMile,
+      ratesPerMile: response?.ratesPerMile,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: internalServerError, error });
+  }
+};
+
+// Delete rate per mile
+export const deleteRatePerMile = async (req, res) => {
+  try {
+    // DELETE rate per mile
+    const response = await adminService.deleteRatePerMile(req.params?._id);
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      status: response?.status,
+      ratesPerMile: response?.ratesPerMile,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: internalServerError, error });
+  }
+};
+
+// Get rates per mile
+export const fetchRatesPerMile = async (req, res) => {
+  try {
+    // Fetch rates per mile
+    const response = await adminService.getRatesPerMile();
+
+    // Return a response
+    return res.status(response?.status).json({
+      ratesPerMile: response?.ratesPerMile ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
   }
 };
 

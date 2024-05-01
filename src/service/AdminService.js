@@ -1973,40 +1973,87 @@ export default class AdminService {
 
   // RATE PER MILE
   // This service sets the rate per mile
-  async setRatePerMile(rate, mile) {
+  async setRatePerMile(rate, mile, city) {
     // Validate if fields are empty
-    const areFieldsEmpty = validateFields([rate, mile]);
+    const areFieldsEmpty = validateFields([rate, mile, city]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
 
-    // Check if any document already exists (CAN ONLY HAVE 1 RATE PER MILE DOCUMENT)
-    const rpmExists = await RatePerMileModel.find({});
+    // Check if any RATE PER MILE exists with the specified city
+    const rpmExists = await RatePerMileModel.findOne({ city });
 
     console.log("HELLO FROM HERE:::", rpmExists);
 
     // If there is a document already, update it
-    if (rpmExists?.length > 0) {
+    if (rpmExists) {
       const updatedRPM = await RatePerMileModel.findOneAndUpdate(
         { _id: rpmExists?._id },
-        { rate, mile }
+        { rate, mile, city }
       );
+      const updatedRPMs = await RatePerMileModel.find({}).populate("city");
       return {
         status: 201,
         message: `Rate per mile updated successfully!`,
         ratePerMile: updatedRPM,
+        ratesPerMile: updatedRPMs,
       };
     }
 
     const newRPM = await RatePerMileModel.create({
       rate,
       mile,
+      city,
     });
+
+    const updatedRPMs = await RatePerMileModel.find({}).populate("city");
 
     return {
       status: 201,
       message: `Rate per mile updated successfully~`,
       ratePerMile: newRPM,
+      ratesPerMile: updatedRPMs,
+    };
+  }
+
+  // This service DELETES a rate
+  async deleteRatePerMile(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any currency exists with the id provided
+    const rpmExists = await RatePerMileModel.findOneAndDelete({
+      _id: _id,
+    });
+
+    if (!rpmExists) {
+      return {
+        status: 404,
+        message: "No rate exists with the id specified!",
+      };
+    }
+
+    const ratesPerMile = await RatePerMileModel.find({}).populate("city");
+
+    return {
+      status: 201,
+      message: `Rate deleted successfully!`,
+      ratesPerMile,
+    };
+  }
+
+  // This service GETS all rates per mile
+  async getRatesPerMile() {
+    // Get rates per mile
+    const ratesPerMile = await RatePerMileModel.find({}).populate("city");
+
+    return {
+      status: 200,
+      message: `Fetched rates.`,
+      ratesPerMile: ratesPerMile,
     };
   }
 
