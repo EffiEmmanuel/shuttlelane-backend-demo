@@ -20,6 +20,18 @@ const currencySchema = new mongoose.Schema(
       required: true,
     },
 
+    // Rate percentage to add (based off the current exchange rate from the exchangeratesapi API)
+    exchangeRatePercentage: {
+      type: Number,
+      required: true,
+    },
+
+    // Additional rate to add on the percentage
+    additionalRate: {
+      type: Number,
+      required: true,
+    },
+
     symbol: {
       type: String,
       required: true,

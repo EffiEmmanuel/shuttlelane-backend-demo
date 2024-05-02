@@ -46,10 +46,40 @@ export function generateSlug(str) {
 }
 
 // TO-DO: Implement auto exchange rate here
-export function convertAmountToUserCurrency(currency, amountInNaira) {
-  const exchangeAmount = Number(amountInNaira) / Number(currency?.exchangeRate);
-  let exchangeAmountToFixed = exchangeAmount.toFixed(2);
-  return exchangeAmountToFixed;
+export async function convertAmountToUserCurrency(currency, amountInNaira) {
+  // Make API call to get the current exchange rate
+  await axios
+    .get(
+      `https://api.exchangeratesapi.io/v1/convert?access_key=${process.env.EXCHANGE_RATE_API_KEY}&from=NGN&to=${currency?.alias}&amount=1`
+    )
+    .then((res) => {
+      console.log("RESPONSE:", res);
+
+      let total;
+
+      // Get the current exchange rate
+      const fetchedExchangeRate = res.data?.result;
+
+      // Add the percentage the admin has set for this currency to the exchange rate
+      // Then calculate the total using this exchangeRate
+      const percentageAmount =
+        (Number(fetchedExchangeRate) / 100) *
+        Number(currency?.exchangeRatePercentage);
+
+      // Add the percentage amount to the fetched exchange rate
+      const derivedExchangeRate =
+        Number(fetchedExchangeRate) + Number(percentageAmount);
+
+      // Calculate exchange amount based on the derived exchange rate
+      const exchangeAmount =
+        Number(amountInNaira) / Number(derivedExchangeRate);
+      let exchangeAmountToFixed = exchangeAmount.toFixed(2);
+      return exchangeAmountToFixed;
+    })
+    .catch((error) => {
+      console.log("ERROR FROM EXCHANGE RATE CONVERSION:", error);
+      return 0;
+    });
 }
 
 export async function calculateDistanceAndDuration(
