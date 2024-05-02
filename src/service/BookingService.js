@@ -620,7 +620,8 @@ export default class BookingService {
         distanceMatrix = await calculateDistanceAndDuration(
           bookingDetails?.pickupLocation,
           bookingDetails?.dropoffLocation,
-          userCurrency
+          userCurrency,
+          bookingDetails?.city
         );
 
         sum = sum + Number(distanceMatrix?.billedDistanceTotal);

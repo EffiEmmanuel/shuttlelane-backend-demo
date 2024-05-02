@@ -45,6 +45,7 @@ export function generateSlug(str) {
     .replace(/-+/g, "-"); // Replace multiple consecutive hyphens with a single hyphen
 }
 
+// TO-DO: Implement auto exchange rate here
 export function convertAmountToUserCurrency(currency, amountInNaira) {
   const exchangeAmount = Number(amountInNaira) / Number(currency?.exchangeRate);
   let exchangeAmountToFixed = exchangeAmount.toFixed(2);
@@ -54,7 +55,8 @@ export function convertAmountToUserCurrency(currency, amountInNaira) {
 export async function calculateDistanceAndDuration(
   pickupAddress,
   dropoffAddress,
-  currency
+  currency,
+  city
 ) {
   try {
     const apiUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${pickupAddress}&destinations=${dropoffAddress}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
@@ -65,22 +67,21 @@ export async function calculateDistanceAndDuration(
     const distance = response.data.rows[0].elements[0].distance?.text;
     const duration = response.data.rows[0].elements[0].duration?.text;
 
-    // Fetch price per mile (Admin fuction)
-    const ratePerMile = await RatePerMileModel.find({});
-    console.log("RATE PER MILE:", ratePerMile[0]);
+    // Fetch price per mile (Admin function)
+    const ratePerMile = await RatePerMileModel.findOne({ _id: city });
 
     // Subtract distance from from the minimum mile set by the admin
     console.log("HEY HEY :", distance?.split(" ")[0]);
     const eligibleDistanceForBilling =
       Number(distance?.split(" ")[0].replace(/,/g, "")) -
-      Number(ratePerMile[0]?.mile);
+      Number(ratePerMile?.mile);
     console.log("ELIGIBLE DISTANCE FOR BILLING:", eligibleDistanceForBilling);
 
     // Calculate bill for eligible distance (by default, in naira)
     let billedDistanceTotal = 0;
     if (eligibleDistanceForBilling > 0) {
       billedDistanceTotal =
-        Number(ratePerMile[0]?.rate) * eligibleDistanceForBilling;
+        Number(ratePerMile?.rate) * eligibleDistanceForBilling;
 
       console.log("BILL AMOUNT:", billedDistanceTotal);
       // Convert to user's currency

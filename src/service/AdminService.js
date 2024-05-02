@@ -1981,7 +1981,7 @@ export default class AdminService {
     if (areFieldsEmpty) return areFieldsEmpty;
 
     // Check if any RATE PER MILE exists with the specified city
-    const rpmExists = await RatePerMileModel.findOne({ city });
+    const rpmExists = await RatePerMileModel.findOne({ city: city });
 
     console.log("HELLO FROM HERE:::", rpmExists);
 
