@@ -1850,7 +1850,8 @@ export default class AdminService {
   // This service creates a new currency
   async createNewCurrency(
     currencyLabel,
-    exchangeRate,
+    exchangeRatePercentage,
+    additionalRate,
     currencySymbol,
     currenncyAlias,
     supportedCountries
@@ -1858,7 +1859,8 @@ export default class AdminService {
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([
       currencyLabel,
-      exchangeRate,
+      exchangeRatePercentage,
+      additionalRate,
       currencySymbol,
       currenncyAlias,
       supportedCountries,
@@ -1881,7 +1883,8 @@ export default class AdminService {
 
     const newCurrency = await CurrencyModel.create({
       currencyLabel,
-      exchangeRate,
+      exchangeRatePercentage,
+      additionalRate,
       symbol: currencySymbol,
       alias: currenncyAlias,
       supportedCountries,
@@ -1899,7 +1902,8 @@ export default class AdminService {
   async updateCurrency(
     _id,
     currencyLabel,
-    exchangeRate,
+    exchangeRatePercentage,
+    additionalRate,
     symbol,
     alias,
     supportedCountries
@@ -1908,7 +1912,8 @@ export default class AdminService {
     const areFieldsEmpty = validateFields([
       _id,
       currencyLabel,
-      exchangeRate,
+      exchangeRatePercentage,
+      additionalRate,
       symbol,
       alias,
       supportedCountries,
@@ -1922,7 +1927,8 @@ export default class AdminService {
       { _id },
       {
         currencyLabel,
-        exchangeRate,
+        exchangeRatePercentage,
+        additionalRate,
         symbol,
         alias,
         supportedCountries,

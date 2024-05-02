@@ -727,7 +727,8 @@ export const createCurrency = async (req, res) => {
     // CREATE currency
     const response = await adminService.createNewCurrency(
       req.body?.currencyLabel,
-      req.body?.exchangeRate,
+      req.body?.exchangeRatePercentage,
+      req.body?.additionalRate,
       req.body?.currencySymbol,
       req.body?.currencyAlias,
       req.body?.supportedCountries
@@ -752,7 +753,8 @@ export const updateCurrency = async (req, res) => {
     const response = await adminService.updateCurrency(
       req.params?._id,
       req.body?.currencyLabel,
-      req.body?.exchangeRate,
+      req.body?.exchangeRatePercentage,
+      req.body?.additionalRate,
       req.body?.symbol,
       req.body?.alias,
       req.body?.supportedCountries

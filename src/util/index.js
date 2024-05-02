@@ -66,9 +66,11 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
         (Number(fetchedExchangeRate) / 100) *
         Number(currency?.exchangeRatePercentage);
 
-      // Add the percentage amount to the fetched exchange rate
+      // Add the percentage amount andthe additional rate to the fetched exchange rate
       const derivedExchangeRate =
-        Number(fetchedExchangeRate) + Number(percentageAmount);
+        Number(fetchedExchangeRate) +
+        Number(percentageAmount) +
+        Number(currency?.additionalRate);
 
       // Calculate exchange amount based on the derived exchange rate
       const exchangeAmount =
