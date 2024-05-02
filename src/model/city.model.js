@@ -8,11 +8,7 @@ const citySchema = new mongoose.Schema(
       required: true,
     },
 
-    airports: [
-      {
-        type: String,
-      },
-    ],
+    airports: [{}],
 
     vehicleClasses: [
       {

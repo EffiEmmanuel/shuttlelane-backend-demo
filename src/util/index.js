@@ -68,7 +68,7 @@ export async function calculateDistanceAndDuration(
     const duration = response.data.rows[0].elements[0].duration?.text;
 
     // Fetch price per mile (Admin function)
-    const ratePerMile = await RatePerMileModel.findOne({ _id: city });
+    const ratePerMile = await RatePerMileModel.findOne({ city: city });
 
     // Subtract distance from from the minimum mile set by the admin
     console.log("HEY HEY :", distance?.split(" ")[0]);

@@ -425,7 +425,7 @@ export default class AdminService {
     }
   }
 
-  // This service fetches all cities
+  // This service adds an airport to a city
   async addAirportToCity(cityId, airport) {
     console.log("CITY ID:", cityId);
     const city = await CityModel.findOne({ _id: cityId });
