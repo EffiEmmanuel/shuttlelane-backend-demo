@@ -259,7 +259,9 @@ export default class UserService {
   async getCities(userCountry) {
     console.log("USER COUNTRY:", userCountry);
     // Fetch cities
-    const cities = await CityModel.find({}).populate("vehicleClasses");
+    const cities = await CityModel.find({})
+      .populate("vehicleClasses")
+      .populate("cars");
 
     // Get currency (UPDATE LATER TO INCLUDE MORE THAN ONE COUNTRY) where the userCountry is listed
     const allowedCurrency = await CurrencyModel.findOne({
