@@ -183,7 +183,9 @@ export default class CarService {
       createdAt: -1,
     });
 
-    const updatedCity = await CityModel.findOne({ _id: city }).populate("cars");
+    const updatedCity = await CityModel.findOne({ _id: cityId }).populate(
+      "cars"
+    );
 
     return {
       status: 201,
