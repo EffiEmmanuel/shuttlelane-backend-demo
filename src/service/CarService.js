@@ -201,9 +201,12 @@ export default class CarService {
     if (areFieldsEmpty) return areFieldsEmpty;
 
     // Check if any car exists with the _id
-    const car = await this.CarModel.findOneAndRemove({
+    const car = await this.CarModel.findOneAndDelete({
       _id: carId,
     });
+
+    console.log("CAR:", car);
+    console.log("CARID:", carId);
 
     if (!car) {
       return {
