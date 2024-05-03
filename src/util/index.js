@@ -50,7 +50,7 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
   // Make API call to get the current exchange rate
   const convertedAmount = await axios
     .get(
-      `https://api.exchangeratesapi.io/v1/convert?access_key=${process.env.EXCHANGE_RATE_API_KEY}&from=NGN&to=${currency?.alias}&amount=1`
+      `https://api.exchangeratesapi.io/v1/convert?access_key=${process.env.EXCHANGE_RATE_API_KEY}&from=${currency?.alias}&to=NGN&amount=1`
     )
     .then((res) => {
       console.log("RESPONSE:", res);
