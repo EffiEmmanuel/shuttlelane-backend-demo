@@ -60,6 +60,8 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
       // Get the current exchange rate
       const fetchedExchangeRate = res.data?.result;
 
+      console.log("FETCHED EXCHANGE RATE:", fetchedExchangeRate);
+
       // Add the percentage the admin has set for this currency to the exchange rate
       // Then calculate the total using this exchangeRate
       const percentageAmount =
@@ -75,6 +77,7 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
         Number(currency?.additionalRate);
 
       console.log("DERIVED EXCHANGE RATE:", derivedExchangeRate);
+      console.log("AMOUNT IN NAIRA:", amountInNaira);
 
       // Calculate exchange amount based on the derived exchange rate
       const exchangeAmount =
