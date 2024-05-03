@@ -53,7 +53,7 @@ export default class CarService {
     await cityExists.save();
 
     // Fetch updated city (So the frontend can be update without having to refresh the page & to prevent making another request to get them)
-    const updatedCity = await CityModel.find({ _id: city }).populate("cars");
+    const updatedCity = await CityModel.findOne({ _id: city }).populate("cars");
 
     return {
       status: 201,
@@ -183,7 +183,7 @@ export default class CarService {
       createdAt: -1,
     });
 
-    const updatedCity = await CityModel.find({ _id: city }).populate("cars");
+    const updatedCity = await CityModel.findOne({ _id: city }).populate("cars");
 
     return {
       status: 201,
@@ -221,7 +221,7 @@ export default class CarService {
       createdAt: -1,
     });
 
-    const updatedCity = await CityModel.find({ _id: city }).populate("cars");
+    const updatedCity = await CityModel.findOne({ _id: city }).populate("cars");
 
     return {
       status: 201,
