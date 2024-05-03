@@ -278,7 +278,7 @@ export default class UserService {
     if (allowedCurrency) {
       let citiesWithConvertedRates = [];
 
-      cities.forEach((city) => {
+      cities.forEach(async (city) => {
         console.log("HELLO:", city);
         let vehicleClassesWithConvertedRates = [];
         for (let i = 0; i < city?.vehicleClasses?.length; i++) {
