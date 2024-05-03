@@ -353,7 +353,9 @@ export default class AdminService {
   // This service fetches all cities
   async getCities() {
     console.log("HELLO1");
-    const cities = await CityModel.find({}).populate("vehicleClasses");
+    const cities = await CityModel.find({})
+      .populate("vehicleClasses")
+      .populate("cars");
 
     console.log("HELLO2:::", cities);
     // Return a response
@@ -367,9 +369,9 @@ export default class AdminService {
   // This service fetches a city
   async getCity(cityId, userCountry) {
     console.log("HELLO1");
-    const city = await CityModel.findOne({ _id: cityId }).populate(
-      "vehicleClasses"
-    );
+    const city = await CityModel.findOne({ _id: cityId })
+      .populate("vehicleClasses")
+      .populate("cars");
     // Get currency (UPDATE LATER TO INCLUDE MORE THAN ONE COUNTRY) where the userCountry is listed
     const allowedCurrency = await CurrencyModel.findOne({
       supportedCountries: { $in: [userCountry] },

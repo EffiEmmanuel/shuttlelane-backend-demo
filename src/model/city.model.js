@@ -16,6 +16,13 @@ const citySchema = new mongoose.Schema(
         ref: "VehicleClass",
       },
     ],
+
+    cars: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Car",
+      },
+    ],
   },
   { timestamps: true }
 );

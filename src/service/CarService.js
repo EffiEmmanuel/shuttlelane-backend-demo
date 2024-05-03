@@ -1,3 +1,4 @@
+import CityModel from "../model/city.model.js";
 import CurrencyModel from "../model/currency.model.js";
 import { validateFields } from "../util/auth.helper.js";
 import { convertAmountToUserCurrency } from "../util/index.js";
@@ -8,29 +9,44 @@ export default class CarService {
   }
 
   // This service CREATES a new car
-  async createCar(name, price) {
+  async createCar(city, name, price) {
     // Validate if fields are empty
-    const areFieldsEmpty = validateFields([name, price]);
+    const areFieldsEmpty = validateFields([city, name, price]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
 
     const carExists = await this.CarModel.findOne({
+      city,
       name,
-    });
+    }).populate("city");
 
     if (carExists) {
       return {
         status: 409,
-        message:
-          "This car already exists. Try adding a class with a different name.",
+        message: `This car already exists in the ${carExists?.city?.name}. Try adding a class with a different name.`,
+      };
+    }
+    const cityExists = await CityModel.findOne({
+      _id: city,
+    });
+
+    if (!cityExists) {
+      return {
+        status: 409,
+        message: `The specified city does not exist! Try creating a city with that name before proceeding.`,
       };
     }
 
     const newCar = await this.CarModel.create({
+      city,
       name,
       price,
     });
+
+    // Update city document to include the just created car
+    cityExists?.cars?.push(newCar?._id);
+    await cityExists.save();
 
     // Fetch all cars (So the frontend can be update without having to refresh the page & to prevent making another request to get them)
     const cars = await this.CarModel.find().sort({

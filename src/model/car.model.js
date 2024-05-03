@@ -4,6 +4,8 @@ import mongoose from "mongoose";
    schema (Economy, Business and so on)
  */
 const carSchema = new mongoose.Schema({
+  city: { type: mongoose.Types.ObjectId, ref: "City" },
+
   name: { type: String, required: true },
 
   price: { type: String, required: true },
