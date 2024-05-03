@@ -424,6 +424,7 @@ export default class BookingService {
             path: "booking",
             populate: {
               path: "vehicleClass",
+              model: "VehicleClass",
             },
           }
         : bookingReference?.split("-")[0] == "CR"
@@ -431,6 +432,7 @@ export default class BookingService {
             path: "booking",
             populate: {
               path: "car",
+              model: "Car",
             },
           }
         : bookingReference?.split("-")[0] == "PP"
@@ -439,9 +441,11 @@ export default class BookingService {
             populate: [
               {
                 path: "city",
+                model: "City",
               },
               {
                 path: "pass",
+                model: "PriorityPass",
               },
             ],
           }
