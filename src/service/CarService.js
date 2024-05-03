@@ -22,6 +22,9 @@ export default class CarService {
       name,
     }).populate("city");
 
+    console.log("CAR EXISTS:", carExists);
+    console.log("CITY:", city);
+
     if (carExists) {
       return {
         status: 409,
