@@ -74,14 +74,15 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
       const derivedExchangeRate =
         Number(fetchedExchangeRate) +
         Number(percentageAmount) +
-        Number(currency?.additionalRate);
+        Number(currency?.additionalRate) *
+          (Number(fetchedExchangeRate) + Number(percentageAmount));
 
       console.log("DERIVED EXCHANGE RATE:", derivedExchangeRate);
       console.log("AMOUNT IN NAIRA:", amountInNaira);
 
       // Calculate exchange amount based on the derived exchange rate
       const exchangeAmount =
-        Number(amountInNaira) * Number(derivedExchangeRate);
+        Number(amountInNaira) / Number(derivedExchangeRate);
       let exchangeAmountToFixed = exchangeAmount.toFixed(2);
 
       console.log("EXCHANGE AMOUNT:", exchangeAmount);
