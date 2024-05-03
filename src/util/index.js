@@ -48,7 +48,7 @@ export function generateSlug(str) {
 // TO-DO: Implement auto exchange rate here
 export async function convertAmountToUserCurrency(currency, amountInNaira) {
   // Make API call to get the current exchange rate
-  await axios
+  const convertedAmount = await axios
     .get(
       `https://api.exchangeratesapi.io/v1/convert?access_key=${process.env.EXCHANGE_RATE_API_KEY}&from=NGN&to=${currency?.alias}&amount=1`
     )
@@ -91,6 +91,8 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
       console.log("ERROR FROM EXCHANGE RATE CONVERSION:", error);
       return 0;
     });
+
+  return convertedAmount;
 }
 
 export async function calculateDistanceAndDuration(
