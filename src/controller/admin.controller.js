@@ -1055,6 +1055,7 @@ export const createCar = async (req, res) => {
   try {
     // CREATE new vehicle class
     const response = await carService.createCar(
+      req.body?.city,
       req.body?.name,
       req.body?.price
     );
@@ -1063,7 +1064,7 @@ export const createCar = async (req, res) => {
     return res.status(response?.status).json({
       message: response?.message,
       status: response?.status,
-      cars: response?.cars,
+      updatedCity: response?.updatedCity,
     });
   } catch (error) {
     console.log(error);
@@ -1075,33 +1076,40 @@ export const updateCar = async (req, res) => {
   console.log("VALUES::", req.body);
   try {
     // UPDATE vehicle class
-    const response = await carService.updateCar(req.params?._id, {
-      ...req.body,
-    });
+    const response = await carService.updateCar(
+      req.params?._id,
+      {
+        ...req.body,
+      },
+      req.params?.cityId
+    );
 
     // Return a response
     return res.status(response?.status).json({
       message: response?.message,
       status: response?.status,
-      cars: response?.cars,
+      updatedCity: response?.updatedCity,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: internalServerError, error });
   }
 };
-// Delete car
+// Delete car from city
 export const deleteCar = async (req, res) => {
   console.log("VALUES::", req.body);
   try {
     // DELETE vehicle class
-    const response = await carService.deleteCar(req.params?._id);
+    const response = await carService.deleteCar(
+      req.params?._id,
+      req.params?.cityId
+    );
 
     // Return a response
     return res.status(response?.status).json({
       message: response?.message,
       status: response?.status,
-      cars: response?.cars,
+      updatedCity: response?.updatedCity,
     });
   } catch (error) {
     console.log(error);

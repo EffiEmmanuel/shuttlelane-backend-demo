@@ -248,9 +248,9 @@ adminRouter.delete(
 // CREATE car
 adminRouter.post("/cars", verifyUserToken, createCar);
 // UPDATE car
-adminRouter.put("/cars/:_id", verifyUserToken, updateCar);
+adminRouter.put("/cars/:_id/:cityId", verifyUserToken, updateCar);
 // DELETE car
-adminRouter.delete("/cars/:_id", verifyUserToken, deleteCar);
+adminRouter.delete("/cars/:_id/:cityId", verifyUserToken, deleteCar);
 
 // PASSES
 // CREATE pass

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import CityModel from "../model/city.model.js";
 import CurrencyModel from "../model/currency.model.js";
 import { validateFields } from "../util/auth.helper.js";
@@ -48,15 +49,13 @@ export default class CarService {
     cityExists?.cars?.push(newCar?._id);
     await cityExists.save();
 
-    // Fetch all cars (So the frontend can be update without having to refresh the page & to prevent making another request to get them)
-    const cars = await this.CarModel.find().sort({
-      createdAt: -1,
-    });
+    // Fetch updated city (So the frontend can be update without having to refresh the page & to prevent making another request to get them)
+    const updatedCity = await CityModel.find({ _id: city }).populate("cars");
 
     return {
       status: 201,
       message: `Car created successfully!`,
-      cars: cars,
+      updatedCity: updatedCity,
     };
   }
 
@@ -154,7 +153,7 @@ export default class CarService {
   }
 
   // This service UPDATES a car
-  async updateCar(carId, values) {
+  async updateCar(carId, values, cityId) {
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([carId]);
 
@@ -165,6 +164,7 @@ export default class CarService {
     const car = await this.CarModel.findOneAndUpdate(
       {
         _id: carId,
+        city: cityId,
       },
       { ...values }
     );
@@ -180,17 +180,19 @@ export default class CarService {
       createdAt: -1,
     });
 
+    const updatedCity = await CityModel.find({ _id: city }).populate("cars");
+
     return {
       status: 201,
       message: `Car updated successfully.`,
-      cars: cars,
+      updatedCity: updatedCity,
     };
   }
 
   // This service DELETES a car
-  async deleteCar(carId) {
+  async deleteCar(carId, cityId) {
     // Validate if fields are empty
-    const areFieldsEmpty = validateFields([carId]);
+    const areFieldsEmpty = validateFields([carId, cityId]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
@@ -207,14 +209,21 @@ export default class CarService {
       };
     }
 
+    // Delete car from city
+    const city = await CityModel.findOne({ _id: cityId });
+    city.cars = city?.cars?.filter((car) => car !== carId);
+    await city.save();
+
     const cars = await this.CarModel.find({}).sort({
       createdAt: -1,
     });
 
+    const updatedCity = await CityModel.find({ _id: city }).populate("cars");
+
     return {
       status: 201,
       message: `Car deleted successfully.`,
-      cars: cars,
+      updatedCity: updatedCity,
     };
   }
 }
