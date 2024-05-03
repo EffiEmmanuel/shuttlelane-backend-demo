@@ -73,7 +73,7 @@ export default class PriorityPassService {
       let passesWithConvertedRates = [];
 
       for (let i = 0; i < passes?.length; i++) {
-        let convertedRate = convertAmountToUserCurrency(
+        let convertedRate = await convertAmountToUserCurrency(
           allowedCurrency,
           passes[i]?.price
         );

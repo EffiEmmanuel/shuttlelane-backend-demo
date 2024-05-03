@@ -63,9 +63,11 @@ export default class VehicleClassService {
     await cityExists.save();
 
     // Fetch all vehicle classes (So the frontend can be update without having to refresh the page & to prevent making another request to get them)
-    const updatedCity = await CityModel.findOne({ _id: cityId }).sort({
+    const updatedCity = await CityModel.findOne({ _id: cityId })
+      .sort({
         createdAt: -1,
-      }).populate("vehicleClasses");
+      })
+      .populate("vehicleClasses");
 
     return {
       status: 201,
@@ -103,7 +105,7 @@ export default class VehicleClassService {
       let vehicleClassesWithConvertedRates = [];
 
       for (let i = 0; i < vehicleClasses?.length; i++) {
-        let convertedRate = convertAmountToUserCurrency(
+        let convertedRate = await convertAmountToUserCurrency(
           allowedCurrency,
           vehicleClasses[i]?.basePrice
         );
@@ -175,10 +177,12 @@ export default class VehicleClassService {
       };
     }
 
-    const updatedCity = await CityModel.findOne({ _id: cityId }).sort({
+    const updatedCity = await CityModel.findOne({ _id: cityId })
+      .sort({
         createdAt: -1,
-      }).populate("vehicleClasses");
-    const cities = await CityModel.find({}).populate('vehicleClasses');
+      })
+      .populate("vehicleClasses");
+    const cities = await CityModel.find({}).populate("vehicleClasses");
 
     return {
       status: 201,
@@ -216,11 +220,13 @@ export default class VehicleClassService {
     await city.save();
 
     // delete vehicle class from vehicle class schema
-    await this.VehicleClassModel.findOneAndRemove({ _id: vehicleClassId })
+    await this.VehicleClassModel.findOneAndRemove({ _id: vehicleClassId });
 
-    const updatedCity = await CityModel.findOne({ _id: cityId }).sort({
-      createdAt: -1,
-    }).populate("vehicleClasses");
+    const updatedCity = await CityModel.findOne({ _id: cityId })
+      .sort({
+        createdAt: -1,
+      })
+      .populate("vehicleClasses");
 
     return {
       status: 201,

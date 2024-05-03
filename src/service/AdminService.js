@@ -387,7 +387,7 @@ export default class AdminService {
     if (allowedCurrency) {
       let vehicleClassesWithConvertedRates = [];
       for (let i = 0; i < city?.vehicleClasses?.length; i++) {
-        let convertedRate = convertAmountToUserCurrency(
+        let convertedRate = await convertAmountToUserCurrency(
           allowedCurrency,
           city?.vehicleClasses[i]?.basePrice
         );

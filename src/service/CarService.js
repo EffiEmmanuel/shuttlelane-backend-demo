@@ -74,7 +74,7 @@ export default class CarService {
       let carsWithConvertedRates = [];
 
       for (let i = 0; i < cars?.length; i++) {
-        let convertedRate = convertAmountToUserCurrency(
+        let convertedRate = await convertAmountToUserCurrency(
           allowedCurrency,
           cars[i]?.price
         );
@@ -98,7 +98,7 @@ export default class CarService {
       let carsWithConvertedRates = [];
 
       for (let i = 0; i < cars?.length; i++) {
-        let convertedRate = convertAmountToUserCurrency(
+        let convertedRate = await convertAmountToUserCurrency(
           allowedCurrency,
           cars[i]?.price
         );

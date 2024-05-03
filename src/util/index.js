@@ -129,7 +129,7 @@ export async function calculateDistanceAndDuration(
       console.log("BILL AMOUNT:", billedDistanceTotal);
       // Convert to user's currency
       if (currency) {
-        const convertedAmount = convertAmountToUserCurrency(
+        const convertedAmount = await convertAmountToUserCurrency(
           currency,
           billedDistanceTotal
         );

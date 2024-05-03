@@ -282,7 +282,7 @@ export default class UserService {
         console.log("HELLO:", city);
         let vehicleClassesWithConvertedRates = [];
         for (let i = 0; i < city?.vehicleClasses?.length; i++) {
-          let convertedRate = convertAmountToUserCurrency(
+          let convertedRate = await convertAmountToUserCurrency(
             allowedCurrency,
             city?.vehicleClasses[i]?.basePrice
           );
