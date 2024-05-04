@@ -298,7 +298,7 @@ export default class BookingService {
       bookingReference,
       firstName: booking?.firstName ?? booking?.user?.firstName,
       lastName: booking?.lastName ?? booking?.user?.lastName,
-      mobile: booking?.mobile ?? booking?.user?.email,
+      mobile: booking?.mobile ?? booking?.user?.mobile,
       email: booking?.email ?? booking?.user?.email,
     });
 
