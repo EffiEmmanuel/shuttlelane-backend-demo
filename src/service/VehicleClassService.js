@@ -122,7 +122,10 @@ export default class VehicleClassService {
       };
     } else {
       // Default to Dollars
-      const userCurrency = await CurrencyModel.findOne({ symbol: "$" });
+      const userCurrency = await CurrencyModel.findOne({
+        symbol: "$",
+        alias: "USD",
+      });
 
       let vehicleClassesWithConvertedRates = [];
 

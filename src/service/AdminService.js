@@ -435,7 +435,10 @@ export default class AdminService {
       };
     } else {
       // Default to Dollars
-      const userCurrency = await CurrencyModel.findOne({ symbol: "$" });
+      const userCurrency = await CurrencyModel.findOne({
+        symbol: "$",
+        alias: "USD",
+      });
 
       let vehicleClassesWithConvertedRates = [];
       for (let i = 0; i < city?.vehicleClasses?.length; i++) {
