@@ -24,6 +24,8 @@ import VoaBaseFeesModel from "../model/voaBaseFees.model.js";
 import VisaOnArrivalRateModel from "../model/visaOnArrivalRate.model.js";
 import BookingSuccessfulEmail from "../emailTemplates/userEmailTemplates/BookingSuccessfulEmail/index.js";
 import ReactDOMServer from "react-dom/server";
+import moment from "moment";
+import AdminBookingCreatedEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminBookingCreatedEmail/index.js";
 
 export default class BookingService {
   constructor(ShuttlelaneBookingModel) {
@@ -39,7 +41,7 @@ export default class BookingService {
     let shuttlelaneBooking;
 
     try {
-      let newBooking, justCreatedBooking;
+      let newBooking, justCreatedBooking, smsMessage;
 
       switch (booking?.bookingType) {
         case "Airport":
@@ -90,6 +92,13 @@ export default class BookingService {
             .populate("user");
 
           shuttlelaneBooking = justCreatedBooking;
+          smsMessage = `Hello ${booking?.title ?? booking?.user?.title} ${
+            booking?.firstName ?? booking?.user?.firstName
+          }, Your Airport Transfer Service has been booked for ${moment(
+            booking?.pickupDate
+          ).format("DD M, YYYY")}, ${moment(booking?.pickupTime).format(
+            "HH:MM AA"
+          )}. Your booking reference: ${bookingReference}. Thank you for using Shuttlelane.`;
           break;
         case "Car":
           console.log("HELLO FROM THIS PART OF THE CODE:", booking);
@@ -129,6 +138,13 @@ export default class BookingService {
             .populate("user");
 
           shuttlelaneBooking = justCreatedBooking;
+          smsMessage = `Hello ${booking?.title ?? booking?.user?.title} ${
+            booking?.firstName ?? booking?.user?.firstName
+          }, Your Car Rental Service has been booked for ${moment(
+            booking?.pickupDate
+          ).format("DD M, YYYY")}, ${moment(booking?.pickupTime).format(
+            "HH:MM AA"
+          )}. Your booking reference: ${bookingReference}. Thank you for using Shuttlelane.`;
           break;
         case "Priority":
           console.log("HELLO FROM THIS PART OF THE CODE:", booking);
@@ -172,6 +188,13 @@ export default class BookingService {
             .populate("user");
 
           shuttlelaneBooking = justCreatedBooking;
+          smsMessage = `Hello ${booking?.title ?? booking?.user?.title} ${
+            booking?.firstName ?? booking?.user?.firstName
+          }, Your Priority Pass Service has been booked for ${moment(
+            booking?.pickupDate
+          ).format("DD M, YYYY")}, ${moment(booking?.pickupTime).format(
+            "HH:MM AA"
+          )}. Your booking reference: ${bookingReference}. Thank you for using Shuttlelane.`;
           break;
         case "Visa":
           console.log("HELLO FROM THIS PART OF THE CODE::", booking);
@@ -239,6 +262,9 @@ export default class BookingService {
             .populate("user");
 
           shuttlelaneBooking = justCreatedBooking;
+          smsMessage = `Hello ${booking?.title ?? booking?.user?.title} ${
+            booking?.firstName ?? booking?.user?.firstName
+          }, Your Visa On Arrival Service has been booked. Your booking reference: ${bookingReference}. Thank you for using Shuttlelane.`;
           break;
 
         default:
@@ -267,6 +293,31 @@ export default class BookingService {
       html: ReactDOMServer.renderToString(emailHTML),
     };
     sendEmail(message);
+
+    const adminEmailHTML = AdminBookingCreatedEmailTemplate({
+      bookingReference,
+      firstName: booking?.firstName ?? booking?.user?.firstName,
+      lastName: booking?.lastName ?? booking?.user?.lastName,
+      mobile: booking?.mobile ?? booking?.user?.email,
+      email: booking?.email ?? booking?.user?.email,
+    });
+
+    const adminMessage = {
+      to: "info@shuttlelane.com",
+      from: process.env.SENGRID_EMAIL,
+      subject: "🔔 New Booking Notification",
+      html: ReactDOMServer.renderToString(adminEmailHTML),
+    };
+    sendEmail(adminMessage);
+
+    // Send sms
+    await sendSMS(user?.contactMobile, smsMessage)
+      .then((res) => {
+        console.log("TWILIO RESPONSE:", res);
+      })
+      .catch((err) => {
+        console.log("ERROR:", err);
+      });
 
     return {
       status: 201,
