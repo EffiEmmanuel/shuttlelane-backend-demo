@@ -39,10 +39,10 @@ export default class BookingService {
     // Generate booking reference
     const bookingReference = generateBookingReference(booking?.bookingType);
 
-    let shuttlelaneBooking;
+    let shuttlelaneBooking, smsMessage;
 
     try {
-      let newBooking, justCreatedBooking, smsMessage;
+      let newBooking, justCreatedBooking;
 
       switch (booking?.bookingType) {
         case "Airport":
