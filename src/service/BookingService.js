@@ -26,6 +26,7 @@ import BookingSuccessfulEmail from "../emailTemplates/userEmailTemplates/Booking
 import ReactDOMServer from "react-dom/server";
 import moment from "moment";
 import AdminBookingCreatedEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminBookingCreatedEmail/index.js";
+import { sendSMS } from "../util/twilio.js";
 
 export default class BookingService {
   constructor(ShuttlelaneBookingModel) {
@@ -311,7 +312,7 @@ export default class BookingService {
     sendEmail(adminMessage);
 
     // Send sms
-    await sendSMS(user?.contactMobile, smsMessage)
+    await sendSMS(user?.mobile ?? booking?.mobile, smsMessage)
       .then((res) => {
         console.log("TWILIO RESPONSE:", res);
       })
