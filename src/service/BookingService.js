@@ -97,8 +97,8 @@ export default class BookingService {
             booking?.firstName ?? booking?.user?.firstName
           }, Your Airport Transfer Service has been booked for ${moment(
             booking?.pickupDate
-          ).format("DD M, YYYY")}, ${moment(booking?.pickupTime).format(
-            "HH:MM AA"
+          ).format("MMM DD, YYYY")}, ${moment(booking?.pickupTime).format(
+            "HH:MM A"
           )}. Your booking reference: ${bookingReference}. Thank you for using Shuttlelane.`;
           break;
         case "Car":
@@ -143,8 +143,8 @@ export default class BookingService {
             booking?.firstName ?? booking?.user?.firstName
           }, Your Car Rental Service has been booked for ${moment(
             booking?.pickupDate
-          ).format("DD M, YYYY")}, ${moment(booking?.pickupTime).format(
-            "HH:MM AA"
+          ).format("MMM DD, YYYY")}, ${moment(booking?.pickupTime).format(
+            "HH:MM A"
           )}. Your booking reference: ${bookingReference}. Thank you for using Shuttlelane.`;
           break;
         case "Priority":
@@ -193,8 +193,8 @@ export default class BookingService {
             booking?.firstName ?? booking?.user?.firstName
           }, Your Priority Pass Service has been booked for ${moment(
             booking?.pickupDate
-          ).format("DD M, YYYY")}, ${moment(booking?.pickupTime).format(
-            "HH:MM AA"
+          ).format("MMM DD, YYYY")}, ${moment(booking?.pickupTime).format(
+            "HH:MM A"
           )}. Your booking reference: ${bookingReference}. Thank you for using Shuttlelane.`;
           break;
         case "Visa":
