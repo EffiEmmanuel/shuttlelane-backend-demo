@@ -121,14 +121,25 @@ export default class VehicleClassService {
         currency: allowedCurrency,
       };
     } else {
-      // Default to Naira
-      const userCurrency = await CurrencyModel.findOne({ symbol: "₦" });
+      // Default to Dollars
+      const userCurrency = await CurrencyModel.findOne({ symbol: "$" });
+
+      let vehicleClassesWithConvertedRates = [];
+
+      for (let i = 0; i < vehicleClasses?.length; i++) {
+        let convertedRate = await convertAmountToUserCurrency(
+          userCurrency,
+          vehicleClasses[i]?.basePrice
+        );
+        vehicleClasses[i].basePrice = convertedRate;
+        vehicleClassesWithConvertedRates.push(vehicleClasses[i]);
+      }
 
       // Return a response
       return {
         status: 200,
         message: `Vehicle classes fetched`,
-        vehicleClasses: vehicleClasses,
+        vehicleClasses: vehicleClassesWithConvertedRates,
         currency: userCurrency,
       };
     }

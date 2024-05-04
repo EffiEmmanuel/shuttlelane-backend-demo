@@ -367,11 +367,21 @@ export default class AdminService {
   }
 
   // This service fetches a city
-  async getCity(cityId, userCountry) {
+  async getCity(cityId, userCountry, isAdminRequest) {
     console.log("HELLO1");
     const city = await CityModel.findOne({ _id: cityId })
       .populate("vehicleClasses")
       .populate("cars");
+
+    if (isAdminRequest) {
+      // Return a response
+      return {
+        status: 200,
+        message: `City fetched`,
+        city: city,
+      };
+    }
+
     // Get currency (UPDATE LATER TO INCLUDE MORE THAN ONE COUNTRY) where the userCountry is listed
     const allowedCurrency = await CurrencyModel.findOne({
       supportedCountries: { $in: [userCountry] },
@@ -396,12 +406,22 @@ export default class AdminService {
         city.vehicleClasses[i].basePrice = convertedRate;
         vehicleClassesWithConvertedRates.push(city?.vehicleClasses[i]);
       }
+      let carsWithConvertedRates = [];
+      for (let i = 0; i < city?.cars?.length; i++) {
+        let convertedRate = await convertAmountToUserCurrency(
+          allowedCurrency,
+          city?.cars[i]?.price
+        );
+        city.cars[i].price = convertedRate;
+        carsWithConvertedRates.push(city?.cars[i]);
+      }
 
       let cityWithConvertedRate = {
         _id: city?._id,
         cityName: city?.cityName,
         airports: city?.airports,
         vehicleClasses: vehicleClassesWithConvertedRates,
+        cars: carsWithConvertedRates,
       };
 
       console.log("CITY:", cityWithConvertedRate);
@@ -414,14 +434,43 @@ export default class AdminService {
         currency: allowedCurrency,
       };
     } else {
-      // Default to Naira
-      const userCurrency = await CurrencyModel.findOne({ symbol: "₦" });
+      // Default to Dollars
+      const userCurrency = await CurrencyModel.findOne({ symbol: "$" });
+
+      let vehicleClassesWithConvertedRates = [];
+      for (let i = 0; i < city?.vehicleClasses?.length; i++) {
+        let convertedRate = await convertAmountToUserCurrency(
+          userCurrency,
+          city?.vehicleClasses[i]?.basePrice
+        );
+        city.vehicleClasses[i].basePrice = convertedRate;
+        vehicleClassesWithConvertedRates.push(city?.vehicleClasses[i]);
+      }
+      let carsWithConvertedRates = [];
+      for (let i = 0; i < city?.cars?.length; i++) {
+        let convertedRate = await convertAmountToUserCurrency(
+          userCurrency,
+          city?.cars[i]?.basePrice
+        );
+        city.cars[i].basePrice = convertedRate;
+        carsWithConvertedRates.push(city?.cars[i]);
+      }
+
+      let cityWithConvertedRate = {
+        _id: city?._id,
+        cityName: city?.cityName,
+        airports: city?.airports,
+        vehicleClasses: vehicleClassesWithConvertedRates,
+        cars: carsWithConvertedRates,
+      };
+
+      console.log("CITY:", cityWithConvertedRate);
 
       // Return a response
       return {
         status: 200,
         message: `City fetched`,
-        city: city,
+        city: cityWithConvertedRate,
         currency: userCurrency,
       };
     }

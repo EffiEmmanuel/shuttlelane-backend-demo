@@ -231,7 +231,8 @@ export const getCity = async (req, res) => {
     // Fetch city
     const response = await adminService.getCity(
       req.params.cityId,
-      req.query.userCountry
+      req.query.userCountry,
+      req.query.isAdminRequest
     );
 
     console.log("HELLO:::", response);

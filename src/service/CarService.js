@@ -108,16 +108,16 @@ export default class CarService {
         currency: allowedCurrency,
       };
     } else {
-      // Default to naira
+      // Default to dollars
       const currency = await CurrencyModel.findOne({
-        currencyLabel: "Naira",
+        symbol: "$",
       });
 
       let carsWithConvertedRates = [];
 
       for (let i = 0; i < cars?.length; i++) {
         let convertedRate = await convertAmountToUserCurrency(
-          allowedCurrency,
+          currency,
           cars[i]?.price
         );
 

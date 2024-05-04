@@ -317,14 +317,50 @@ export default class UserService {
         currency: allowedCurrency,
       };
     } else {
-      // Default to Naira
-      const userCurrency = await CurrencyModel.findOne({ symbol: "₦" });
+      // Default to Dollars
+      const userCurrency = await CurrencyModel.findOne({ symbol: "$" });
+
+      let citiesWithConvertedRates = [];
+
+      cities.forEach(async (city) => {
+        console.log("HELLO:", city);
+        let vehicleClassesWithConvertedRates = [];
+        for (let i = 0; i < city?.vehicleClasses?.length; i++) {
+          let convertedRate = await convertAmountToUserCurrency(
+            userCurrency,
+            city?.vehicleClasses[i]?.basePrice
+          );
+          city.vehicleClasses[i].basePrice = convertedRate;
+          vehicleClassesWithConvertedRates.push(city?.vehicleClasses[i]);
+        }
+
+        let carsWithConvertedRates = [];
+        for (let i = 0; i < city?.cars?.length; i++) {
+          let convertedRate = await convertAmountToUserCurrency(
+            userCurrency,
+            city?.cars[i]?.price
+          );
+          city.cars[i].price = convertedRate;
+          carsWithConvertedRates.push(city?.cars[i]);
+        }
+
+        let cityWithConvertedRate = {
+          _id: city?._id,
+          cityName: city?.cityName,
+          airports: city?.airports,
+          vehicleClasses: vehicleClassesWithConvertedRates,
+          cars: carsWithConvertedRates,
+        };
+        citiesWithConvertedRates.push(cityWithConvertedRate);
+      });
+
+      console.log("CITIES:", citiesWithConvertedRates);
 
       // Return a response
       return {
         status: 200,
         message: `Cities fetched`,
-        cities: cities,
+        cities: citiesWithConvertedRates,
         currency: userCurrency,
       };
     }
