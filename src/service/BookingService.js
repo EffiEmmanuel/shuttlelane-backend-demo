@@ -312,7 +312,7 @@ export default class BookingService {
     sendEmail(adminMessage);
 
     // Send sms
-    await sendSMS(user?.mobile ?? booking?.mobile, smsMessage)
+    await sendSMS(booking?.user?.mobile ?? booking?.mobile, smsMessage)
       .then((res) => {
         console.log("TWILIO RESPONSE:", res);
       })
