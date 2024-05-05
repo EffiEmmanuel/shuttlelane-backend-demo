@@ -202,6 +202,7 @@ export const getCities = async (req, res) => {
       message: response?.message,
     });
   } catch (error) {
+    console.log("ERROR:", error);
     return res.status(500).json({ message: internalServerError });
   }
 };
