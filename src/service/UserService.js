@@ -302,9 +302,9 @@ export default class UserService {
         }
 
         let cityWithConvertedRate = {
-          _id: city?._id,
-          cityName: city?.cityName,
-          airports: city?.airports,
+          _id: cities[i]?._id,
+          cityName: cities[i]?.cityName,
+          airports: cities[i]?.airports,
           vehicleClasses: vehicleClassesWithConvertedRates,
           cars: carsWithConvertedRates,
         };
