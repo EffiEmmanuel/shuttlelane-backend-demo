@@ -294,7 +294,7 @@ export default class UserService {
         let carsWithConvertedRates = [];
         for (let i = 0; i < cities[i]?.cars?.length; i++) {
           let convertedRate = await convertAmountToUserCurrency(
-            userCurrency,
+            allowedCurrency,
             cities[i]?.cars[i]?.price
           );
           cities[i].cars[i].price = convertedRate;
