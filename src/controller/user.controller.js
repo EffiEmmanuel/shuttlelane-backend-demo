@@ -193,6 +193,8 @@ export const getCities = async (req, res) => {
     console.log("HI FROM THE GETCITIES CONTROLLER");
     const response = await userService.getCities(req.query.userCountry);
 
+    console.log("CITIES:", response?.cities);
+
     // Return a response
     return res.status(response?.status).json({
       currency: response?.currency,
