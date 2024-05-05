@@ -263,6 +263,8 @@ export default class UserService {
       .populate("vehicleClasses")
       .populate("cars");
 
+    console.log("cities from here::", cities);
+
     // Get currency (UPDATE LATER TO INCLUDE MORE THAN ONE COUNTRY) where the userCountry is listed
     const allowedCurrency = await CurrencyModel.findOne({
       supportedCountries: { $in: [userCountry] },
