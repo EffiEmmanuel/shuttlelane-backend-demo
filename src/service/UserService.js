@@ -276,8 +276,6 @@ export default class UserService {
         console.log("ERROR:", err);
       });
 
-    console.log("ALLOWED CURRENCY:", allowedCurrency);
-
     // Check if the user's country has been added to a currency
     if (allowedCurrency) {
       let citiesWithConvertedRates = [];
@@ -293,12 +291,6 @@ export default class UserService {
           city.vehicleClasses[i].basePrice = convertedRate;
           vehicleClassesWithConvertedRates.push(city?.vehicleClasses[i]);
         }
-        console.log(
-          "vehicleClassesWithConvertedRates:",
-          vehicleClassesWithConvertedRates
-        );
-
-        console.log("CITY AT THE END OF THE ARRAY:", city);
 
         let cityWithConvertedRate = {
           _id: city?._id,
