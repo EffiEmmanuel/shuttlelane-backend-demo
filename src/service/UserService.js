@@ -280,16 +280,25 @@ export default class UserService {
     if (allowedCurrency) {
       let citiesWithConvertedRates = [];
 
-      cities.forEach(async (city) => {
-        console.log("HELLO:", city);
+      for(let i = 0; i< cities?.length; i++) {
         let vehicleClassesWithConvertedRates = [];
-        for (let i = 0; i < city?.vehicleClasses?.length; i++) {
+        for (let i = 0; i < cities[i]?.vehicleClasses?.length; i++) {
           let convertedRate = await convertAmountToUserCurrency(
             allowedCurrency,
-            city?.vehicleClasses[i]?.basePrice
+            cities[i]?.vehicleClasses[i]?.basePrice
           );
-          city.vehicleClasses[i].basePrice = convertedRate;
-          vehicleClassesWithConvertedRates.push(city?.vehicleClasses[i]);
+          cities[i].vehicleClasses[i].basePrice = convertedRate;
+          vehicleClassesWithConvertedRates.push(cities[i]?.vehicleClasses[i]);
+        }
+
+        let carsWithConvertedRates = [];
+        for (let i = 0; i < cities[i]?.cars?.length; i++) {
+          let convertedRate = await convertAmountToUserCurrency(
+            userCurrency,
+            cities[i]?.cars[i]?.price
+          );
+          cities[i].cars[i].price = convertedRate;
+          carsWithConvertedRates.push(cities[i]?.cars[i]);
         }
 
         let cityWithConvertedRate = {
@@ -297,6 +306,7 @@ export default class UserService {
           cityName: city?.cityName,
           airports: city?.airports,
           vehicleClasses: vehicleClassesWithConvertedRates,
+          cars: carsWithConvertedRates,
         };
         citiesWithConvertedRates.push(cityWithConvertedRate);
       });
