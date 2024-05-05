@@ -53,8 +53,6 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
       `https://api.exchangeratesapi.io/v1/convert?access_key=${process.env.EXCHANGE_RATE_API_KEY}&from=${currency?.alias}&to=NGN&amount=1`
     )
     .then((res) => {
-      console.log("RESPONSE:", res);
-
       let total;
 
       // Get the current exchange rate
