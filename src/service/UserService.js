@@ -280,7 +280,7 @@ export default class UserService {
     if (allowedCurrency) {
       let citiesWithConvertedRates = [];
 
-      for(let i = 0; i< cities?.length; i++) {
+      for (let i = 0; i < cities?.length; i++) {
         let vehicleClassesWithConvertedRates = [];
         for (let i = 0; i < cities[i]?.vehicleClasses?.length; i++) {
           let convertedRate = await convertAmountToUserCurrency(
@@ -309,7 +309,7 @@ export default class UserService {
           cars: carsWithConvertedRates,
         };
         citiesWithConvertedRates.push(cityWithConvertedRate);
-      });
+      }
 
       console.log("CITIES:", citiesWithConvertedRates);
 
