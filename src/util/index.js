@@ -50,7 +50,7 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
   // Make API call to get the current exchange rate
   const convertedAmount = await axios
     .get(
-      `https://api.exchangeratesapi.io/v1/convert?access_key=${process.env.EXCHANGE_RATE_API_KEY}&from=${currency?.alias}&to=NGN&amount=1`
+      `https://api.exchangeratesapi.io/v1/convert?access_key=${process.env.EXCHANGE_RATE_API_KEY}&from=NGN&to=${currency?.alias}&amount=1`
     )
     .then((res) => {
       let total;
@@ -63,8 +63,8 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
       // Add the percentage the admin has set for this currency to the exchange rate
       // Then calculate the total using this exchangeRate
       const percentageAmount =
-        (Number(fetchedExchangeRate) / 100) *
-        Number(currency?.exchangeRatePercentage);
+        (Number(currency?.exchangeRatePercentage) / 100) *
+        Number(fetchedExchangeRate);
 
       console.log("PERCENTAGE AMOUNT:", percentageAmount);
 
@@ -72,8 +72,7 @@ export async function convertAmountToUserCurrency(currency, amountInNaira) {
       const derivedExchangeRate =
         Number(fetchedExchangeRate) +
         Number(percentageAmount) +
-        Number(currency?.additionalRate) *
-          (Number(fetchedExchangeRate) + Number(percentageAmount));
+        Number(currency?.additionalRate);
 
       console.log("DERIVED EXCHANGE RATE:", derivedExchangeRate);
       console.log("AMOUNT IN NAIRA:", amountInNaira);
