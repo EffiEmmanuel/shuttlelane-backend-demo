@@ -47,42 +47,37 @@ export function generateSlug(str) {
 
 // TO-DO: Implement auto exchange rate here
 export async function convertAmountToUserCurrency(currency, amountInNaira) {
-  // Make API call to get the current exchange rate
+  // Make API call to get the current exchange rate conversion of the amount in the user's currency
   const convertedAmount = await axios
     .get(
-      `https://api.exchangeratesapi.io/v1/convert?access_key=${process.env.EXCHANGE_RATE_API_KEY}&from=NGN&to=${currency?.alias}&amount=1`
+      `https://api.exchangeratesapi.io/v1/convert?access_key=${process.env.EXCHANGE_RATE_API_KEY}&from=NGN&to=${currency?.alias}&amount=${amountInNaira}`
     )
     .then((res) => {
       let total;
 
       // Get the current exchange rate
-      const fetchedExchangeRate = res.data?.result;
+      const fetchedExchangeRateConversion = res.data?.result;
 
-      console.log("FETCHED EXCHANGE RATE:", fetchedExchangeRate);
+      console.log("FETCHED EXCHANGE RATE:", fetchedExchangeRateConversion);
 
       // Add the percentage the admin has set for this currency to the exchange rate
       // Then calculate the total using this exchangeRate
       const percentageAmount =
         (Number(currency?.exchangeRatePercentage) / 100) *
-        Number(fetchedExchangeRate);
+        Number(fetchedExchangeRateConversion);
 
       console.log("PERCENTAGE AMOUNT:", percentageAmount);
 
-      // Add the percentage amount andthe additional rate to the fetched exchange rate
-      const derivedExchangeRate =
-        Number(fetchedExchangeRate) +
+      // Add the percentage amount and the additional rate to the fetched exchange rate conversion
+      total =
+        Number(fetchedExchangeRateConversion) +
         Number(percentageAmount) +
         Number(currency?.additionalRate);
 
-      console.log("DERIVED EXCHANGE RATE:", derivedExchangeRate);
-      console.log("AMOUNT IN NAIRA:", amountInNaira);
+      let exchangeAmountToFixed = total.toFixed(2);
 
-      // Calculate exchange amount based on the derived exchange rate
-      const exchangeAmount =
-        Number(amountInNaira) * Number(derivedExchangeRate);
-      let exchangeAmountToFixed = exchangeAmount.toFixed(2);
+      console.log("TOTAL EXCHANGE RATE CONVERSION:", exchangeAmountToFixed);
 
-      console.log("EXCHANGE AMOUNT:", exchangeAmount);
       return exchangeAmountToFixed;
     })
     .catch((error) => {
