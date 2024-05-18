@@ -13,12 +13,21 @@ const BookingDetails = _ref => {
       borderRadius: "8px",
       padding: "20px"
     }
-  }, /*#__PURE__*/React.createElement("h2", {
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
-      color: "#333",
-      marginBottom: "10px"
+      backgroundColor: "green",
+      color: "#fff",
+      padding: "10px",
+      textAlign: "center",
+      borderRadius: "10px 10px 0 0",
+      width: "100%",
+      boxSizing: "border-box"
     }
-  }, "Booking Details"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h1", {
+    style: {
+      margin: 0
+    }
+  }, "BOOKING DETAILS")), /*#__PURE__*/React.createElement("div", {
     className: "booking-info",
     style: {
       marginBottom: "10px"

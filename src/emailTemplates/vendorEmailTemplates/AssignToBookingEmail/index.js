@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "../../reusable/Header/index.js";
 import BookingDetails from "../../reusable/BookingDetails/index.js";
+import EmailFooter from "../../reusable/EmailFooter/index.js";
 
 // Main EmailTemplate component
 const AssignToBookingEmailTemplate = (_ref) => {
@@ -67,7 +68,8 @@ const AssignToBookingEmailTemplate = (_ref) => {
         },
         "Thank you for your service"
       )
-    )
+    ),
+    /*#__PURE__*/ React.createElement(EmailFooter, null)
   );
 };
 export default AssignToBookingEmailTemplate;

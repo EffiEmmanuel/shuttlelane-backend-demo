@@ -532,6 +532,8 @@ export default class DriverService {
       carPlateNumber:
         bookingExists?.booking?.assignedDriver?.carPlateNumber ??
         bookingExists?.booking?.driverJobWasSentTo?.carModel,
+      title: bookingExists?.user?.title ?? bookingExists?.title,
+      firstName: bookingExists?.user?.firstName ?? bookingExists?.firstName,
     });
 
     console.log("BOOKIGNS ASSIGNED TO 7.1:");
@@ -781,7 +783,11 @@ export default class DriverService {
     // Check if any booking exists with the _id
     const bookingExists = await BookingModel.findOne({
       _id: bookingId,
-    }).populate("booking");
+    })
+      .populate("booking")
+      .populate("assignedDriver")
+      .populate("driverJobWasSentTo")
+      .populate("user");
     if (!bookingExists) {
       return {
         status: 404,
@@ -843,6 +849,7 @@ export default class DriverService {
     // Send a notification to the user
     const userEmailHTML = UserDriverStartedBookingEmailTemplate({
       bookingReference: bookingExists?.booking?.bookingReference,
+      title: bookingExists?.user?.title ?? bookingExists?.title,
       firstName: `${
         bookingExists?.user?.firstName ?? bookingExists?.firstName
       }`,

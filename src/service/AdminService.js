@@ -1379,7 +1379,8 @@ export default class AdminService {
     })
       .populate("paymentId")
       .populate("user")
-      .populate("booking");
+      .populate("booking")
+      .sort({ createdAt: -1 });
 
     return {
       status: 200,
@@ -1432,7 +1433,8 @@ export default class AdminService {
       })
       .populate({
         path: "user",
-      });
+      })
+      .sort({ createdAt: -1 });
 
     console.log("OVER HERE 2:", bookingsAwaitingAssignment);
     // Remove Visa On Arrival Bookings

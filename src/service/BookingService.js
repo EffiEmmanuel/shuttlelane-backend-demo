@@ -283,18 +283,6 @@ export default class BookingService {
       };
     }
 
-    const emailHTML = BookingSuccessfulEmail({
-      bookingReference,
-    });
-
-    const message = {
-      to: booking?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: "Booking Successfully Created🎊",
-      html: ReactDOMServer.renderToString(emailHTML),
-    };
-    sendEmail(message);
-
     const adminEmailHTML = AdminBookingCreatedEmailTemplate({
       bookingReference,
       firstName: booking?.firstName ?? booking?.user?.firstName,
@@ -310,15 +298,6 @@ export default class BookingService {
       html: ReactDOMServer.renderToString(adminEmailHTML),
     };
     sendEmail(adminMessage);
-
-    // Send sms
-    await sendSMS(booking?.user?.mobile ?? booking?.mobile, smsMessage)
-      .then((res) => {
-        console.log("TWILIO RESPONSE:", res);
-      })
-      .catch((err) => {
-        console.log("ERROR:", err);
-      });
 
     return {
       status: 201,
