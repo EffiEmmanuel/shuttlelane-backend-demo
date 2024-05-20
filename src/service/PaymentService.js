@@ -65,7 +65,7 @@ export default class PaymentService {
       { paymentId: newPayment?._id }
     );
 
-    let smsMessage, bookingDetails;
+    let smsMessage, bookingDetails, booking;
     if (bookingExists?.bookingType == "Airport") {
       smsMessage = `Hello ${
         bookingExists?.title ?? bookingExists?.user?.title
@@ -79,7 +79,7 @@ export default class PaymentService {
         bookingExists?.bookingReference
       }. Thank you for using Shuttlelane.`;
 
-      const booking = await AirportTransferBookingModel.findOne({
+      booking = await AirportTransferBookingModel.findOne({
         _id: bookingExists?.booking?._id,
       }).populate("vehicleClass");
 
@@ -109,7 +109,7 @@ export default class PaymentService {
         bookingExists?.bookingReference
       }. Thank you for using Shuttlelane.`;
 
-      const booking = await CarRentalBookingModel.findOne({
+      booking = await CarRentalBookingModel.findOne({
         _id: bookingExists?.booking?._id,
       }).populate("car");
 
@@ -136,7 +136,7 @@ export default class PaymentService {
         bookingExists?.bookingReference
       }. Thank you for using Shuttlelane.`;
 
-      const booking = await PriorityPassBookingModel.findOne({
+      booking = await PriorityPassBookingModel.findOne({
         _id: bookingExists?.booking?._id,
       }).populate("pass");
 
@@ -160,7 +160,7 @@ export default class PaymentService {
         bookingExists?.bookingReference
       }. Thank you for using Shuttlelane.`;
 
-      const booking = await VisaOnArrivalBookingModel.findOne({
+      booking = await VisaOnArrivalBookingModel.findOne({
         _id: bookingExists?.booking?._id,
       }).populate("pass");
 
@@ -240,6 +240,7 @@ export default class PaymentService {
     return {
       status: 201,
       message: `Payment successful!`,
+      booking: booking,
     };
   }
 
@@ -302,8 +303,8 @@ export default class PaymentService {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: "http://localhost:3000/payment_successful",
-      cancel_url: "http://localhost:3000/payment_failed",
+      success_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&&status=Successful`,
+      cancel_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&&status=Failed`,
     });
 
     console.log("SESSION:", session);

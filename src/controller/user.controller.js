@@ -266,7 +266,9 @@ export const sendEnquiryEmail = async (req, res) => {
 export const createPayment = async (req, res) => {
   try {
     const response = await paymentService.createPayment(req.body);
-    return res.status(response?.status).json({ message: response?.message });
+    return res
+      .status(response?.status)
+      .json({ message: response?.message, booking: response?.booking });
   } catch (error) {
     console.log("ERROR:", error);
     return res.status(500).json({ message: internalServerError });
