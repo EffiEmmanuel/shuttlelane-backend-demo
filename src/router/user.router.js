@@ -15,6 +15,7 @@ import {
   getVisaOnArrivalRatesWithNigerianVisa,
   sendEnquiryEmail,
   createPayment,
+  getBookingById,
 } from "../controller/user.controller.js";
 
 const userRouter = express.Router();
@@ -30,6 +31,8 @@ userRouter.get("/get-user-by-email", verifyUserToken, getUserByEmail);
 userRouter.get("/get-user/:userId", verifyUserToken, getUserById);
 // GET USER BOOKINGS BY USER ID
 userRouter.patch("/bookings/:userId", verifyUserToken, getUserBookingsByUserId);
+// GET BOOKING BY ID
+userRouter.patch("/booking/:bookingId", verifyUserToken, getBookingById);
 // GET USER SPEND BY USER ID
 userRouter.get(
   "/total-spend/:userId",

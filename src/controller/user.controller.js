@@ -1,5 +1,7 @@
+import BookingModel from "../model/booking.model.js";
 import PaymentModel from "../model/payment.model.js";
 import UserModel from "../model/user.model.js";
+import BookingService from "../service/BookingService.js";
 import PaymentService from "../service/PaymentService.js";
 import UserService from "../service/UserService.js";
 
@@ -11,6 +13,7 @@ const internalServerError =
 // Create a new UserService instance
 const userService = new UserService(UserModel);
 const paymentService = new PaymentService(PaymentModel);
+const bookingService = new BookingService(BookingModel);
 
 // Sign up user
 export const signupUser = async (req, res) => {
@@ -178,6 +181,20 @@ export const getUserBookingsByUserId = async (req, res) => {
     // Fetch user
     const response = await userService.getUserBookingsByUserId(userId);
 
+    // Return a response
+    return res.status(response?.status).json({ message: response?.message });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Get booking by id
+export const getBookingById = async (req, res) => {
+  const { bookingId } = req.params;
+
+  try {
+    // Fetch booking by id
+    const response = await bookingService.getBookingById(bookingId);
     // Return a response
     return res.status(response?.status).json({ message: response?.message });
   } catch (error) {
