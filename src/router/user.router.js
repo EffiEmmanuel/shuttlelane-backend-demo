@@ -32,7 +32,7 @@ userRouter.get("/get-user/:userId", verifyUserToken, getUserById);
 // GET USER BOOKINGS BY USER ID
 userRouter.patch("/bookings/:userId", verifyUserToken, getUserBookingsByUserId);
 // GET BOOKING BY ID
-userRouter.patch("/booking/:bookingId", getBookingById);
+userRouter.get("/booking/:bookingId", getBookingById);
 // GET USER SPEND BY USER ID
 userRouter.get(
   "/total-spend/:userId",
