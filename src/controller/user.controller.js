@@ -196,7 +196,9 @@ export const getBookingById = async (req, res) => {
     // Fetch booking by id
     const response = await bookingService.getBookingById(bookingId);
     // Return a response
-    return res.status(response?.status).json({ message: response?.message });
+    return res
+      .status(response?.status)
+      .json({ message: response?.message, booking: response?.booking });
   } catch (error) {
     console.log("ERROR FRM BKBYID:", error);
     return res.status(500).json({ message: internalServerError });
