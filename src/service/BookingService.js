@@ -423,7 +423,7 @@ export default class BookingService {
     const booking = await this.BookingModel.findOne({
       _id: _id,
     }).populate({
-      path: "bookings",
+      path: "booking",
     });
 
     if (!booking) {
