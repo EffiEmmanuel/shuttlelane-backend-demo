@@ -246,7 +246,10 @@ export default class PaymentService {
 
   // This service fetches all payments
   async getPayments() {
-    const payments = await this.PaymentModel.find({}).populate("booking");
+    const payments = await this.PaymentModel.find({})
+      .populate("booking")
+      .populate("currency")
+      .sort({ createdAt: -1 });
     // Return a response
     return {
       status: 200,
@@ -265,7 +268,10 @@ export default class PaymentService {
 
     const payment = await this.PaymentModel.findOne({
       _id: paymentId,
-    });
+    })
+      .populate("booking")
+      .populate("currency")
+      .sort({ createdAt: -1 });
 
     // Return a response
     return {

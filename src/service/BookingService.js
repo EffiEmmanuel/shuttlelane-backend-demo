@@ -567,7 +567,8 @@ export default class BookingService {
       .populate("booking")
       .populate("paymentId")
       .populate("user")
-      .populate("bookingCurrency");
+      .populate("bookingCurrency")
+      .sort({ createdAt: -1 });
     // Fetch upcoming bookings
     const bookingsAwaitingAssignment = await BookingModel.find({
       bookingStatus: "Not yet assigned",
@@ -575,7 +576,8 @@ export default class BookingService {
       .populate("booking")
       .populate("paymentId")
       .populate("user")
-      .populate("bookingCurrency");
+      .populate("bookingCurrency")
+      .sort({ createdAt: -1 });
 
     // Remove Visa On Arrival Bookings
     const filteredVoaBookings = bookingsAwaitingAssignment?.filter(
@@ -585,7 +587,7 @@ export default class BookingService {
     );
 
     // Fetch upcoming bookings
-    const upcomingBookings = await BookingModel.find({
+    const upcomingBookings = await this.BookingModel.find({
       bookingStatus: "Scheduled",
     })
       .populate({
@@ -593,7 +595,8 @@ export default class BookingService {
       })
       .populate("paymentId")
       .populate("user")
-      .populate("bookingCurrency");
+      .populate("bookingCurrency")
+      .sort({ createdAt: -1 });
 
     return {
       status: 201,
@@ -625,9 +628,15 @@ export default class BookingService {
       };
     }
 
+    const bookings = await this.BookingModel.find({})
+      .populate("booking")
+      .populate("bookingCurrency")
+      .sort({ createdAt: -1 });
+
     return {
       status: 201,
       message: `Booking with _id ${_id} has been updated successfully.`,
+      booking: booking,
     };
   }
 
