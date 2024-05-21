@@ -422,9 +422,13 @@ export default class BookingService {
     // Check if any booking exists with the bookingname
     const booking = await this.BookingModel.findOne({
       _id: _id,
-    }).populate({
-      path: "booking",
-    });
+    })
+      .populate({
+        path: "booking",
+      })
+      .populate({
+        path: "bookingCurrency",
+      });
 
     if (!booking) {
       return {
