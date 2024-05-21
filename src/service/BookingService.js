@@ -430,7 +430,6 @@ export default class BookingService {
       return {
         status: 404,
         message: "No booking exists with the id specified.",
-        booking: booking,
       };
     }
 

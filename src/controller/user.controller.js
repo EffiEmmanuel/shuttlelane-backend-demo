@@ -198,6 +198,7 @@ export const getBookingById = async (req, res) => {
     // Return a response
     return res.status(response?.status).json({ message: response?.message });
   } catch (error) {
+    console.log("ERROR FRM BKBYID:", error);
     return res.status(500).json({ message: internalServerError });
   }
 };
