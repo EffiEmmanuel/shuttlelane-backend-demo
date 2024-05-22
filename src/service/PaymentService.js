@@ -309,8 +309,8 @@ export default class PaymentService {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `http://localhost:3000/booking/payment-status?bid=${booking?._id}&&status=Successful`,
-      cancel_url: `http://localhost:3000/booking/payment-status?bid=${booking?._id}&&status=Failed`,
+      success_url: `http://localhost:3000/booking/payment-status?bid=${booking?._id}&&status=success`,
+      cancel_url: `http://localhost:3000/booking/payment-status?bid=${booking?._id}&&status=failed`,
     });
 
     console.log("SESSION:", session);
