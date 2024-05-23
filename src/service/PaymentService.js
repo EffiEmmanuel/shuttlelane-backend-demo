@@ -34,11 +34,28 @@ export default class PaymentService {
       .populate("bookingCurrency");
 
     if (paymentExists) {
-      return {
-        status: 409,
-        message:
-          "Payment has already been made for this booking. Please contact support for further information.",
-      };
+      if (paymentExists?.paymentStatus !== "Successful") {
+        return {
+          status: 409,
+          message:
+            "Payment has already been made for this booking. Please contact support for further information.",
+        };
+      } else {
+        const updatePayment = await this.PaymentModel.findOneAndUpdate(
+          { _id: paymentExists?._id },
+          {
+            amount: bookingExists?.bookingTotal,
+            currency: bookingExists?.bookingCurrency?._id,
+            paymentStatus: payment?.paymentStatus,
+            booking: payment?.booking,
+            gateway: payment?.gateway,
+            firstName:
+              bookingExists?.user?.firstName ?? bookingExists?.firstName,
+            lastName: bookingExists?.user?.lastName ?? bookingExists?.lastName,
+            email: bookingExists?.user?.email ?? bookingExists?.email,
+          }
+        );
+      }
     }
 
     if (!bookingExists) {
@@ -87,10 +104,16 @@ export default class PaymentService {
         "Pick-up Address": bookingExists?.booking?.pickupAddress,
         Airline: bookingExists?.booking?.airline ?? "N/A",
         "Flight Number": bookingExists?.booking?.flightNumber ?? "N/A",
-        "Pick-up Date": bookingExists?.booking?.pickupDate,
+        "Pick-up Date": moment(bookingExists?.booking?.pickupDate).format(
+          "MMM DD, YYYY"
+        ),
         "Drop-off Address": bookingExists?.booking?.dropoffAddress,
-        "Drop-off Date": bookingExists?.booking?.dropoffDate,
-        "Drop-off Time": bookingExists?.booking?.dropoffTime,
+        "Drop-off Date": moment(bookingExists?.booking?.dropoffDate).format(
+          "MMM DD, YYYY"
+        ),
+        "Drop-off Time": moment(bookingExists?.booking?.dropoffTime).format(
+          "HH:MM AA"
+        ),
         "Vehicle Class": booking?.vehicleClass?.className,
         Passenger: `${bookingExists?.user?.title ?? bookingExists?.title} ${
           bookingExists?.user?.firstName ?? bookingExists?.firstName
@@ -115,8 +138,12 @@ export default class PaymentService {
 
       bookingDetails = {
         "Pick-up Address": bookingExists?.booking?.pickupAddress,
-        "Pick-up Date": bookingExists?.booking?.pickupDate,
-        "Pick-up Time": bookingExists?.booking?.pickupTime,
+        "Pick-up Date": moment(bookingExists?.booking?.pickupDate).format(
+          "MMM DD, YYYY"
+        ),
+        "Pick-up Time": moment(bookingExists?.booking?.pickupTime).format(
+          "HH:MM AA"
+        ),
         Car: booking?.car?.name,
         Days: bookingExists?.booking?.days,
         Passenger: `${bookingExists?.user?.title ?? bookingExists?.title} ${
@@ -144,7 +171,9 @@ export default class PaymentService {
         "Pick-up Address": bookingExists?.booking?.pickupAddress,
         Airline: bookingExists?.booking?.airline ?? "N/A",
         "Flight Number": bookingExists?.booking?.flightNumber ?? "N/A",
-        "Pick-up Date": bookingExists?.booking?.pickupDate,
+        "Pick-up Date": moment(bookingExists?.booking?.pickupDate).format(
+          "MMM DD, YYYY"
+        ),
         "Service Type": booking?.service,
         "Protocol Type": booking?.pass?.name,
         Passenger: `${bookingExists?.user?.title ?? bookingExists?.title} ${
@@ -170,18 +199,26 @@ export default class PaymentService {
         "Passport Type": bookingExists?.booking?.passportType,
         "Full Name": `${bookingExists?.booking?.title} ${bookingExists?.booking?.surname} ${bookingExists?.booking?.firstName} ${bookingExists?.booking?.middleName}`,
         Email: bookingExists?.booking?.email,
-        "Date Of Birth": bookingExists?.booking?.dateOfBirth,
+        "Date Of Birth": moment(bookingExists?.booking?.dateOfBirth).format(
+          "MMM DD, YYYY"
+        ),
         "Place Of Birth": bookingExists?.booking?.placeOfBirth,
         Gender: bookingExists?.booking?.gender,
         "Marital Status": bookingExists?.booking?.maritalStatus,
         "Passport Number": bookingExists?.booking?.passportNumber,
-        "Passport Expiry Date": bookingExists?.booking?.passportExpiryDate,
+        "Passport Expiry Date": moment(
+          bookingExists?.booking?.passportExpiryDate
+        ).format("MMM DD, YYYY"),
         "Purpose Of Journey": bookingExists?.booking?.purposeOfJourney,
         Airline: bookingExists?.booking?.airline,
         "Flight Number": bookingExists?.booking?.flightNumber,
         "Country Of Departure": bookingExists?.booking?.countryOfDeparture,
-        "Departure Date": bookingExists?.booking?.departureDate,
-        "Arrival Date": bookingExists?.booking?.arrivalDate,
+        "Departure Date": moment(bookingExists?.booking?.departureDate).format(
+          "MMM DD, YYYY"
+        ),
+        "Arrival Date": moment(bookingExists?.booking?.arrivalDate).format(
+          "MMM DD, YYYY"
+        ),
         "Port Of Entry": bookingExists?.booking?.portOfEntry,
         "Duration Of Stay": bookingExists?.booking?.durationOfStay,
         "Contact Name": bookingExists?.booking?.contactName,
