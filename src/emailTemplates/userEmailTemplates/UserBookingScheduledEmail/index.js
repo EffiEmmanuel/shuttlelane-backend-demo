@@ -1,7 +1,8 @@
 import React from "react";
-import EmailFooter from "../../reusable/EmailFooter/index.js";
-import EmailHeader from "../../reusable/EmailHeader/index.js";
-const UserBookingScheduledConfirmation = (_ref) => {
+import EmailFooter from "../../reusable/EmailFooter";
+import EmailHeader from "../../reusable/EmailHeader";
+import BookingDetails from "../../reusable/BookingDetails";
+const UserBookingScheduledConfirmation = _ref => {
   let {
     bookingReference,
     pickupLocation,
@@ -15,195 +16,73 @@ const UserBookingScheduledConfirmation = (_ref) => {
     carColor,
     carPlateNumber,
     title,
-    firstName,
+    firstName
   } = _ref;
-  return /*#__PURE__*/ React.createElement(
-    "div",
-    {
-      style: {
-        fontFamily: "Arial, sans-serif",
-        maxWidth: "600px",
-        margin: "0 auto",
-        padding: "20px",
-        backgroundColor: "#f4f4f4",
-      },
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "Poppins, sans-serif",
+      backgroundColor: "#f5f5f5",
+      color: "#333333",
+      margin: "0",
+      padding: "20px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: "600px",
+      margin: "0 auto",
+      backgroundColor: "#ffffff",
+      padding: "20px",
+      borderRadius: "5px"
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: "https://shuttlelane.com/static/media/logo.46684879b753af396f9a.png",
+    alt: "Shuttlelane Limited",
+    width: "150",
+    height: "auto",
+    style: {
+      maxWidth: "100%"
+    }
+  }), /*#__PURE__*/React.createElement("h1", {
+    style: {
+      fontWeight: "600",
+      marginTop: "20px",
+      marginBottom: "10px"
+    }
+  }, "Booking Scheduled: ", bookingReference), /*#__PURE__*/React.createElement("p", {
+    style: {
+      lineHeight: "1.5",
+      marginBottom: "20px"
+    }
+  }, "Dear ", title, " ", firstName, ","), /*#__PURE__*/React.createElement("p", {
+    style: {
+      lineHeight: "1.5",
+      marginBottom: "20px"
+    }
+  }, "We're pleased to inform you that your booking has been scheduled."), /*#__PURE__*/React.createElement(BookingDetails, {
+    details: {
+      "Booking Reference": bookingReference,
+      "Pickup Location": pickupLocation,
+      "Pickup Date": pickupDate,
+      "Pickup Time": pickupTime,
+      "Driver's Name": driverName,
+      "Driver's Phone Number": driverMobile,
+      "Car Type": carType,
+      "Car Name": carName,
+      "Car Model": carModel,
+      "Car Color": carColor,
+      "Plate Number": carPlateNumber
     },
-    /*#__PURE__*/ React.createElement(EmailHeader, null),
-    /*#__PURE__*/ React.createElement(
-      "div",
-      {
-        style: {
-          backgroundColor: "#fff",
-          padding: "20px",
-          borderRadius: "10px",
-        },
-      },
-      /*#__PURE__*/ React.createElement(
-        "h1",
-        {
-          style: {
-            textAlign: "center",
-            marginBottom: "20px",
-            color: "#333",
-          },
-        },
-        "Booking Confirmed: ",
-        bookingReference
-      ),
-      /*#__PURE__*/ React.createElement(
-        "p",
-        {
-          style: {
-            color: "#333",
-            marginBottom: "20px",
-          },
-        },
-        "Dear ",
-        title,
-        " ",
-        firstName,
-        ","
-      ),
-      /*#__PURE__*/ React.createElement(
-        "p",
-        {
-          style: {
-            color: "#333",
-            marginBottom: "20px",
-          },
-        },
-        "We're pleased to inform you that your booking has been confirmed with the following details:"
-      ),
-      /*#__PURE__*/ React.createElement(
-        "ul",
-        {
-          style: {
-            color: "#333",
-            marginBottom: "20px",
-          },
-        },
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Booking ID:"),
-          " ",
-          bookingReference
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Pickup Location:"),
-          " ",
-          pickupLocation
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Pickup Date:"),
-          " ",
-          pickupDate
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Pickup Time:"),
-          " ",
-          pickupTime
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Driver Name:"),
-          " ",
-          driverName
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Driver Contact:"),
-          " ",
-          driverMobile
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Car Type:"),
-          " ",
-          carType
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Car Name:"),
-          " ",
-          carName
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Car Model:"),
-          " ",
-          carModel
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement("strong", null, "Car Color:"),
-          " ",
-          carColor
-        ),
-        /*#__PURE__*/ React.createElement(
-          "li",
-          null,
-          /*#__PURE__*/ React.createElement(
-            "strong",
-            null,
-            "Car Plate Number:"
-          ),
-          " ",
-          carPlateNumber
-        )
-      ),
-      /*#__PURE__*/ React.createElement(
-        "p",
-        {
-          style: {
-            color: "#333",
-            marginBottom: "20px",
-          },
-        },
-        "Your booking is now scheduled as per the provided details. Should you have any questions or require further assistance, feel free to contact us."
-      ),
-      /*#__PURE__*/ React.createElement(
-        "p",
-        {
-          style: {
-            color: "#333",
-          },
-        },
-        "Thank you for choosing ShuttleLane for your transportation needs."
-      ),
-      /*#__PURE__*/ React.createElement(
-        "p",
-        {
-          style: {
-            color: "#333",
-          },
-        },
-        "Best regards,"
-      ),
-      /*#__PURE__*/ React.createElement(
-        "p",
-        {
-          style: {
-            color: "#333",
-            marginBottom: "20px",
-          },
-        },
-        "The ShuttleLane Team"
-      )
-    ),
-    /*#__PURE__*/ React.createElement(EmailFooter, null)
-  );
+    endNote: ""
+  }), /*#__PURE__*/React.createElement("p", {
+    style: {
+      lineHeight: "1.5",
+      marginBottom: "20px"
+    }
+  }, "Your booking is now scheduled as per the provided details. Should you have any questions or require further assistance, feel free to contact us."), /*#__PURE__*/React.createElement("p", {
+    style: {
+      lineHeight: "1.5",
+      marginBottom: "20px"
+    }
+  }, "Best regards,", /*#__PURE__*/React.createElement("br", null), "The Shuttlelane Team.")), /*#__PURE__*/React.createElement(EmailFooter, null));
 };
 export default UserBookingScheduledConfirmation;

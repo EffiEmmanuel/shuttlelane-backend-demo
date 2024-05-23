@@ -29,10 +29,12 @@ const BookingSuccessfulEmail = _ref => {
       borderRadius: "5px"
     }
   }, /*#__PURE__*/React.createElement("img", {
-    src: "company_logo.png",
+    src: "https://shuttlelane.com/static/media/logo.46684879b753af396f9a.png",
     alt: "Shuttlelane Limited",
+    width: "150",
+    height: "auto",
     style: {
-      maxWidth: "200px"
+      maxWidth: "100%"
     }
   }), /*#__PURE__*/React.createElement("h1", {
     style: {
@@ -40,7 +42,7 @@ const BookingSuccessfulEmail = _ref => {
       marginTop: "20px",
       marginBottom: "10px"
     }
-  }, "Welcome to Our Company"), /*#__PURE__*/React.createElement("p", {
+  }, "Booking Confirmation"), /*#__PURE__*/React.createElement("p", {
     style: {
       lineHeight: "1.5",
       marginBottom: "20px"
