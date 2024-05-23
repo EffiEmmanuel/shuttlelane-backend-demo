@@ -428,6 +428,9 @@ export default class BookingService {
       })
       .populate({
         path: "bookingCurrency",
+      })
+      .populate({
+        path: "paymentId",
       });
 
     if (!booking) {
