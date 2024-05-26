@@ -8,14 +8,14 @@ const BookingSuccessfulEmail = (_ref) => {
   let { bookingReference, booking, bookingType, bookingDetails, totalBilled } =
     _ref;
   return /*#__PURE__*/ React.createElement(
-    "div",
+    "body",
     {
       style: {
         fontFamily: "Poppins, sans-serif",
         backgroundColor: "#f5f5f5",
-        color: "#333333",
         margin: "0",
         padding: "20px",
+        textAlign: "center",
       },
     },
     /*#__PURE__*/ React.createElement(
@@ -27,24 +27,27 @@ const BookingSuccessfulEmail = (_ref) => {
           backgroundColor: "#ffffff",
           padding: "20px",
           borderRadius: "5px",
+          textAlign: "left",
         },
       },
       /*#__PURE__*/ React.createElement("img", {
         src: "https://shuttlelane.com/static/media/logo.46684879b753af396f9a.png",
         alt: "Shuttlelane Limited",
         width: "150",
-        height: "auto",
         style: {
           maxWidth: "100%",
+          height: "auto",
+          marginBottom: "20px",
         },
       }),
       /*#__PURE__*/ React.createElement(
         "h1",
         {
           style: {
-            fontWeight: "600",
+            fontWeight: 600,
             marginTop: "20px",
             marginBottom: "10px",
+            color: "#000000",
           },
         },
         "Booking Confirmation"
@@ -55,6 +58,7 @@ const BookingSuccessfulEmail = (_ref) => {
           style: {
             lineHeight: "1.5",
             marginBottom: "20px",
+            color: "#000000",
           },
         },
         "Dear ",
@@ -90,11 +94,12 @@ const BookingSuccessfulEmail = (_ref) => {
           style: {
             lineHeight: "1.5",
             marginBottom: "20px",
+            color: "#000000",
           },
         },
         "Thank you for booking your ",
         bookingType,
-        " with Shuttlelane."
+        " Booking with Shuttlelane."
       ),
       /*#__PURE__*/ React.createElement(BookingDetails, {
         details: {
@@ -109,6 +114,7 @@ const BookingSuccessfulEmail = (_ref) => {
           style: {
             lineHeight: "1.5",
             marginBottom: "20px",
+            color: "#000000",
           },
         },
         "Thank you for choosing Shuttlelane. We look forward to providing you with an exceptional experience."
@@ -119,6 +125,7 @@ const BookingSuccessfulEmail = (_ref) => {
           style: {
             lineHeight: "1.5",
             marginBottom: "20px",
+            color: "#000000",
           },
         },
         "Best regards,",
