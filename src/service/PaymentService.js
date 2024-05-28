@@ -466,8 +466,18 @@ export default class PaymentService {
     const msg = {
       to: bookingExists?.user?.email ?? bookingExists?.email,
       from: "booking@shuttlelane.com",
-      subject: "Booking Confirmation",
-      templateId: "d-c7e06ac8c347451ab9de3da1a6f8c418",
+      subject: `${dynamicTemplateData?.bookingType} Booking Confirmation`,
+      templateId: `${
+        bookingExists?.bookingType == "Airport"
+          ? "d-c7e06ac8c347451ab9de3da1a6f8c418"
+          : bookingExists?.bookingType == "Car"
+          ? "d-e4516282152f47b199d73195c556b29e"
+          : bookingExists?.bookingType == "Priority"
+          ? "d-07bed1074544425aba3b919bc9ba9f23"
+          : bookingExists?.bookingType == "Visa"
+          ? "d-30e154de18774dbc861b94872430b98f"
+          : "d-c7e06ac8c347451ab9de3da1a6f8c418"
+      }`,
       dynamicTemplateData,
     };
 
