@@ -6,32 +6,33 @@ import axios from "axios";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// async function sendEmail(message) {
-//   try {
-//     sgMail
-//       .send(message)
-//       .then((res) => {
-//         console.log("Email sent");
-//         return {
-//           status: 200,
-//           message: "Email sent successfully!",
-//         };
-//       })
-//       .catch((err) => {
-//         console.log("Sendgrid Error", err);
-//         return {
-//           status: 500,
-//           message: "An error occured while sending the email",
-//         };
-//       });
-//   } catch (err) {
-//     console.error("Sendgrid Outer Catch Error", err);
-//     return {
-//       status: 500,
-//       message: "An error occured while sending the email",
-//     };
-//   }
-// }
+export async function sendSGDynamicEmail(message) {
+  try {
+    sgMail
+      .send(message)
+      .then((res) => {
+        console.log("Email sent");
+        return {
+          status: 200,
+          message: "Email sent successfully!",
+        };
+      })
+      .catch((err) => {
+        console.log("Sendgrid Error", err);
+        return {
+          status: 500,
+          message: "An error occured while sending the email",
+        };
+      });
+  } catch (err) {
+    console.error("Sendgrid Outer Catch Error", err);
+    return {
+      status: 500,
+      message: "An error occured while sending the email",
+    };
+  }
+}
+
 const apiKey = `${process.env.SENDGRID_API_KEY}`;
 
 export const sendEmail = async (message) => {

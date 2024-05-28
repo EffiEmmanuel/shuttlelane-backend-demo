@@ -8,7 +8,7 @@ import { convertAmountToUserCurrency } from "../util/index.js";
 import { sendSMS } from "../util/twilio.js";
 import moment from "moment";
 import BookingSuccessfulEmail from "../emailTemplates/userEmailTemplates/BookingSuccessfulEmail/index.js";
-import { sendEmail } from "../util/sendgrid.js";
+import { sendEmail, sendSGDynamicEmail } from "../util/sendgrid.js";
 import ReactDOMServer from "react-dom/server";
 import AirportTransferBookingModel from "../model/airportTransferBooking.model.js";
 import CarRentalBookingModel from "../model/carRentalBooking.model.js";
@@ -100,25 +100,44 @@ export default class PaymentService {
         _id: bookingExists?.booking?._id,
       }).populate("vehicleClass");
 
-      bookingDetails = {
-        "Pick-up Address": bookingExists?.booking?.pickupAddress,
-        Airline: bookingExists?.booking?.airline ?? "N/A",
-        "Flight Number": bookingExists?.booking?.flightNumber ?? "N/A",
-        "Pick-up Date": moment(bookingExists?.booking?.pickupDate).format(
-          "MMM DD, YYYY"
-        ),
-        "Drop-off Address": bookingExists?.booking?.dropoffAddress,
-        "Drop-off Date": moment(bookingExists?.booking?.dropoffDate).format(
-          "MMM DD, YYYY"
-        ),
-        "Drop-off Time": moment(bookingExists?.booking?.dropoffTime).format(
-          "HH:MM AA"
-        ),
-        "Vehicle Class": booking?.vehicleClass?.className,
-        Passenger: `${bookingExists?.user?.title ?? bookingExists?.title} ${
-          bookingExists?.user?.firstName ?? bookingExists?.firstName
-        } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
-      };
+      bookingDetails = [
+        {
+          label: "Pick-up Address",
+          value: bookingExists?.booking?.pickupAddress,
+        },
+        { label: "Airline", value: bookingExists?.booking?.airline ?? "N/A" },
+        {
+          label: "Flight Number",
+          value: bookingExists?.booking?.flightNumber ?? "N/A",
+        },
+        {
+          label: "Pick-up Date",
+          value: moment(bookingExists?.booking?.pickupDate).format(
+            "MMM DD, YYYY"
+          ),
+        },
+        {
+          label: "Drop-off Address",
+          value: bookingExists?.booking?.dropoffAddress,
+        },
+        {
+          label: "Drop-off Date",
+          value: moment(bookingExists?.booking?.dropoffDate).format(
+            "MMM DD, YYYY"
+          ),
+        },
+        {
+          label: "Drop-off Time",
+          value: moment(bookingExists?.booking?.dropoffTime).format("HH:MM AA"),
+        },
+        { label: "Vehicle Class", value: booking?.vehicleClass?.className },
+        {
+          label: "Passenger",
+          value: `${bookingExists?.user?.title ?? bookingExists?.title} ${
+            bookingExists?.user?.firstName ?? bookingExists?.firstName
+          } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+        },
+      ];
     } else if (bookingExists?.bookingType == "Car") {
       smsMessage = `Hello ${
         bookingExists?.title ?? bookingExists?.user?.title
@@ -136,20 +155,30 @@ export default class PaymentService {
         _id: bookingExists?.booking?._id,
       }).populate("car");
 
-      bookingDetails = {
-        "Pick-up Address": bookingExists?.booking?.pickupAddress,
-        "Pick-up Date": moment(bookingExists?.booking?.pickupDate).format(
-          "MMM DD, YYYY"
-        ),
-        "Pick-up Time": moment(bookingExists?.booking?.pickupTime).format(
-          "HH:MM AA"
-        ),
-        Car: booking?.car?.name,
-        Days: bookingExists?.booking?.days,
-        Passenger: `${bookingExists?.user?.title ?? bookingExists?.title} ${
-          bookingExists?.user?.firstName ?? bookingExists?.firstName
-        } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
-      };
+      bookingDetails = [
+        {
+          label: "Pick-up Address",
+          value: bookingExists?.booking?.pickupAddress,
+        },
+        {
+          label: "Pick-up Date",
+          value: moment(bookingExists?.booking?.pickupDate).format(
+            "MMM DD, YYYY"
+          ),
+        },
+        {
+          label: "Pick-up Time",
+          value: moment(bookingExists?.booking?.pickupTime).format("HH:MM AA"),
+        },
+        { label: "Car", value: booking?.car?.name },
+        { label: "Days", value: bookingExists?.booking?.days },
+        {
+          label: "Passenger",
+          value: `${bookingExists?.user?.title ?? bookingExists?.title} ${
+            bookingExists?.user?.firstName ?? bookingExists?.firstName
+          } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+        },
+      ];
     } else if (bookingExists?.bookingType == "Priority") {
       smsMessage = `Hello ${
         bookingExists?.title ?? bookingExists?.user?.title
@@ -167,19 +196,31 @@ export default class PaymentService {
         _id: bookingExists?.booking?._id,
       }).populate("pass");
 
-      bookingDetails = {
-        "Pick-up Address": bookingExists?.booking?.pickupAddress,
-        Airline: bookingExists?.booking?.airline ?? "N/A",
-        "Flight Number": bookingExists?.booking?.flightNumber ?? "N/A",
-        "Pick-up Date": moment(bookingExists?.booking?.pickupDate).format(
-          "MMM DD, YYYY"
-        ),
-        "Service Type": booking?.service,
-        "Protocol Type": booking?.pass?.name,
-        Passenger: `${bookingExists?.user?.title ?? bookingExists?.title} ${
-          bookingExists?.user?.firstName ?? bookingExists?.firstName
-        } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
-      };
+      bookingDetails = [
+        {
+          label: "Pick-up Address",
+          value: bookingExists?.booking?.pickupAddress,
+        },
+        { label: "Airline", value: bookingExists?.booking?.airline ?? "N/A" },
+        {
+          label: "Flight Number",
+          value: bookingExists?.booking?.flightNumber ?? "N/A",
+        },
+        {
+          label: "Pick-up Date",
+          value: moment(bookingExists?.booking?.pickupDate).format(
+            "MMM DD, YYYY"
+          ),
+        },
+        { label: "Service Type", value: booking?.service },
+        { label: "Protocol Type", value: booking?.pass?.name },
+        {
+          label: "Passenger",
+          value: `${bookingExists?.user?.title ?? bookingExists?.title} ${
+            bookingExists?.user?.firstName ?? bookingExists?.firstName
+          } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+        },
+      ];
     } else if (bookingExists?.bookingType == "Visa") {
       smsMessage = `Hello ${
         bookingExists?.title ?? bookingExists?.user?.title
@@ -193,56 +234,98 @@ export default class PaymentService {
         _id: bookingExists?.booking?._id,
       }).populate("pass");
 
-      bookingDetails = {
-        Nationality: bookingExists?.booking?.nationality,
-        "Visa Class": bookingExists?.booking?.visaClass,
-        "Passport Type": bookingExists?.booking?.passportType,
-        "Full Name": `${bookingExists?.booking?.title} ${bookingExists?.booking?.surname} ${bookingExists?.booking?.firstName} ${bookingExists?.booking?.middleName}`,
-        Email: bookingExists?.booking?.email,
-        "Date Of Birth": moment(bookingExists?.booking?.dateOfBirth).format(
-          "MMM DD, YYYY"
-        ),
-        "Place Of Birth": bookingExists?.booking?.placeOfBirth,
-        Gender: bookingExists?.booking?.gender,
-        "Marital Status": bookingExists?.booking?.maritalStatus,
-        "Passport Number": bookingExists?.booking?.passportNumber,
-        "Passport Expiry Date": moment(
-          bookingExists?.booking?.passportExpiryDate
-        ).format("MMM DD, YYYY"),
-        "Purpose Of Journey": bookingExists?.booking?.purposeOfJourney,
-        Airline: bookingExists?.booking?.airline,
-        "Flight Number": bookingExists?.booking?.flightNumber,
-        "Country Of Departure": bookingExists?.booking?.countryOfDeparture,
-        "Departure Date": moment(bookingExists?.booking?.departureDate).format(
-          "MMM DD, YYYY"
-        ),
-        "Arrival Date": moment(bookingExists?.booking?.arrivalDate).format(
-          "MMM DD, YYYY"
-        ),
-        "Port Of Entry": bookingExists?.booking?.portOfEntry,
-        "Duration Of Stay": bookingExists?.booking?.durationOfStay,
-        "Contact Name": bookingExists?.booking?.contactName,
-        "Contact Number": bookingExists?.booking?.contactNumber,
-        "Contact Address": bookingExists?.booking?.contactAddress,
-        "Contact City": bookingExists?.booking?.contactCity,
-        "Contact State": bookingExists?.booking?.contactState,
-        "Contact Email": bookingExists?.booking?.contactEmail,
-        "Contact Postal Code": bookingExists?.booking?.contactPostalCode,
-      };
+      bookingDetails = [
+        { label: "Nationality", value: bookingExists?.booking?.nationality },
+        { label: "Visa Class", value: bookingExists?.booking?.visaClass },
+        { label: "Passport Type", value: bookingExists?.booking?.passportType },
+        {
+          label: "Full Name",
+          value: `${bookingExists?.booking?.title} ${bookingExists?.booking?.surname} ${bookingExists?.booking?.firstName} ${bookingExists?.booking?.middleName}`,
+        },
+        { label: "Email", value: bookingExists?.booking?.email },
+        {
+          label: "Date Of Birth",
+          value: moment(bookingExists?.booking?.dateOfBirth).format(
+            "MMM DD, YYYY"
+          ),
+        },
+        {
+          label: "Place Of Birth",
+          value: bookingExists?.booking?.placeOfBirth,
+        },
+        { label: "Gender", value: bookingExists?.booking?.gender },
+        {
+          label: "Marital Status",
+          value: bookingExists?.booking?.maritalStatus,
+        },
+        {
+          label: "Passport Number",
+          value: bookingExists?.booking?.passportNumber,
+        },
+        {
+          label: "Passport Expiry Date",
+          value: moment(bookingExists?.booking?.passportExpiryDate).format(
+            "MMM DD, YYYY"
+          ),
+        },
+        {
+          label: "Purpose Of Journey",
+          value: bookingExists?.booking?.purposeOfJourney,
+        },
+        { label: "Airline", value: bookingExists?.booking?.airline },
+        { label: "Flight Number", value: bookingExists?.booking?.flightNumber },
+        {
+          label: "Country Of Departure",
+          value: bookingExists?.booking?.countryOfDeparture,
+        },
+        {
+          label: "Departure Date",
+          value: moment(bookingExists?.booking?.departureDate).format(
+            "MMM DD, YYYY"
+          ),
+        },
+        {
+          label: "Arrival Date",
+          value: moment(bookingExists?.booking?.arrivalDate).format(
+            "MMM DD, YYYY"
+          ),
+        },
+        { label: "Port Of Entry", value: bookingExists?.booking?.portOfEntry },
+        {
+          label: "Duration Of Stay",
+          value: bookingExists?.booking?.durationOfStay,
+        },
+        { label: "Contact Name", value: bookingExists?.booking?.contactName },
+        {
+          label: "Contact Number",
+          value: bookingExists?.booking?.contactNumber,
+        },
+        {
+          label: "Contact Address",
+          value: bookingExists?.booking?.contactAddress,
+        },
+        { label: "Contact City", value: bookingExists?.booking?.contactCity },
+        { label: "Contact State", value: bookingExists?.booking?.contactState },
+        { label: "Contact Email", value: bookingExists?.booking?.contactEmail },
+        {
+          label: "Contact Postal Code",
+          value: bookingExists?.booking?.contactPostalCode,
+        },
+      ];
     }
 
-    const emailHTML = BookingSuccessfulEmail({
-      bookingReference: bookingExists?.bookingReference,
-      booking: bookingExists,
-      bookingType: bookingExists?.bookingType,
-      bookingDetails,
-      totalBilled: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
-    });
+    // const emailHTML = BookingSuccessfulEmail({
+    //   bookingReference: bookingExists?.bookingReference,
+    //   booking: bookingExists,
+    //   bookingType: bookingExists?.bookingType,
+    //   bookingDetails,
+    //   totalBilled: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
+    // });
 
-    const message = {
-      to: bookingExists?.user?.email ?? bookingExists?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: `${
+    const dynamicTemplateData = {
+      title: bookingExists?.user?.title ?? bookingExists?.title,
+      firstName: bookingExists?.user?.firstName ?? bookingExists?.firstName,
+      bookingType:
         bookingExists?.bookingType == "Airport"
           ? "Airport Transfer"
           : bookingExists?.bookingType == "Car"
@@ -251,11 +334,37 @@ export default class PaymentService {
           ? "Priority Pass"
           : bookingExists?.bookingType == "Visa"
           ? "Visa On Arrival"
-          : ""
-      } Booking Confirmation`,
-      html: ReactDOMServer.renderToString(emailHTML),
+          : "",
+      bookingDetails: bookingDetails,
     };
-    await sendEmail(message);
+
+    const msg = {
+      to: bookingExists?.user?.email ?? bookingExists?.email,
+      from: "booking@shuttlelane.com",
+      subject: `${dynamicTemplateData?.bookingType} Booking Confirmation`,
+      templateId: "d-c7e06ac8c347451ab9de3da1a6f8c418",
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
+
+    // const message = {
+    //   to: bookingExists?.user?.email ?? bookingExists?.email,
+    //   from: process.env.SENGRID_EMAIL,
+    //   subject: `${
+    //     bookingExists?.bookingType == "Airport"
+    //       ? "Airport Transfer"
+    //       : bookingExists?.bookingType == "Car"
+    //       ? "Car Rental"
+    //       : bookingExists?.bookingType == "Priority"
+    //       ? "Priority Pass"
+    //       : bookingExists?.bookingType == "Visa"
+    //       ? "Visa On Arrival"
+    //       : ""
+    //   } Booking Confirmation`,
+    //   html: ReactDOMServer.renderToString(emailHTML),
+    // };
+    // await sendEmail(message);
 
     // Send sms
     await sendSMS(
