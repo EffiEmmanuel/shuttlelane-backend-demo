@@ -466,7 +466,7 @@ export default class PaymentService {
     const msg = {
       to: bookingExists?.user?.email ?? bookingExists?.email,
       from: "booking@shuttlelane.com",
-      subject: `${dynamicTemplateData?.bookingType} Booking Confirmation`,
+      subject: "Booking Confirmation",
       templateId: "d-c7e06ac8c347451ab9de3da1a6f8c418",
       dynamicTemplateData,
     };
