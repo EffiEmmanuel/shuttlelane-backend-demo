@@ -213,7 +213,7 @@ export default class PaymentService {
         {
           label: "TOTAL BILLED",
           value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
-          backgroundColor: "#F5F5F5",
+          backgroundColor: "",
         },
       ];
     } else if (bookingExists?.bookingType == "Priority") {
@@ -434,7 +434,7 @@ export default class PaymentService {
         {
           label: "TOTAL BILLED",
           value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
-          backgroundColor: "#F5F5F5",
+          backgroundColor: "",
         },
       ];
     }
