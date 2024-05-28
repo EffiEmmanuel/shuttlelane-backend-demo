@@ -463,21 +463,25 @@ export default class PaymentService {
       bookingDetails: bookingDetails,
     };
 
+    const templateId = `${
+      bookingExists?.bookingType == "Airport"
+        ? "d-c7e06ac8c347451ab9de3da1a6f8c418"
+        : bookingExists?.bookingType == "Car"
+        ? "d-e4516282152f47b199d73195c556b29e"
+        : bookingExists?.bookingType == "Priority"
+        ? "d-07bed1074544425aba3b919bc9ba9f23"
+        : bookingExists?.bookingType == "Visa"
+        ? "d-30e154de18774dbc861b94872430b98f"
+        : "d-c7e06ac8c347451ab9de3da1a6f8c418"
+    }`;
+
+    console.log("TEMPLATE ID:", templateId);
+
     const msg = {
       to: bookingExists?.user?.email ?? bookingExists?.email,
       from: "booking@shuttlelane.com",
       subject: `${dynamicTemplateData?.bookingType} Booking Confirmation`,
-      templateId: `${
-        bookingExists?.bookingReference?.split("-")[0] == "AT"
-          ? "d-c7e06ac8c347451ab9de3da1a6f8c418"
-          : bookingExists?.bookingReference?.split("-")[0] == "CR"
-          ? "d-e4516282152f47b199d73195c556b29e"
-          : bookingExists?.bookingReference?.split("-")[0] == "PP"
-          ? "d-07bed1074544425aba3b919bc9ba9f23"
-          : bookingExists?.bookingReference?.split("-")[0] == "VOA"
-          ? "d-30e154de18774dbc861b94872430b98f"
-          : "d-c7e06ac8c347451ab9de3da1a6f8c418"
-      }`,
+      templateId: templateId,
       dynamicTemplateData,
     };
 
