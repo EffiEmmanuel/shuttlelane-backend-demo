@@ -137,7 +137,7 @@ export default class PaymentService {
         },
         {
           label: "Drop-off Time",
-          value: moment(bookingExists?.booking?.dropoffTime).format("HH:MM AA"),
+          value: moment(bookingExists?.booking?.dropoffTime).format("HH:MM A"),
           backgroundColor: "",
         },
         {
@@ -190,7 +190,7 @@ export default class PaymentService {
         },
         {
           label: "Pick-up Time",
-          value: moment(bookingExists?.booking?.pickupTime).format("HH:MM AA"),
+          value: moment(bookingExists?.booking?.pickupTime).format("HH:MM A"),
           backgroundColor: "",
         },
         {
