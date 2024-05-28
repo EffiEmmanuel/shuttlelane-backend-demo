@@ -295,7 +295,7 @@ export default class BookingService {
       to: "info@shuttlelane.com",
       from: process.env.SENGRID_EMAIL,
       subject: "🔔 New Booking Notification",
-      html: ReactDOMServer.renderToString(adminEmailHTML),
+      html: ReactDOMServer.renderToStaticMarkup(adminEmailHTML),
     };
     sendEmail(adminMessage);
 
