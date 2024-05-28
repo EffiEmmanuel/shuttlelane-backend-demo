@@ -104,38 +104,53 @@ export default class PaymentService {
         {
           label: "Pick-up Address",
           value: bookingExists?.booking?.pickupAddress,
+          backgroundColor: "",
         },
-        { label: "Airline", value: bookingExists?.booking?.airline ?? "N/A" },
+        {
+          label: "Airline",
+          value: bookingExists?.booking?.airline ?? "N/A",
+          backgroundColor: "#F5F5F5",
+        },
         {
           label: "Flight Number",
           value: bookingExists?.booking?.flightNumber ?? "N/A",
+          backgroundColor: "",
         },
         {
           label: "Pick-up Date",
           value: moment(bookingExists?.booking?.pickupDate).format(
             "MMM DD, YYYY"
           ),
+          backgroundColor: "#F5F5F5",
         },
         {
           label: "Drop-off Address",
           value: bookingExists?.booking?.dropoffAddress,
+          backgroundColor: "",
         },
         {
           label: "Drop-off Date",
           value: moment(bookingExists?.booking?.dropoffDate).format(
             "MMM DD, YYYY"
           ),
+          backgroundColor: "#F5F5F5",
         },
         {
           label: "Drop-off Time",
           value: moment(bookingExists?.booking?.dropoffTime).format("HH:MM AA"),
+          backgroundColor: "",
         },
-        { label: "Vehicle Class", value: booking?.vehicleClass?.className },
+        {
+          label: "Vehicle Class",
+          value: booking?.vehicleClass?.className,
+          backgroundColor: "#F5F5F5",
+        },
         {
           label: "Passenger",
           value: `${bookingExists?.user?.title ?? bookingExists?.title} ${
             bookingExists?.user?.firstName ?? bookingExists?.firstName
           } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+          backgroundColor: "",
         },
       ];
     } else if (bookingExists?.bookingType == "Car") {
@@ -159,24 +174,36 @@ export default class PaymentService {
         {
           label: "Pick-up Address",
           value: bookingExists?.booking?.pickupAddress,
+          backgroundColor: "",
         },
         {
           label: "Pick-up Date",
           value: moment(bookingExists?.booking?.pickupDate).format(
             "MMM DD, YYYY"
           ),
+          backgroundColor: "#F5F5F5",
         },
         {
           label: "Pick-up Time",
           value: moment(bookingExists?.booking?.pickupTime).format("HH:MM AA"),
+          backgroundColor: "",
         },
-        { label: "Car", value: booking?.car?.name },
-        { label: "Days", value: bookingExists?.booking?.days },
+        {
+          label: "Car",
+          value: booking?.car?.name,
+          backgroundColor: "#F5F5F5",
+        },
+        {
+          label: "Days",
+          value: bookingExists?.booking?.days,
+          backgroundColor: "",
+        },
         {
           label: "Passenger",
           value: `${bookingExists?.user?.title ?? bookingExists?.title} ${
             bookingExists?.user?.firstName ?? bookingExists?.firstName
           } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+          backgroundColor: "#F5F5F5",
         },
       ];
     } else if (bookingExists?.bookingType == "Priority") {
@@ -200,25 +227,41 @@ export default class PaymentService {
         {
           label: "Pick-up Address",
           value: bookingExists?.booking?.pickupAddress,
+          backgroundColor: "",
         },
-        { label: "Airline", value: bookingExists?.booking?.airline ?? "N/A" },
+        {
+          label: "Airline",
+          value: bookingExists?.booking?.airline ?? "N/A",
+          backgroundColor: "#F5F5F5",
+        },
         {
           label: "Flight Number",
           value: bookingExists?.booking?.flightNumber ?? "N/A",
+          backgroundColor: "",
         },
         {
           label: "Pick-up Date",
           value: moment(bookingExists?.booking?.pickupDate).format(
             "MMM DD, YYYY"
           ),
+          backgroundColor: "#F5F5F5",
         },
-        { label: "Service Type", value: booking?.service },
-        { label: "Protocol Type", value: booking?.pass?.name },
+        {
+          label: "Service Type",
+          value: booking?.service,
+          backgroundColor: "",
+        },
+        {
+          label: "Protocol Type",
+          value: booking?.pass?.name,
+          backgroundColor: "#F5F5F5",
+        },
         {
           label: "Passenger",
           value: `${bookingExists?.user?.title ?? bookingExists?.title} ${
             bookingExists?.user?.firstName ?? bookingExists?.firstName
           } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+          backgroundColor: "",
         },
       ];
     } else if (bookingExists?.bookingType == "Visa") {
@@ -235,81 +278,143 @@ export default class PaymentService {
       }).populate("pass");
 
       bookingDetails = [
-        { label: "Nationality", value: bookingExists?.booking?.nationality },
-        { label: "Visa Class", value: bookingExists?.booking?.visaClass },
-        { label: "Passport Type", value: bookingExists?.booking?.passportType },
+        {
+          label: "Nationality",
+          value: bookingExists?.booking?.nationality,
+          backgroundColor: "",
+        },
+        {
+          label: "Visa Class",
+          value: bookingExists?.booking?.visaClass,
+          backgroundColor: "#F5F5F5",
+        },
+        {
+          label: "Passport Type",
+          value: bookingExists?.booking?.passportType,
+          backgroundColor: "",
+        },
         {
           label: "Full Name",
           value: `${bookingExists?.booking?.title} ${bookingExists?.booking?.surname} ${bookingExists?.booking?.firstName} ${bookingExists?.booking?.middleName}`,
+          backgroundColor: "#F5F5F5",
         },
-        { label: "Email", value: bookingExists?.booking?.email },
+        {
+          label: "Email",
+          value: bookingExists?.booking?.email,
+          backgroundColor: "",
+        },
         {
           label: "Date Of Birth",
           value: moment(bookingExists?.booking?.dateOfBirth).format(
             "MMM DD, YYYY"
           ),
+          backgroundColor: "#F5F5F5",
         },
         {
           label: "Place Of Birth",
           value: bookingExists?.booking?.placeOfBirth,
+          backgroundColor: "",
         },
-        { label: "Gender", value: bookingExists?.booking?.gender },
+        {
+          label: "Gender",
+          value: bookingExists?.booking?.gender,
+          backgroundColor: "#F5F5F5",
+        },
         {
           label: "Marital Status",
           value: bookingExists?.booking?.maritalStatus,
+          backgroundColor: "",
         },
         {
           label: "Passport Number",
           value: bookingExists?.booking?.passportNumber,
+          backgroundColor: "#F5F5F5",
         },
         {
           label: "Passport Expiry Date",
           value: moment(bookingExists?.booking?.passportExpiryDate).format(
             "MMM DD, YYYY"
           ),
+          backgroundColor: "",
         },
         {
           label: "Purpose Of Journey",
           value: bookingExists?.booking?.purposeOfJourney,
+          backgroundColor: "#F5F5F5",
         },
-        { label: "Airline", value: bookingExists?.booking?.airline },
-        { label: "Flight Number", value: bookingExists?.booking?.flightNumber },
+        {
+          label: "Airline",
+          value: bookingExists?.booking?.airline,
+          backgroundColor: "",
+        },
+        {
+          label: "Flight Number",
+          value: bookingExists?.booking?.flightNumber,
+          backgroundColor: "#F5F5F5",
+        },
         {
           label: "Country Of Departure",
           value: bookingExists?.booking?.countryOfDeparture,
+          backgroundColor: "",
         },
         {
           label: "Departure Date",
           value: moment(bookingExists?.booking?.departureDate).format(
             "MMM DD, YYYY"
           ),
+          backgroundColor: "#F5F5F5",
         },
         {
           label: "Arrival Date",
           value: moment(bookingExists?.booking?.arrivalDate).format(
             "MMM DD, YYYY"
           ),
+          backgroundColor: "",
         },
-        { label: "Port Of Entry", value: bookingExists?.booking?.portOfEntry },
+        {
+          label: "Port Of Entry",
+          value: bookingExists?.booking?.portOfEntry,
+          backgroundColor: "#F5F5F5",
+        },
         {
           label: "Duration Of Stay",
           value: bookingExists?.booking?.durationOfStay,
+          backgroundColor: "",
         },
-        { label: "Contact Name", value: bookingExists?.booking?.contactName },
+        {
+          label: "Contact Name",
+          value: bookingExists?.booking?.contactName,
+          backgroundColor: "#F5F5F5",
+        },
         {
           label: "Contact Number",
           value: bookingExists?.booking?.contactNumber,
+          backgroundColor: "",
         },
         {
           label: "Contact Address",
           value: bookingExists?.booking?.contactAddress,
+          backgroundColor: "#F5F5F5",
         },
-        { label: "Contact City", value: bookingExists?.booking?.contactCity },
-        { label: "Contact State", value: bookingExists?.booking?.contactState },
-        { label: "Contact Email", value: bookingExists?.booking?.contactEmail },
+        {
+          label: "Contact City",
+          value: bookingExists?.booking?.contactCity,
+          backgroundColor: "",
+        },
+        {
+          label: "Contact State",
+          value: bookingExists?.booking?.contactState,
+          backgroundColor: "#F5F5F5",
+        },
+        {
+          label: "Contact Email",
+          value: bookingExists?.booking?.contactEmail,
+          backgroundColor: "",
+        },
         {
           label: "Contact Postal Code",
           value: bookingExists?.booking?.contactPostalCode,
+          backgroundColor: "#F5F5F5",
         },
       ];
     }
