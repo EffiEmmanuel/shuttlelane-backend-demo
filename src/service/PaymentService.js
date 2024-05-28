@@ -152,6 +152,11 @@ export default class PaymentService {
           } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
           backgroundColor: "",
         },
+        {
+          label: "TOTAL BILLED",
+          value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
+          backgroundColor: "#F5F5F5",
+        },
       ];
     } else if (bookingExists?.bookingType == "Car") {
       smsMessage = `Hello ${
@@ -203,6 +208,11 @@ export default class PaymentService {
           value: `${bookingExists?.user?.title ?? bookingExists?.title} ${
             bookingExists?.user?.firstName ?? bookingExists?.firstName
           } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
+          backgroundColor: "#F5F5F5",
+        },
+        {
+          label: "TOTAL BILLED",
+          value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
           backgroundColor: "#F5F5F5",
         },
       ];
@@ -262,6 +272,11 @@ export default class PaymentService {
             bookingExists?.user?.firstName ?? bookingExists?.firstName
           } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
           backgroundColor: "",
+        },
+        {
+          label: "TOTAL BILLED",
+          value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
+          backgroundColor: "#F5F5F5",
         },
       ];
     } else if (bookingExists?.bookingType == "Visa") {
@@ -414,6 +429,11 @@ export default class PaymentService {
         {
           label: "Contact Postal Code",
           value: bookingExists?.booking?.contactPostalCode,
+          backgroundColor: "#F5F5F5",
+        },
+        {
+          label: "TOTAL BILLED",
+          value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
           backgroundColor: "#F5F5F5",
         },
       ];
