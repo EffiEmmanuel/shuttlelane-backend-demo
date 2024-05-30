@@ -564,8 +564,8 @@ export default class PaymentService {
       _id: paymentId,
     })
       .populate("booking")
-      .populate("currency")
-      .sort({ createdAt: -1 });
+      .populate("paymentId")
+      .populate("currency");
 
     // Return a response
     return {
