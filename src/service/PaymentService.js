@@ -529,7 +529,8 @@ export default class PaymentService {
     })
       .populate("user")
       .populate("booking")
-      .populate("bookingCurrency");
+      .populate("bookingCurrency")
+      .populate("paymentId");
 
     return {
       status: 201,
@@ -564,7 +565,6 @@ export default class PaymentService {
       _id: paymentId,
     })
       .populate("booking")
-      .populate("paymentId")
       .populate("currency");
 
     // Return a response
