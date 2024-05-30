@@ -461,6 +461,7 @@ export default class PaymentService {
           ? "Visa On Arrival"
           : "",
       bookingDetails: bookingDetails,
+      bookingReference: bookingExists?.bookingReference,
     };
 
     const templateId = `${
@@ -522,10 +523,18 @@ export default class PaymentService {
       createdAt: -1,
     });
 
+    // Fetch updated booking
+    const updatedBooking = await BookingModel.findOne({
+      bookingReference: bookingExists?.bookingReference,
+    })
+      .populate("user")
+      .populate("booking")
+      .populate("bookingCurrency");
+
     return {
       status: 201,
       message: `Payment successful!`,
-      booking: booking,
+      booking: updatedBooking,
     };
   }
 
@@ -594,8 +603,8 @@ export default class PaymentService {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&&status=success&&ch=Stripe`,
-      cancel_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&&status=failed&&ch=Stripe`,
+      success_url: `http://localhost:3000/booking/payment-status?bid=${booking?._id}&&status=success&&ch=Stripe`,
+      cancel_url: `http://localhost:3000/booking/payment-status?bid=${booking?._id}&&status=failed&&ch=Stripe`,
     });
 
     console.log("SESSION:", session);
