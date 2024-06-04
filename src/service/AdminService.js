@@ -1355,11 +1355,36 @@ export default class AdminService {
 
       const bookingsAwaitingAssignment = await BookingModel.find({
         bookingStatus: "Not yet assigned",
-      }).populate("booking");
+      })
+        .populate({
+          path: "booking",
+        })
+        .populate({
+          path: "bookingCurrency",
+        })
+        .populate({
+          path: "assignedDriver",
+        })
+        .populate({
+          path: "assignedVendor",
+        })
+        .populate({
+          path: "paymentId",
+        })
+        .populate({
+          path: "assignedDriver",
+        })
+        .populate({
+          path: "user",
+        })
+        .sort({ createdAt: -1 });
 
       const updatedUnassignedBookings = bookingsAwaitingAssignment?.filter(
         (booking) => {
-          return booking?.bookingType !== "Visa";
+          return (
+            booking?.bookingType !== "Visa" &&
+            booking?.paymentId?.paymentStatus == "Successful"
+          );
         }
       );
 
@@ -1437,9 +1462,12 @@ export default class AdminService {
       .sort({ createdAt: -1 });
 
     console.log("OVER HERE 2:", bookingsAwaitingAssignment);
-    // Remove Visa On Arrival Bookings
+    // Remove Visa On Arrival Bookings and return only bookings with successful payments
     const filteredBookings = bookingsAwaitingAssignment?.filter((booking) => {
-      return booking?.bookingType !== "Visa";
+      return (
+        booking?.bookingType !== "Visa" &&
+        booking?.paymentId?.paymentStatus == "Successful"
+      );
     });
     console.log("OVER HERE 3:", filteredBookings);
 

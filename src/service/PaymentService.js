@@ -107,6 +107,18 @@ export default class PaymentService {
           backgroundColor: "",
         },
         {
+          label: "Pick-up Date",
+          value: moment(bookingExists?.booking?.pickupDate).format(
+            "MMM DD, YYYY"
+          ),
+          backgroundColor: "#F5F5F5",
+        },
+        {
+          label: "Pick-up Time",
+          value: moment(bookingExists?.booking?.pickupTime).format("HH:MM A"),
+          backgroundColor: "",
+        },
+        {
           label: "Airline",
           value: bookingExists?.booking?.airline ?? "N/A",
           backgroundColor: "#F5F5F5",
@@ -117,27 +129,8 @@ export default class PaymentService {
           backgroundColor: "",
         },
         {
-          label: "Pick-up Date",
-          value: moment(bookingExists?.booking?.pickupDate).format(
-            "MMM DD, YYYY"
-          ),
-          backgroundColor: "#F5F5F5",
-        },
-        {
           label: "Drop-off Address",
           value: bookingExists?.booking?.dropoffAddress,
-          backgroundColor: "",
-        },
-        {
-          label: "Drop-off Date",
-          value: moment(bookingExists?.booking?.dropoffDate).format(
-            "MMM DD, YYYY"
-          ),
-          backgroundColor: "#F5F5F5",
-        },
-        {
-          label: "Drop-off Time",
-          value: moment(bookingExists?.booking?.dropoffTime).format("HH:MM A"),
           backgroundColor: "",
         },
         {
@@ -240,6 +233,18 @@ export default class PaymentService {
           backgroundColor: "",
         },
         {
+          label: "Pick-up Date",
+          value: moment(bookingExists?.booking?.pickupDate).format(
+            "MMM DD, YYYY"
+          ),
+          backgroundColor: "#F5F5F5",
+        },
+        {
+          label: "Pick-up Time",
+          value: moment(bookingExists?.booking?.pickupTime).format("HH:MM A"),
+          backgroundColor: "",
+        },
+        {
           label: "Airline",
           value: bookingExists?.booking?.airline ?? "N/A",
           backgroundColor: "#F5F5F5",
@@ -248,13 +253,6 @@ export default class PaymentService {
           label: "Flight Number",
           value: bookingExists?.booking?.flightNumber ?? "N/A",
           backgroundColor: "",
-        },
-        {
-          label: "Pick-up Date",
-          value: moment(bookingExists?.booking?.pickupDate).format(
-            "MMM DD, YYYY"
-          ),
-          backgroundColor: "#F5F5F5",
         },
         {
           label: "Service Type",
@@ -373,13 +371,6 @@ export default class PaymentService {
           backgroundColor: "",
         },
         {
-          label: "Departure Date",
-          value: moment(bookingExists?.booking?.departureDate).format(
-            "MMM DD, YYYY"
-          ),
-          backgroundColor: "#F5F5F5",
-        },
-        {
           label: "Arrival Date",
           value: moment(bookingExists?.booking?.arrivalDate).format(
             "MMM DD, YYYY"
@@ -439,14 +430,6 @@ export default class PaymentService {
       ];
     }
 
-    // const emailHTML = BookingSuccessfulEmail({
-    //   bookingReference: bookingExists?.bookingReference,
-    //   booking: bookingExists,
-    //   bookingType: bookingExists?.bookingType,
-    //   bookingDetails,
-    //   totalBilled: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
-    // });
-
     const dynamicTemplateData = {
       title: bookingExists?.user?.title ?? bookingExists?.title,
       firstName: bookingExists?.user?.firstName ?? bookingExists?.firstName,
@@ -487,24 +470,6 @@ export default class PaymentService {
     };
 
     await sendSGDynamicEmail(msg);
-
-    // const message = {
-    //   to: bookingExists?.user?.email ?? bookingExists?.email,
-    //   from: process.env.SENGRID_EMAIL,
-    //   subject: `${
-    //     bookingExists?.bookingType == "Airport"
-    //       ? "Airport Transfer"
-    //       : bookingExists?.bookingType == "Car"
-    //       ? "Car Rental"
-    //       : bookingExists?.bookingType == "Priority"
-    //       ? "Priority Pass"
-    //       : bookingExists?.bookingType == "Visa"
-    //       ? "Visa On Arrival"
-    //       : ""
-    //   } Booking Confirmation`,
-    //   html: ReactDOMServer.renderToString(emailHTML),
-    // };
-    // await sendEmail(message);
 
     // Send sms
     await sendSMS(
@@ -603,8 +568,8 @@ export default class PaymentService {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `http://localhost:3000/booking/payment-status?bid=${booking?._id}&&status=success&&ch=Stripe`,
-      cancel_url: `http://localhost:3000/booking/payment-status?bid=${booking?._id}&&status=failed&&ch=Stripe`,
+      success_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&&status=success&&ch=Stripe`,
+      cancel_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&&status=failed&&ch=Stripe`,
     });
 
     console.log("SESSION:", session);

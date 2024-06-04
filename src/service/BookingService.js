@@ -576,16 +576,36 @@ export default class BookingService {
     const bookingsAwaitingAssignment = await BookingModel.find({
       bookingStatus: "Not yet assigned",
     })
-      .populate("booking")
-      .populate("paymentId")
-      .populate("user")
-      .populate("bookingCurrency")
+      .populate({
+        path: "booking",
+      })
+      .populate({
+        path: "bookingCurrency",
+      })
+      .populate({
+        path: "assignedDriver",
+      })
+      .populate({
+        path: "assignedVendor",
+      })
+      .populate({
+        path: "paymentId",
+      })
+      .populate({
+        path: "assignedDriver",
+      })
+      .populate({
+        path: "user",
+      })
       .sort({ createdAt: -1 });
 
     // Remove Visa On Arrival Bookings
     const filteredVoaBookings = bookingsAwaitingAssignment?.filter(
       (booking) => {
-        return booking?.bookingType !== "Visa";
+        return (
+          booking?.bookingType !== "Visa" &&
+          booking?.paymentId?.paymentStatus == "Successful"
+        );
       }
     );
 
