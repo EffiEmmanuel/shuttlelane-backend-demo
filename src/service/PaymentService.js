@@ -104,7 +104,7 @@ export default class PaymentService {
         {
           label: "Pick-up Address",
           value: bookingExists?.booking?.pickupAddress,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Pick-up Date",
@@ -116,7 +116,7 @@ export default class PaymentService {
         {
           label: "Pick-up Time",
           value: moment(bookingExists?.booking?.pickupTime).format("HH:MM A"),
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Airline",
@@ -126,12 +126,12 @@ export default class PaymentService {
         {
           label: "Flight Number",
           value: bookingExists?.booking?.flightNumber ?? "N/A",
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Drop-off Address",
           value: bookingExists?.booking?.dropoffAddress,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Vehicle Class",
@@ -143,7 +143,7 @@ export default class PaymentService {
           value: `${bookingExists?.user?.title ?? bookingExists?.title} ${
             bookingExists?.user?.firstName ?? bookingExists?.firstName
           } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "TOTAL BILLED",
@@ -172,7 +172,7 @@ export default class PaymentService {
         {
           label: "Pick-up Address",
           value: bookingExists?.booking?.pickupAddress,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Pick-up Date",
@@ -184,7 +184,7 @@ export default class PaymentService {
         {
           label: "Pick-up Time",
           value: moment(bookingExists?.booking?.pickupTime).format("HH:MM A"),
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Car",
@@ -194,7 +194,7 @@ export default class PaymentService {
         {
           label: "Days",
           value: bookingExists?.booking?.days,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Passenger",
@@ -206,7 +206,7 @@ export default class PaymentService {
         {
           label: "TOTAL BILLED",
           value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
       ];
     } else if (bookingExists?.bookingType == "Priority") {
@@ -230,7 +230,7 @@ export default class PaymentService {
         {
           label: "Pick-up Address",
           value: bookingExists?.booking?.pickupAddress,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Pick-up Date",
@@ -242,7 +242,7 @@ export default class PaymentService {
         {
           label: "Pick-up Time",
           value: moment(bookingExists?.booking?.pickupTime).format("HH:MM A"),
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Airline",
@@ -252,12 +252,12 @@ export default class PaymentService {
         {
           label: "Flight Number",
           value: bookingExists?.booking?.flightNumber ?? "N/A",
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Service Type",
           value: booking?.service,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Protocol Type",
@@ -269,7 +269,7 @@ export default class PaymentService {
           value: `${bookingExists?.user?.title ?? bookingExists?.title} ${
             bookingExists?.user?.firstName ?? bookingExists?.firstName
           } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "TOTAL BILLED",
@@ -294,7 +294,7 @@ export default class PaymentService {
         {
           label: "Nationality",
           value: bookingExists?.booking?.nationality,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Visa Class",
@@ -304,7 +304,7 @@ export default class PaymentService {
         {
           label: "Passport Type",
           value: bookingExists?.booking?.passportType,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Full Name",
@@ -314,7 +314,7 @@ export default class PaymentService {
         {
           label: "Email",
           value: bookingExists?.booking?.email,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Date Of Birth",
@@ -326,7 +326,7 @@ export default class PaymentService {
         {
           label: "Place Of Birth",
           value: bookingExists?.booking?.placeOfBirth,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Gender",
@@ -336,7 +336,7 @@ export default class PaymentService {
         {
           label: "Marital Status",
           value: bookingExists?.booking?.maritalStatus,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Passport Number",
@@ -348,7 +348,7 @@ export default class PaymentService {
           value: moment(bookingExists?.booking?.passportExpiryDate).format(
             "MMM DD, YYYY"
           ),
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Purpose Of Journey",
@@ -358,7 +358,7 @@ export default class PaymentService {
         {
           label: "Airline",
           value: bookingExists?.booking?.airline,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Flight Number",
@@ -368,14 +368,14 @@ export default class PaymentService {
         {
           label: "Country Of Departure",
           value: bookingExists?.booking?.countryOfDeparture,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Arrival Date",
           value: moment(bookingExists?.booking?.arrivalDate).format(
             "MMM DD, YYYY"
           ),
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Port Of Entry",
@@ -385,7 +385,7 @@ export default class PaymentService {
         {
           label: "Duration Of Stay",
           value: bookingExists?.booking?.durationOfStay,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Contact Name",
@@ -395,7 +395,7 @@ export default class PaymentService {
         {
           label: "Contact Number",
           value: bookingExists?.booking?.contactNumber,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Contact Address",
@@ -405,7 +405,7 @@ export default class PaymentService {
         {
           label: "Contact City",
           value: bookingExists?.booking?.contactCity,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Contact State",
@@ -415,7 +415,7 @@ export default class PaymentService {
         {
           label: "Contact Email",
           value: bookingExists?.booking?.contactEmail,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
         {
           label: "Contact Postal Code",
@@ -425,7 +425,7 @@ export default class PaymentService {
         {
           label: "TOTAL BILLED",
           value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
-          backgroundColor: "",
+          backgroundColor: "#FFFFFF",
         },
       ];
     }
