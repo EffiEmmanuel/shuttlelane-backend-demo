@@ -568,8 +568,8 @@ export default class PaymentService {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&&status=success&&ch=Stripe`,
-      cancel_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&&status=failed&&ch=Stripe`,
+      success_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&status=success&ch=Stripe`,
+      cancel_url: `https://www.shuttlelane.com/booking/payment-status?bid=${booking?._id}&status=failed&ch=Stripe`,
     });
 
     console.log("SESSION:", session);
