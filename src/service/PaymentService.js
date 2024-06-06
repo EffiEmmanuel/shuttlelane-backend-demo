@@ -508,12 +508,12 @@ export default class PaymentService {
   async getPayments() {
     const payments = await this.PaymentModel.find({})
       .populate("booking")
-      .populate("currency")
-      .sort({ createdAt: -1 });
+      .populate("currency");
+    //   .sort({ createdAt: -1 });
     // Return a response
     return {
       status: 200,
-      message: `All payments fetched`,
+      message: `All payments fetched 2`,
       payments: payments,
     };
   }
