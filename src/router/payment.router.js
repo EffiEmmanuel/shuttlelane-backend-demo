@@ -6,7 +6,7 @@ import { createStripePaymentIntent } from "../controller/user.controller.js";
 const paymentRouter = express.Router();
 
 // Routes
-// GET STATISTICS
+// GET PAYMENTS
 paymentRouter.get("/", verifyUserToken, getPayments);
 // GET UPCOMING BOOKINGS
 paymentRouter.get("/:paymentId", verifyUserToken, getPayment);
