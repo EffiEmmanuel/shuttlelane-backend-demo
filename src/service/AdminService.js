@@ -1652,12 +1652,23 @@ export default class AdminService {
     if (areFieldsEmpty) return areFieldsEmpty;
 
     // Check if any vendor exists with the vendor id
-    const vendor = await VendorModel.findOneAndUpdate(
+    const updatedVendor = await VendorModel.findOneAndUpdate(
       {
         _id: _id,
       },
       { isAccountApproved: true }
     )
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
+
+    // Get the vendor
+    const vendor = await VendorModel.findOne({
+      _id: _id,
+    })
       .populate({
         path: "bookingsAssignedTo",
       })
