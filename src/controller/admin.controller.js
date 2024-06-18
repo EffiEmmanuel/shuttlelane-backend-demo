@@ -464,7 +464,8 @@ export const fetchSuspendDriverAccounts = async (req, res) => {
       message: response?.message,
     });
   } catch (error) {
-    return res.status(500).json({ message: internalServerError });
+    console.log("ERROR FROM FETCH SUSPENDED DRIVERS:", error);
+    return res.status(500).json({ message: internalServerError, error: error });
   }
 };
 
