@@ -18,7 +18,11 @@ import DriverModel from "../model/driver.model.js";
 import CityModel from "../model/city.model.js";
 import VendorModel from "../model/vendor.model.js";
 import EnquiryModel from "../model/enquiry.model.js";
-import { sendBulkEmail, sendEmail } from "../util/sendgrid.js";
+import {
+  sendBulkEmail,
+  sendEmail,
+  sendSGDynamicEmail,
+} from "../util/sendgrid.js";
 import CurrencyModel from "../model/currency.model.js";
 import RatePerMileModel from "../model/ratePerMile.model.js";
 import VisaOnArrivalRateModel from "../model/visaOnArrivalRate.model.js";
@@ -30,7 +34,10 @@ import AssignToBookingEmailTemplate from "../emailTemplates/driverEmailTemplates
 import DriverAccountApprovalEmail from "../emailTemplates/driverEmailTemplates/DriverAccountApprovalEmail/index.js";
 import AdminAccountCreationEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminAccountCreationEmail/index.js";
 import AdminAccountCreationSuccessfulEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminAccountCreationSuccessfulEmail/index.js";
-import { convertAmountToUserCurrency } from "../util/index.js";
+import {
+  convertAmountToUserCurrency,
+  generateBookingDetails,
+} from "../util/index.js";
 import VendorAccountApprovalEmail from "../emailTemplates/vendorEmailTemplates/VendorAccountApprovalEmail/index.js";
 
 export default class AdminService {
@@ -772,242 +779,196 @@ export default class AdminService {
     };
   }
 
-  // This service APPROVES a driver account by their id
-  async approveDriverAccount(_id) {
-    // Validate if fields are empty
-    const areFieldsEmpty = validateFields([_id]);
-
-    // areFieldsEmpty is an object that contains a status and message field
-    if (areFieldsEmpty) return areFieldsEmpty;
-
-    // Check if any driver exists with the driver id
-    const driver = await DriverModel.findOneAndUpdate(
-      {
-        _id: _id,
-      },
-      { isAccountApproved: true }
-    );
-
-    if (!driver) {
-      return {
-        status: 404,
-        message: "No driver exists with the id specified.",
-        driver: driver,
-      };
-    }
-
-    // TO-DO: Send driver a confirmation email here
-    const emailHTML = DriverAccountApprovalEmail({
-      driver,
-    });
-
-    const message = {
-      to: driver.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: "Driver Account Has Been Approved🎉",
-      html: ReactDOMServer.renderToString(emailHTML),
-    };
-    await sendEmail(message);
-
-    const drivers = await DriverModel.find({});
-
-    return {
-      status: 201,
-      message: `Driver account has been approved`,
-      drivers: drivers,
-    };
-  }
-
   // This service ASSIGNS a driver to a job
-  async assignDriverToJob(userType, userId, bookingId, bookingRate) {
-    console.log("VALUES:", userType, userId, bookingId, bookingRate);
+  //   async assignDriverToJob(userType, userId, bookingId, bookingRate) {
+  //     console.log("VALUES:", userType, userId, bookingId, bookingRate);
 
-    // Validate if fields are empty
-    const areFieldsEmpty = validateFields([
-      userType,
-      userId,
-      bookingId,
-      bookingRate,
-    ]);
+  //     // Validate if fields are empty
+  //     const areFieldsEmpty = validateFields([
+  //       userType,
+  //       userId,
+  //       bookingId,
+  //       bookingRate,
+  //     ]);
 
-    // areFieldsEmpty is an object that contains a status and message field
-    if (areFieldsEmpty) return areFieldsEmpty;
+  //     // areFieldsEmpty is an object that contains a status and message field
+  //     if (areFieldsEmpty) return areFieldsEmpty;
 
-    let vendor, driver;
+  //     let vendor, driver;
 
-    if (userType == "Driver") {
-      // Check if any driver exists with the driver id
-      driver = await DriverModel.findOne({
-        _id: userId,
-        isAccountApproved: true,
-      }).populate({
-        path: "bookingsAssignedTo",
-      });
+  //     if (userType == "Driver") {
+  //       // Check if any driver exists with the driver id
+  //       driver = await DriverModel.findOne({
+  //         _id: userId,
+  //         isAccountApproved: true,
+  //       }).populate({
+  //         path: "bookingsAssignedTo",
+  //       });
 
-      if (!driver) {
-        return {
-          status: 404,
-          message: "No driver exists with the id specified.",
-          driver: driver,
-        };
-      }
+  //       if (!driver) {
+  //         return {
+  //           status: 404,
+  //           message: "No driver exists with the id specified.",
+  //           driver: driver,
+  //         };
+  //       }
 
-      driver?.bookingsAssignedTo?.push(bookingId);
-      console.log("DBAT:", driver?.bookingsAssignedTo);
+  //       driver?.bookingsAssignedTo?.push(bookingId);
+  //       console.log("DBAT:", driver?.bookingsAssignedTo);
 
-      const updateDriver = await DriverModel.findOneAndUpdate(
-        { _id: driver?._id },
-        {
-          bookingsAssignedTo: driver?.bookingsAssignedTo,
-        }
-      );
+  //       const updateDriver = await DriverModel.findOneAndUpdate(
+  //         { _id: driver?._id },
+  //         {
+  //           bookingsAssignedTo: driver?.bookingsAssignedTo,
+  //         }
+  //       );
 
-      const updateBooking = await BookingModel.findOneAndUpdate(
-        {
-          _id: bookingId,
-        },
-        {
-          driverJobWasSentTo: driver?._id,
-          hasDriverAccepted: false,
-          hasDriverDeclined: false,
-          bookingStatus: "Awaiting response",
-          bookingRate: bookingRate,
-        }
-      ).populate({
-        path: "booking",
-      });
+  //       const updateBooking = await BookingModel.findOneAndUpdate(
+  //         {
+  //           _id: bookingId,
+  //         },
+  //         {
+  //           driverJobWasSentTo: driver?._id,
+  //           hasDriverAccepted: false,
+  //           hasDriverDeclined: false,
+  //           bookingStatus: "Awaiting response",
+  //           bookingRate: bookingRate,
+  //         }
+  //       ).populate({
+  //         path: "booking",
+  //       });
 
-      // Sample booking data
-      const booking = {
-        "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
-        "Pickup Location": `${updateBooking?.booking?.pickupAddress}`,
-        Destination: `${updateBooking?.booking?.dropoffAddress}`,
-        "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
-          "en-US"
-        )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
-          "en-US",
-          {
-            hour12: true,
-          }
-        )}`,
-        "Booking Rate": `${
-          updateBooking?.bookingCurrency?.symbol ?? "₦"
-        }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
-      };
+  //       // Sample booking data
+  //       const booking = {
+  //         "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
+  //         "Pickup Location": `${updateBooking?.booking?.pickupAddress}`,
+  //         Destination: `${updateBooking?.booking?.dropoffAddress}`,
+  //         "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
+  //           "en-US"
+  //         )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
+  //           "en-US",
+  //           {
+  //             hour12: true,
+  //           }
+  //         )}`,
+  //         "Booking Rate": `${
+  //           updateBooking?.bookingCurrency?.symbol ?? "₦"
+  //         }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
+  //       };
 
-      const emailHTML = AssignToBookingEmailTemplate({
-        booking,
-        driverId: driver?._id?.toString(),
-      });
+  //       const emailHTML = AssignToBookingEmailTemplate({
+  //         booking,
+  //         driverId: driver?._id?.toString(),
+  //       });
 
-      //   console.log("EMAIL:", emailHTML);
+  //       //   console.log("EMAIL:", emailHTML);
 
-      const message = {
-        to: updateDriver?.email,
-        from: process.env.SENGRID_EMAIL,
-        subject: "🚨New Job Alert🚨",
-        html: ReactDOMServer.renderToString(emailHTML),
-      };
-      await sendEmail(message);
+  //       const message = {
+  //         to: updateDriver?.email,
+  //         from: process.env.SENGRID_EMAIL,
+  //         subject: "🚨New Job Alert🚨",
+  //         html: ReactDOMServer.renderToString(emailHTML),
+  //       };
+  //       await sendEmail(message);
 
-      const bookingsAwaitingAssignment = await BookingModel.find({
-        bookingStatus: "Not yet assigned",
-      })
-        .populate("booking")
-        .populate("paymentId");
+  //       const bookingsAwaitingAssignment = await BookingModel.find({
+  //         bookingStatus: "Not yet assigned",
+  //       })
+  //         .populate("booking")
+  //         .populate("paymentId");
 
-      const updatedUnassignedBookings = bookingsAwaitingAssignment?.filter(
-        (booking) => {
-          return booking?.bookingType !== "Visa";
-        }
-      );
+  //       const updatedUnassignedBookings = bookingsAwaitingAssignment?.filter(
+  //         (booking) => {
+  //           return booking?.bookingType !== "Visa";
+  //         }
+  //       );
 
-      return {
-        status: 201,
-        updatedUnassignedBookings,
-        message: `Booking has been successfully assigned to ${driver?.firstName} ${driver?.lastName}.`,
-      };
-    } else {
-      // Check if any vendor exists with the vendor id
-      vendor = await VendorModel.findOne({
-        _id: userId,
-        isAccountApproved: true,
-      }).populate({
-        path: "bookingsAssignedTo",
-      });
+  //       return {
+  //         status: 201,
+  //         updatedUnassignedBookings,
+  //         message: `Booking has been successfully assigned to ${driver?.firstName} ${driver?.lastName}.`,
+  //       };
+  //     } else {
+  //       // Check if any vendor exists with the vendor id
+  //       vendor = await VendorModel.findOne({
+  //         _id: userId,
+  //         isAccountApproved: true,
+  //       }).populate({
+  //         path: "bookingsAssignedTo",
+  //       });
 
-      if (!vendor) {
-        return {
-          status: 404,
-          message:
-            "No vendor exists with the id specified or this account has ont been approved yet.",
-          vendor: vendor,
-        };
-      }
+  //       if (!vendor) {
+  //         return {
+  //           status: 404,
+  //           message:
+  //             "No vendor exists with the id specified or this account has ont been approved yet.",
+  //           vendor: vendor,
+  //         };
+  //       }
 
-      const updatedBookingsAssignedToList =
-        vendor?.bookingsAssignedTo?.push(bookingId);
+  //       const updatedBookingsAssignedToList =
+  //         vendor?.bookingsAssignedTo?.push(bookingId);
 
-      const updateVendor = await VendorModel.findOneAndUpdate(
-        { _id: vendor?._id },
-        {
-          bookingsAssignedTo: updatedBookingsAssignedToList,
-        }
-      );
+  //       const updateVendor = await VendorModel.findOneAndUpdate(
+  //         { _id: vendor?._id },
+  //         {
+  //           bookingsAssignedTo: updatedBookingsAssignedToList,
+  //         }
+  //       );
 
-      const updateBooking = await BookingModel.findOneAndUpdate(
-        {
-          _id: bookingId,
-        },
-        {
-          vendorJobWasSentTo: vendor?._id,
-          hasVendorAccepted: false,
-          hasVendorDeclined: false,
-          bookingStatus: "Awaiting response",
-          bookingRate: bookingRate,
-        }
-      ).populate({
-        path: "booking",
-      });
+  //       const updateBooking = await BookingModel.findOneAndUpdate(
+  //         {
+  //           _id: bookingId,
+  //         },
+  //         {
+  //           vendorJobWasSentTo: vendor?._id,
+  //           hasVendorAccepted: false,
+  //           hasVendorDeclined: false,
+  //           bookingStatus: "Awaiting response",
+  //           bookingRate: bookingRate,
+  //         }
+  //       ).populate({
+  //         path: "booking",
+  //       });
 
-      // Sample booking data
-      const booking = {
-        _id: updateBooking?._id,
-        "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
-        "Pickup Location": `${updateBooking?.booking?.pickupLocation}`,
-        Destination: `${updateBooking?.booking?.dropoffLocation}`,
-        "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
-          "en-US"
-        )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
-          "en-US",
-          {
-            hour12: true,
-          }
-        )}`,
-        "Booking Rate": `${
-          updateBooking?.bookingCurrency?.symbol ?? "₦"
-        }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
-      };
+  //       // Sample booking data
+  //       const booking = {
+  //         _id: updateBooking?._id,
+  //         "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
+  //         "Pickup Location": `${updateBooking?.booking?.pickupLocation}`,
+  //         Destination: `${updateBooking?.booking?.dropoffLocation}`,
+  //         "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
+  //           "en-US"
+  //         )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
+  //           "en-US",
+  //           {
+  //             hour12: true,
+  //           }
+  //         )}`,
+  //         "Booking Rate": `${
+  //           updateBooking?.bookingCurrency?.symbol ?? "₦"
+  //         }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
+  //       };
 
-      const emailHTML = AssignToBookingEmailTemplate({
-        booking: booking,
-        driverId: updateVendor?._id,
-      });
+  //       const emailHTML = AssignToBookingEmailTemplate({
+  //         booking: booking,
+  //         driverId: updateVendor?._id,
+  //       });
 
-      const message = {
-        to: updateVendor?.email,
-        from: process.env.SENGRID_EMAIL,
-        subject: "🚨New Job Alert🚨",
-        html: ReactDOMServer.renderToString(emailHTML),
-      };
-      sendEmail(message);
+  //       const message = {
+  //         to: updateVendor?.email,
+  //         from: process.env.SENGRID_EMAIL,
+  //         subject: "🚨New Job Alert🚨",
+  //         html: ReactDOMServer.renderToString(emailHTML),
+  //       };
+  //       sendEmail(message);
 
-      return {
-        status: 201,
-        message: `Booking has been successfully assigned to ${vendor?.companyName}`,
-      };
-    }
-  }
+  //       return {
+  //         status: 201,
+  //         message: `Booking has been successfully assigned to ${vendor?.companyName}`,
+  //       };
+  //     }
+  //   }
 
   // This service GETS all drivers
   async getDrivers() {
@@ -1138,17 +1099,21 @@ export default class AdminService {
     }
 
     // TO-DO: Send driver a confirmation email here
-    const emailHTML = DriverAccountApprovalEmail({
-      driver,
-    });
-
-    const message = {
-      to: driver.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: "Driver Account Has Been Approved🎉",
-      html: ReactDOMServer.renderToString(emailHTML),
+    const dynamicTemplateData = {
+      driverName: `${driver?.firstName} ${driver?.lastName}`,
     };
-    await sendEmail(message);
+
+    const templateId = "d-8ab1ed96c87d452dbfe0be4d0f48b6c4";
+
+    const msg = {
+      to: driver?.email,
+      from: "info@shuttlelane.com",
+      subject: `Driver Account Has Been Approved🎉`,
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
 
     const drivers = await DriverModel.find({});
 
@@ -1159,7 +1124,178 @@ export default class AdminService {
     };
   }
 
-  // This service ASSIGNS a driver to a job
+  // This service fetches SUSPENDED driver accounts
+  async fetchSuspendDriverAccounts() {
+    const suspendedDriverAccounts = await DriverModel.find({
+      isAccountBlocked: true,
+    }).sort({ createdAt: -1 });
+
+    return {
+      status: 200,
+      message: `All suspended driver accounts fetched`,
+      suspendedDriverAccounts: suspendedDriverAccounts,
+    };
+  }
+
+  // This service REJECTS a driver account application by their id
+  async rejectDriverAccount(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any driver exists with the driver id
+    const driver = await DriverModel.findOneAndUpdate(
+      {
+        _id: _id,
+      },
+      { isAccountApproved: false }
+    );
+
+    if (!driver) {
+      return {
+        status: 404,
+        message: "No driver exists with the id specified.",
+        driver: driver,
+      };
+    }
+
+    // TO-DO: Send driver a confirmation email here
+    const dynamicTemplateData = {
+      driverName: `${driver?.firstName} ${driver?.lastName}`,
+    };
+
+    const templateId = "d-4ca77bcd72064605ba885f8df8606659";
+
+    const msg = {
+      to: driver?.email,
+      from: "info@shuttlelane.com",
+      subject: `Driver Application Rejected`,
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
+
+    const drivers = await DriverModel.find({});
+
+    return {
+      status: 201,
+      message: `Driver application has been successfully rejected`,
+      drivers: drivers,
+    };
+  }
+
+  // This service SUSPENDS a driver account by their id
+  async suspendDriverAccount(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any driver exists with the driver id
+    const driver = await DriverModel.findOneAndUpdate(
+      {
+        _id: _id,
+      },
+      { isAccountBlocked: true }
+    );
+
+    if (!driver) {
+      return {
+        status: 404,
+        message: "No driver exists with the id specified.",
+        driver: driver,
+      };
+    }
+
+    // TO-DO: Send driver a confirmation email here
+    const dynamicTemplateData = {
+      driverName: `${driver?.firstName} ${driver?.lastName}`,
+    };
+
+    const templateId = "d-0ee57e699a5847a4bb0ad1c96e4b361f";
+
+    const msg = {
+      to: driver?.email,
+      from: "info@shuttlelane.com",
+      subject: `Driver Account Suspended`,
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
+
+    const drivers = await DriverModel.find({}).sort({ createdAt: -1 });
+    const suspendedDriverAccounts = await DriverModel.find({
+      isAccountBlocked: true,
+    }).sort({ createdAt: -1 });
+
+    return {
+      status: 201,
+      message: `Driver account has been suspended`,
+      drivers: drivers,
+      suspendedDriverAccounts: suspendedDriverAccounts,
+    };
+  }
+
+  // This service UNSUSPENDS a driver account by their id
+  async unsuspendDriverAccount(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any driver exists with the driver id
+    const driver = await DriverModel.findOneAndUpdate(
+      {
+        _id: _id,
+      },
+      { isAccountBlocked: false }
+    );
+
+    if (!driver) {
+      return {
+        status: 404,
+        message: "No driver exists with the id specified.",
+        driver: driver,
+      };
+    }
+
+    // TO-DO: Send driver a confirmation email here
+    const dynamicTemplateData = {
+      driverName: `${driver?.firstName} ${driver?.lastName}`,
+    };
+
+    const templateId = "d-fd004f719e354bdf9c70f1c4fe419a97";
+
+    const msg = {
+      to: driver?.email,
+      from: "info@shuttlelane.com",
+      subject: `Welcome Back!`,
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
+
+    const drivers = await DriverModel.find({}).sort({ createdAt: -1 });
+    const suspendedDriverAccounts = await DriverModel.find({
+      isAccountBlocked: true,
+    }).sort({ createdAt: -1 });
+
+    return {
+      status: 201,
+      message: `Driver account has been unsuspended`,
+      drivers: drivers,
+      suspendedDriverAccounts: suspendedDriverAccounts,
+    };
+  }
+
+  // This service ASSIGNS a PARTNER (Driver or Vendor) to a job
   async assignDriverToJob(userType, userId, bookingId, bookingRate) {
     console.log("VALUES:", userType, userId, bookingId, bookingRate);
 
@@ -1218,38 +1354,24 @@ export default class AdminService {
         path: "booking",
       });
 
-      // Sample booking data
-      const booking = {
-        "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
-        "Pickup Location": `${updateBooking?.booking?.pickupAddress}`,
-        Destination: `${updateBooking?.booking?.dropoffAddress}`,
-        "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
-          "en-US"
-        )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
-          "en-US",
-          {
-            hour12: true,
-          }
-        )}`,
-        "Booking Rate": `${
-          updateBooking?.bookingCurrency?.symbol ?? "₦"
-        }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
+      const booking = await BookingModel.findOne({ _id: bookingId });
+      const bookingDetails = await generateBookingDetails(booking);
+      // TO-DO: Send confirmation email here
+      const dynamicTemplateData = {
+        driverName: `${driver?.firstName} ${driver?.lastName}`,
+        bookingDetails: bookingDetails,
       };
 
-      const emailHTML = AssignToBookingEmailTemplate({
-        booking,
-        driverId: driver?._id?.toString(),
-      });
-
-      //   console.log("EMAIL:", emailHTML);
-
-      const message = {
-        to: updateDriver?.email,
-        from: process.env.SENGRID_EMAIL,
-        subject: "🚨New Job Alert🚨",
-        html: ReactDOMServer.renderToString(emailHTML),
+      const templateId = "d-509719020e154d5aa26ce543aa362ea0";
+      const msg = {
+        to: driver?.email,
+        from: "booking@shuttlelane.com",
+        subject: `New Booking Notification🚨`,
+        templateId: templateId,
+        dynamicTemplateData,
       };
-      await sendEmail(message);
+
+      await sendSGDynamicEmail(msg);
 
       const bookingsAwaitingAssignment = await BookingModel.find({
         bookingStatus: "Not yet assigned",
@@ -1318,40 +1440,27 @@ export default class AdminService {
         path: "booking",
       });
 
-      console.log("HELLO 5555:", updateBooking);
+      const booking = await BookingModel.findOne({ _id: bookingId });
 
-      // Sample booking data
-      const booking = {
-        "Passenger Name": `${updateBooking?.firstName} ${updateBooking?.lastName}`,
-        "Pickup Location": `${updateBooking?.booking?.pickupAddress}`,
-        Destination: `${updateBooking?.booking?.dropoffAddress}`,
-        "Date & Time": `${updateBooking?.booking?.pickupDate?.toLocaleDateString(
-          "en-US"
-        )} at ${updateBooking?.booking?.pickupTime?.toLocaleTimeString(
-          "en-US",
-          {
-            hour12: true,
-          }
-        )}`,
-        "Booking Rate": `${
-          updateBooking?.bookingCurrency?.symbol ?? "₦"
-        }${Intl.NumberFormat("en-US", {}).format(bookingRate)}`,
+      const bookingDetails = await generateBookingDetails(booking);
+
+      // TO-DO: Send confirmation email here
+      const dynamicTemplateData = {
+        companyName: vendor?.companyName,
+        bookingDetails: bookingDetails,
       };
 
-      console.log("HELLO 6666:", typeof updateVendor?._id?.toString());
+      const templateId = "d-e84ddb740d574cc09100710b40a02a22";
 
-      const emailHTML = AssignToBookingEmailTemplate({
-        booking,
-        driverId: updateVendor?._id?.toString(),
-      });
-
-      const message = {
-        to: updateVendor?.companyEmail,
-        from: process.env.SENGRID_EMAIL,
-        subject: "🚨New Job Alert🚨",
-        html: ReactDOMServer.renderToString(emailHTML),
+      const msg = {
+        to: vendor?.companyEmail ?? vendor?.contactEmail,
+        from: "booking@shuttlelane.com",
+        subject: `New Booking Notification🚨`,
+        templateId: templateId,
+        dynamicTemplateData,
       };
-      sendEmail(message);
+
+      await sendSGDynamicEmail(msg);
 
       const bookingsAwaitingAssignment = await BookingModel.find({
         bookingStatus: "Not yet assigned",
@@ -1685,17 +1794,21 @@ export default class AdminService {
     }
 
     // TO-DO: Send vendor a confirmation email here
-    const emailHTML = VendorAccountApprovalEmail({
-      vendor,
-    });
-
-    const message = {
-      to: vendor.companyEmail,
-      from: process.env.SENGRID_EMAIL,
-      subject: "Vendor Account Has Been Approved🎉",
-      html: ReactDOMServer.renderToString(emailHTML),
+    const dynamicTemplateData = {
+      companyName: vendor?.companyName,
     };
-    await sendEmail(message);
+
+    const templateId = "d-0ea2352470254998bcd00d840a37bb0b";
+
+    const msg = {
+      to: vendor?.companyEmail ?? vendor?.contactEmail,
+      from: "info@shuttlelane.com",
+      subject: "Vendor Account Has Been Approved🎉",
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
 
     const vendors = await VendorModel.find({});
 
@@ -1703,6 +1816,228 @@ export default class AdminService {
       status: 201,
       message: `Vendor account has been approved`,
       vendors: vendors,
+    };
+  }
+
+  // This service REJECTS a vendor account application by their id
+  async rejectVendorAccount(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any vendor exists with the vendor id
+    const updatedVendor = await VendorModel.findOneAndUpdate(
+      {
+        _id: _id,
+      },
+      { isAccountApproved: false }
+    )
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
+
+    // Get the vendor
+    const vendor = await VendorModel.findOne({
+      _id: _id,
+    })
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
+
+    if (!vendor) {
+      return {
+        status: 404,
+        message: "No vendor exists with the id specified.",
+        vendor: vendor,
+      };
+    }
+
+    // TO-DO: Send vendor a confirmation email here
+    const dynamicTemplateData = {
+      companyName: vendor?.companyName,
+    };
+
+    const templateId = "d-9608d98927a04818a2e41e57f9ec4111";
+
+    const msg = {
+      to: vendor?.companyEmail ?? vendor?.contactEmail,
+      from: "info@shuttlelane.com",
+      subject: "Vendor Account Application Has Been Rejected",
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
+
+    const vendors = await VendorModel.find({});
+
+    return {
+      status: 201,
+      message: `Vendor application has been rejected`,
+      vendors: vendors,
+    };
+  }
+
+  // This service fetches SUSPENDED vendor accounts
+  async fetchSuspendVendorAccounts() {
+    const suspendedVendorAccounts = await VendorModel.find({
+      isAccountBlocked: true,
+    }).sort({ createdAt: -1 });
+
+    return {
+      status: 200,
+      message: `All suspended vendor accounts fetched`,
+      suspendedVendorAccounts: suspendedVendorAccounts,
+    };
+  }
+
+  // This service SUSPENDS a vendor account by their id
+  async suspendVendorAccount(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any vendor exists with the vendor id
+    const updatedVendor = await VendorModel.findOneAndUpdate(
+      {
+        _id: _id,
+      },
+      { isAccountBlocked: true }
+    )
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
+
+    // Get the vendor
+    const vendor = await VendorModel.findOne({
+      _id: _id,
+    })
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
+
+    if (!vendor) {
+      return {
+        status: 404,
+        message: "No vendor exists with the id specified.",
+        vendor: vendor,
+      };
+    }
+
+    // TO-DO: Send vendor a confirmation email here
+    const dynamicTemplateData = {
+      companyName: vendor?.companyName,
+    };
+
+    const templateId = "d-865b59a46cb347ab914ec3886e6f03a0";
+
+    const msg = {
+      to: vendor?.companyEmail ?? vendor?.contactEmail,
+      from: "info@shuttlelane.com",
+      subject: "Vendor Account Has Been Temporarily Suspended",
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
+
+    const vendors = await VendorModel.find({}).sort({ createdAt: -1 });
+    const suspendedVendorAccounts = await VendorModel.find({
+      isAccountBlocked: true,
+    }).sort({ createdAt: -1 });
+
+    return {
+      status: 201,
+      message: `Vendor account has been suspended`,
+      vendors: vendors,
+      suspendedVendorAccounts: suspendedVendorAccounts,
+    };
+  }
+
+  // This service UNSUSPENDS a vendor account by their id
+  async unsuspendVendorAccount(_id) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Check if any vendor exists with the vendor id
+    const updatedVendor = await VendorModel.findOneAndUpdate(
+      {
+        _id: _id,
+      },
+      { isAccountBlocked: false }
+    )
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
+
+    // Get the vendor
+    const vendor = await VendorModel.findOne({
+      _id: _id,
+    })
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
+
+    if (!vendor) {
+      return {
+        status: 404,
+        message: "No vendor exists with the id specified.",
+        vendor: vendor,
+      };
+    }
+
+    // TO-DO: Send vendor a confirmation email here
+    const dynamicTemplateData = {
+      companyName: vendor?.companyName,
+    };
+
+    const templateId = "d-79a6c8bf25f942aba3f3fa9f33096db8";
+
+    const msg = {
+      to: vendor?.companyEmail ?? vendor?.contactEmail,
+      from: "info@shuttlelane.com",
+      subject: "Welcome Back!",
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
+
+    const vendors = await VendorModel.find({}).sort({ createdAt: -1 });
+    const suspendedVendorAccounts = await VendorModel.find({
+      isAccountBlocked: true,
+    }).sort({ createdAt: -1 });
+
+    return {
+      status: 201,
+      message: `Vendor account has been unsuspended`,
+      vendors: vendors,
+      suspendedVendorAccounts: suspendedVendorAccounts,
     };
   }
 

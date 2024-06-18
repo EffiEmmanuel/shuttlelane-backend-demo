@@ -58,6 +58,14 @@ import {
   deleteCity,
   fetchRatesPerMile,
   deleteRatePerMile,
+  rejectVendorAccount,
+  suspendVendorAccount,
+  unsuspendVendorAccount,
+  fetchSuspendVendorAccounts,
+  rejectDriverAccount,
+  fetchSuspendDriverAccounts,
+  suspendDriverAccount,
+  unsuspendDriverAccount,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
@@ -116,6 +124,30 @@ adminRouter.patch(
   verifyUserToken,
   approveDriverAccount
 );
+// Reject Driver account
+adminRouter.patch(
+  "/drivers/:driverId/account/reject",
+  verifyUserToken,
+  rejectDriverAccount
+);
+// Fetch Suspended Driver accounts
+adminRouter.get(
+  "/drivers/suspended-accounts",
+  verifyUserToken,
+  fetchSuspendDriverAccounts
+);
+// Suspend Driver account
+adminRouter.patch(
+  "/drivers/:driverId/account/suspend",
+  verifyUserToken,
+  suspendDriverAccount
+);
+// Unsuspend Driver account
+adminRouter.patch(
+  "/drivers/:driverId/account/unsuspend",
+  verifyUserToken,
+  unsuspendDriverAccount
+);
 // Assign Driver to a booking
 adminRouter.patch(
   "/assign-to-booking/:userType/:userId/:bookingId",
@@ -141,6 +173,30 @@ adminRouter.patch(
   "/vendors/:vendorId/account/approve",
   verifyUserToken,
   approveVendorAccount
+);
+// Reject Vendor account
+adminRouter.patch(
+  "/vendors/:vendorId/account/reject",
+  verifyUserToken,
+  rejectVendorAccount
+);
+// Fetch Suspended Vendor accounts
+adminRouter.get(
+  "/vendors/suspended-accounts",
+  verifyUserToken,
+  fetchSuspendVendorAccounts
+);
+// Suspend Vendor account
+adminRouter.patch(
+  "/vendors/:vendorId/account/suspend",
+  verifyUserToken,
+  suspendVendorAccount
+);
+// Unsuspend Vendor account
+adminRouter.patch(
+  "/vendors/:vendorId/account/unsuspend",
+  verifyUserToken,
+  unsuspendVendorAccount
 );
 // Delete Vendor by id
 adminRouter.delete(

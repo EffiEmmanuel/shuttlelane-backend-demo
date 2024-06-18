@@ -432,6 +432,82 @@ export const approveDriverAccount = async (req, res) => {
   }
 };
 
+// Reject a driver's account
+export const rejectDriverAccount = async (req, res) => {
+  try {
+    // Reject driver account
+    const response = await adminService.rejectDriverAccount(
+      req.params.driverId
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      drivers: response?.drivers ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Fetch suspend driver accounts
+export const fetchSuspendDriverAccounts = async (req, res) => {
+  try {
+    // Fetch suspend driver accounts
+    const response = await adminService.fetchSuspendDriverAccounts();
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      suspendedDriverAccounts: response?.suspendedDriverAccounts ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Suspend a driver's account
+export const suspendDriverAccount = async (req, res) => {
+  try {
+    // Suspend driver account
+    const response = await adminService.suspendDriverAccount(
+      req.params.driverId
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      drivers: response?.drivers ?? null,
+      suspendedDriverAccounts: response?.suspendedDriverAccounts ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Unsuspend a driver's account
+export const unsuspendDriverAccount = async (req, res) => {
+  try {
+    // Unsuspend driver account
+    const response = await adminService.unsuspendDriverAccount(
+      req.params.driverId
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      drivers: response?.drivers ?? null,
+      suspendedDriverAccounts: response?.suspendedDriverAccounts ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
 // Assign driver to a job
 export const assignDriverToJob = async (req, res) => {
   try {
@@ -572,6 +648,82 @@ export const approveVendorAccount = async (req, res) => {
     return res.status(response?.status).json({
       status: response?.status,
       vendors: response?.vendors ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Reject a vendor's account
+export const rejectVendorAccount = async (req, res) => {
+  try {
+    // Reject vendor account
+    const response = await adminService.rejectVendorAccount(
+      req.params.vendorId
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      vendors: response?.vendors ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Fetch suspend vendor accounts
+export const fetchSuspendVendorAccounts = async (req, res) => {
+  try {
+    // Fetch suspend vendor accounts
+    const response = await adminService.fetchSuspendVendorAccounts();
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      suspendedVendorAccounts: response?.suspendedVendorAccounts ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Suspend a vendor's account
+export const suspendVendorAccount = async (req, res) => {
+  try {
+    // Suspend vendor account
+    const response = await adminService.suspendVendorAccount(
+      req.params.vendorId
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      vendors: response?.vendors ?? null,
+      suspendedVendorAccounts: response?.suspendedVendorAccounts ?? null,
+      message: response?.message,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Unsuspend a vendor's account
+export const unsuspendVendorAccount = async (req, res) => {
+  try {
+    // Unsuspend vendor account
+    const response = await adminService.unsuspendVendorAccount(
+      req.params.vendorId
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      vendors: response?.vendors ?? null,
+      suspendedVendorAccounts: response?.suspendedVendorAccounts ?? null,
       message: response?.message,
     });
   } catch (error) {

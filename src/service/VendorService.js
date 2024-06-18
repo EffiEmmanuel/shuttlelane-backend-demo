@@ -13,7 +13,7 @@ import {
 } from "../util/db.helper.js";
 import PaymentModel from "../model/payment.model.js";
 import BookingModel from "../model/booking.model.js";
-import { sendEmail } from "../util/sendgrid.js";
+import { sendEmail, sendSGDynamicEmail } from "../util/sendgrid.js";
 import shortid from "shortid";
 import VerificationModel from "../model/verification.model.js";
 import { sendSMS } from "../util/twilio.js";
@@ -34,6 +34,7 @@ import VendorDriverModel from "../model/vendorDriver.model.js";
 import DriverSignupConfirmationEmail from "../emailTemplates/driverEmailTemplates/DriverSignupEmail/index.js";
 import VendorFleetModel from "../model/vendorFleet.model.js";
 import mongoose from "mongoose";
+import { generateUserBookingDetails } from "../util/index.js";
 
 const verificationService = new VerificationService(VerificationModel);
 
@@ -68,18 +69,22 @@ export default class VendorService {
     });
 
     // TO-DO: Send confirmation email here
-
-    const emailHTML = VendorSignupConfirmationEmail({
-      vendor: newVendor,
-    });
-
-    const message = {
-      to: vendor?.companyEmail,
-      from: process.env.SENGRID_EMAIL,
-      subject: "Vendor Account Created Successfully🎉",
-      html: ReactDOMServer.renderToString(emailHTML),
+    const dynamicTemplateData = {
+      contactName: newVendor?.contactName,
+      companyName: newVendor?.companyName,
     };
-    await sendEmail(message);
+
+    const templateId = "d-e5b984be5da34e88b0e934ad2e9971ee";
+
+    const msg = {
+      to: newVendor?.companyEmail,
+      from: "info@shuttlelane.com",
+      subject: `Vendor Account Created Successfully🎉`,
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
 
     // TO-DO: Send phone verification SMS here
     // Generate verification code
@@ -529,78 +534,66 @@ export default class VendorService {
 
     console.log("BOOKIGNS ASSIGNED TO 7:");
     // Send a notification to the user
-    const userEmailHTML = UserBookingScheduledConfirmation({
-      bookingReference: updatedBooking?.booking?.bookingReference,
-      pickupDate: moment(updatedBooking?.booking?.pickupDate).format(
-        "MMM DD, YYYY"
-      ),
-      pickupTime: moment(updatedBooking?.booking?.pickupTime).format("H:MM A"),
-      pickupLocation: updatedBooking?.booking?.pickupAddress,
-      driverName: `${updatedBooking?.vendorAssignedDriver?.firstName} ${updatedBooking?.vendorAssignedDriver?.lastName}`,
-      driverMobile: updatedBooking?.vendorAssignedDriver?.mobile,
-      carName: updatedBooking?.assignedCar?.carName,
-      carType: updatedBooking?.assignedCar?.carType,
-      carModel: updatedBooking?.assignedCar?.carModel,
-      carColor: updatedBooking?.assignedCar?.carColor,
-      carPlateNumber: updatedBooking?.assignedCar?.carPlateNumber,
-    });
-
-    console.log("BOOKIGNS ASSIGNED TO 7.1:");
-
-    const userMessage = {
-      to: bookingExists?.user?.email ?? bookingExists?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: `Your booking has been scheduled: ${bookingExists?.bookingReference}`,
-      html: ReactDOMServer.renderToString(userEmailHTML),
+    const userBookingDetails = await generateUserBookingDetails(bookingExists);
+    const dynamicTemplateData = {
+      bookingReference: bookingExists?.bookingReference,
+      title: `${bookingExists?.title ?? bookingExists?.user?.title}`,
+      firstName: `${
+        bookingExists?.firstName ?? bookingExists?.user?.firstName
+      }`,
+      bookingDetails: userBookingDetails,
     };
 
-    console.log("BOOKIGNS ASSIGNED TO 7.2:");
-    sendEmail(userMessage);
+    const msg = {
+      to: bookingExists?.email ?? bookingExists?.user?.email,
+      from: "booking@shuttlelane.com",
+      subject: "Your Booking Has Been Scheduled",
+      templateId: "d-07c6b4b45f944ef38c55af74685e7143",
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
 
     console.log("BOOKIGNS ASSIGNED TO 8:");
     // Send a notification to the vendor
-    const vendorEmailHTML = VendorAcceptedBookingEmailTemplate({
-      pickupDate: moment(bookingExists?.booking?.pickupDate).format(
-        "MMM DD, YYYY"
-      ),
-      pickupTime: moment(bookingExists?.booking?.pickupTime).format("H:MM A"),
-      pickupLocation: bookingExists?.booking?.pickupAddress,
-      passengerName: `${
-        bookingExists?.user?.firstName ?? bookingExists?.firstName
-      } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
-      passengerMobile: bookingExists?.user?.mobile ?? bookingExists?.mobile,
-    });
+    const booking = await BookingModel.findOne({ _id: bookingId });
+    const bookingDetails = await generateBookingDetails(booking);
 
-    const vendorMessage = {
-      to:
-        bookingExists?.assignedVendor?.email ??
-        bookingExists?.vendorJobWasSentTo?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: `Booking Confirmation: ${bookingExists?.bookingReference}`,
-      html: ReactDOMServer.renderToString(vendorEmailHTML),
+    // TO-DO: Send confirmation email here
+    dynamicTemplateData = {
+      companyName: vendorExists?.companyName,
+      bookingDetails: bookingDetails,
     };
-    sendEmail(vendorMessage);
+
+    const templateId = "d-003655035e76402eac8ccc87a7393fa3";
+
+    msg = {
+      to: vendorExists?.companyEmail ?? vendorExists?.contactEmail,
+      from: "booking@shuttlelane.com",
+      subject: `Booking Confirmation: ${bookingExists?.bookingReference}`,
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
 
     console.log("BOOKIGNS ASSIGNED TO 9:");
+
     // Send a notification to the vendor if this is his first booking on shuttlelane
     if (vendorExists?.bookingsAssignedTo?.length === 1) {
-      const vendorFirstTimeEmailHTML = VendorFirstTimeBookingEmailTemplate({
-        vendorName: `${
-          bookingExists?.assignedVendor?.firstName ??
-          bookingExists?.vendorJobWasSentTo?.firstName
-        } ${
-          bookingExists?.assignedVendor?.lastName ??
-          bookingExists?.vendorJobWasSentTo?.lastName
-        }`,
-      });
-
-      const vendorFirstTimeMessage = {
-        to: vendorExists?.email,
-        from: process.env.SENGRID_EMAIL,
-        subject: `Congratulations on accepting your first booking!🎉`,
-        html: ReactDOMServer.renderToString(vendorFirstTimeEmailHTML),
+      const dynamicTemplateData = {
+        companyName: vendorExists?.companyName,
       };
-      sendEmail(vendorFirstTimeMessage);
+      const templateId = "d-d7be6e8c4c664188a31f1626fcd1fadf";
+      const msg = {
+        to: vendorExists?.companyEmail,
+        from: "booking@shuttlelane.com",
+        subject: `Congratulations on accepting your first booking!🎉`,
+        templateId: templateId,
+        dynamicTemplateData,
+      };
+
+      await sendSGDynamicEmail(msg);
     }
 
     // Fetch all upcoming bookings with the _id provided
@@ -843,28 +836,36 @@ export default class VendorService {
     sendEmail(adminMessage);
 
     // Send a notification to the user
-    const userEmailHTML = UserDriverStartedBookingEmailTemplate({
-      bookingReference: bookingExists?.booking?.bookingReference,
+    const userDynamicTemplateData = {
+      bookingReference: bookingExists?.bookingReference,
+      title: `${bookingExists?.title ?? bookingExists?.user?.title}`,
       firstName: `${
-        bookingExists?.user?.firstName ?? bookingExists?.firstName
+        bookingExists?.firstName ?? bookingExists?.user?.firstName
       }`,
-      driverName: `${
-        bookingExists?.vendorAssignedDriver?.firstName ??
-        bookingExists?.assignedVendor?.companyName
-      } ${bookingExists?.vendorAssignedDriver?.lastName}`,
-      driverContact:
-        bookingExists?.vendorAssignedDriver?.mobile ??
-        bookingExists?.assignedVendor?.contactMobile,
-    });
-
-    const userMessage = {
-      to: bookingExists?.user?.email ?? bookingExists?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: `Your trip has started: ${bookingExists?.bookingReference}`,
-      html: ReactDOMServer.renderToString(userEmailHTML),
+      driverName: bookingExists?.isAssignedToDriver
+        ? `${
+            bookingExists?.assignedDriver?.firstName ??
+            bookingExists?.driverJobWasSentTo?.firstName
+          } ${
+            bookingExists?.assignedDriver?.lastName ??
+            bookingExists?.driverJobWasSentTo?.lastName
+          }`
+        : `${bookingExists?.vendorAssignedDriver?.firstName} ${bookingExists?.vendorAssignedDriver?.lastName}`,
+      driverContact: bookingExists?.isAssignedToDriver
+        ? `${
+            bookingExists?.assignedDriver?.mobile ??
+            bookingExists?.driverJobWasSentTo?.mobile
+          }`
+        : `${bookingExists?.vendorAssignedDriver?.mobile}`,
     };
-
-    sendEmail(userMessage);
+    const msg = {
+      to: bookingExists?.email ?? bookingExists?.user?.email,
+      from: "booking@shuttlelane.com",
+      subject: "Your Trip Has Started",
+      templateId: "d-84451cd8238642418957e4c1f21bdfa3",
+      dynamicTemplateData: userDynamicTemplateData,
+    };
+    await sendSGDynamicEmail(msg);
 
     // Fetch all upcoming bookings with the _id provided
     const vendorUpcomingBookings = await BookingModel.find({
@@ -971,21 +972,21 @@ export default class VendorService {
     sendEmail(adminMessage);
 
     // Send a notification to the user
-    const userEmailHTML = UserBookingCompletedEmailTemplate({
-      bookingReference: bookingExists?.booking?.bookingReference,
+    const userDynamicTemplateData = {
+      bookingReference: bookingExists?.bookingReference,
+      title: `${bookingExists?.title ?? bookingExists?.user?.title}`,
       firstName: `${
-        bookingExists?.user?.firstName ?? bookingExists?.firstName
+        bookingExists?.firstName ?? bookingExists?.user?.firstName
       }`,
-    });
-
-    const userMessage = {
-      to: bookingExists?.user?.email ?? bookingExists?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: `Trip Ended: ${bookingExists?.bookingReference}`,
-      html: ReactDOMServer.renderToString(userEmailHTML),
     };
-
-    sendEmail(userMessage);
+    const msg = {
+      to: bookingExists?.email ?? bookingExists?.user?.email,
+      from: "booking@shuttlelane.com",
+      subject: "Your Trip Has Ended",
+      templateId: "d-6cd9d47d40944a91939e14af431a8a85",
+      dynamicTemplateData: userDynamicTemplateData,
+    };
+    await sendSGDynamicEmail(msg);
 
     // Fetch all upcoming bookings with the _id provided
     const vendorUpcomingBookings = await BookingModel.find({

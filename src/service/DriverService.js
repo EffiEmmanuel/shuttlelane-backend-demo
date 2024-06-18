@@ -10,7 +10,7 @@ import jsonwebtoken from "jsonwebtoken";
 import { checkDriverEmailValidity } from "../util/db.helper.js";
 import PaymentModel from "../model/payment.model.js";
 import BookingModel from "../model/booking.model.js";
-import { sendEmail } from "../util/sendgrid.js";
+import { sendEmail, sendSGDynamicEmail } from "../util/sendgrid.js";
 import shortid from "shortid";
 import VerificationModel from "../model/verification.model.js";
 import { sendSMS } from "../util/twilio.js";
@@ -27,6 +27,10 @@ import AdminDriverEnRouteEmailTemplate from "../emailTemplates/adminEmailTemplat
 import UserDriverStartedBookingEmailTemplate from "../emailTemplates/userEmailTemplates/UserDriverStartedBookingEmail/index.js";
 import AdminBookingEndedEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminBookingEndedEmail/index.js";
 import UserBookingCompletedEmailTemplate from "../emailTemplates/userEmailTemplates/UserBookingCompletedEmail/index.js";
+import {
+  generateBookingDetails,
+  generateUserBookingDetails,
+} from "../util/index.js";
 
 const verificationService = new VerificationService(VerificationModel);
 
@@ -61,18 +65,21 @@ export default class DriverService {
     });
 
     // TO-DO: Send confirmation email here
-
-    const emailHTML = DriverSignupConfirmationEmail({
-      driver: newDriver,
-    });
-
-    const message = {
-      to: driver.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: "Driver Account Created Successfully🎉",
-      html: ReactDOMServer.renderToString(emailHTML),
+    const dynamicTemplateData = {
+      driverName: `${newDriver?.firstName} ${newDriver?.lastName}`,
     };
-    await sendEmail(message);
+
+    const templateId = "d-a9a55f4aa0fe4c7094ea29610d66c4f1";
+
+    const msg = {
+      to: newDriver?.email,
+      from: "info@shuttlelane.com",
+      subject: `Driver Account Created Successfully🎉`,
+      templateId: templateId,
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
 
     // TO-DO: Send phone verification SMS here
     // Generate verification code
@@ -399,7 +406,6 @@ export default class DriverService {
   }
 
   async acceptJob(driverId, bookingId) {
-    console.log("BOOKIGNS ASSIGNED TO 1:");
     // Validate if fields are empty
     const areFieldsEmpty = validateFields([driverId, bookingId]);
 
@@ -417,20 +423,23 @@ export default class DriverService {
       };
     }
 
-    console.log("BOOKIGNS ASSIGNED TO 2:");
-
     // Check if any booking exists with the _id
     const bookingExists = await BookingModel.findOne({
       _id: bookingId,
-    }).populate("booking");
+    })
+      .populate("booking")
+      .populate("assignedCar")
+      .populate("driverJobWasSentTo")
+      .populate("vendorAssignedDriver")
+      .populate("assignedDriver")
+      .populate("bookingCurrency")
+      .populate("user");
     if (!bookingExists) {
       return {
         status: 404,
         message: `No booking with _id ${bookingId} exists.`,
       };
     }
-
-    console.log("BOOKIGNS ASSIGNED TO 3:");
 
     // Check if any driver exists with the _id
     const driverExists = await this.DriverModel.findOne({
@@ -443,7 +452,6 @@ export default class DriverService {
       };
     }
 
-    console.log("BOOKIGNS ASSIGNED TO 4:");
     // Update booking to "ACCEPT" job
     const acceptBooking = await BookingModel.findOneAndUpdate(
       { _id: bookingId },
@@ -458,12 +466,9 @@ export default class DriverService {
       .populate("driverJobWasSentTo")
       .populate("user");
 
-    console.log("BOOKIGNS ASSIGNED TO 5:", driverExists);
     // Update driver schema
     driverExists?.bookingsAssignedTo?.push(bookingId);
     await driverExists.save();
-
-    console.log("BOOKIGNS ASSIGNED TO 6:");
 
     // Send a notification to the admin
     const adminEmailHTML = AdminAcceptedBookingEmailTemplate({
@@ -499,99 +504,62 @@ export default class DriverService {
     sendEmail(adminMessage);
 
     console.log("BOOKIGNS ASSIGNED TO 7:");
+
     // Send a notification to the user
-    const userEmailHTML = UserBookingScheduledConfirmation({
-      bookingReference: bookingExists?.booking?.bookingReference,
-      pickupDate: moment(bookingExists?.booking?.pickupDate).format(
-        "MMM DD, YYYY"
-      ),
-      pickupTime: moment(bookingExists?.booking?.pickupTime).format("H:MM A"),
-      pickupLocation: bookingExists?.booking?.pickupAddress,
-      driverName: `${
-        bookingExists?.assignedDriver?.firstName ??
-        bookingExists?.driverJobWasSentTo?.firstName
-      } ${
-        bookingExists?.assignedDriver?.lastName ??
-        bookingExists?.driverJobWasSentTo?.lastName
+    const userBookingDetails = await generateUserBookingDetails(bookingExists);
+    const dynamicTemplateData = {
+      bookingReference: bookingExists?.bookingReference,
+      title: `${bookingExists?.title ?? bookingExists?.user?.title}`,
+      firstName: `${
+        bookingExists?.firstName ?? bookingExists?.user?.firstName
       }`,
-      driverMobile:
-        bookingExists?.assignedDriver?.mobile ??
-        bookingExists?.driverJobWasSentTo?.mobile,
-      carName:
-        bookingExists?.booking?.assignedDriver?.carName ??
-        bookingExists?.booking?.driverJobWasSentTo?.carName,
-      carType:
-        bookingExists?.booking?.assignedDriver?.carType ??
-        bookingExists?.booking?.driverJobWasSentTo?.carType,
-      carModel:
-        bookingExists?.booking?.assignedDriver?.carModel ??
-        bookingExists?.booking?.driverJobWasSentTo?.carModel,
-      carColor:
-        bookingExists?.booking?.assignedDriver?.carColor ??
-        bookingExists?.booking?.driverJobWasSentTo?.carModel,
-      carPlateNumber:
-        bookingExists?.booking?.assignedDriver?.carPlateNumber ??
-        bookingExists?.booking?.driverJobWasSentTo?.carModel,
-      title: bookingExists?.user?.title ?? bookingExists?.title,
-      firstName: bookingExists?.user?.firstName ?? bookingExists?.firstName,
-    });
-
-    console.log("BOOKIGNS ASSIGNED TO 7.1:");
-
-    const userMessage = {
-      to: bookingExists?.user?.email ?? bookingExists?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: `Your booking has been scheduled: ${bookingExists?.bookingReference}`,
-      html: ReactDOMServer.renderToString(userEmailHTML),
+      bookingDetails: userBookingDetails,
     };
 
-    console.log("BOOKIGNS ASSIGNED TO 7.2:");
-    sendEmail(userMessage);
+    const msg = {
+      to: bookingExists?.email ?? bookingExists?.user?.email,
+      from: "booking@shuttlelane.com",
+      subject: "Your Booking Has Been Scheduled",
+      templateId: "d-07c6b4b45f944ef38c55af74685e7143",
+      dynamicTemplateData,
+    };
 
-    console.log("BOOKIGNS ASSIGNED TO 8:");
+    await sendSGDynamicEmail(msg);
+
     // Send a notification to the driver
-    const driverEmailHTML = DriverAcceptedBookingEmailTemplate({
-      pickupDate: moment(bookingExists?.booking?.pickupDate).format(
-        "MMM DD, YYYY"
-      ),
-      pickupTime: moment(bookingExists?.booking?.pickupTime).format("H:MM A"),
-      pickupLocation: bookingExists?.booking?.pickupAddress,
-      passengerName: `${
-        bookingExists?.user?.firstName ?? bookingExists?.firstName
-      } ${bookingExists?.user?.lastName ?? bookingExists?.lastName}`,
-      passengerMobile: bookingExists?.user?.mobile ?? bookingExists?.mobile,
-    });
-
-    const driverMessage = {
-      to:
-        bookingExists?.assignedDriver?.email ??
-        bookingExists?.driverJobWasSentTo?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: `Booking Confirmation: ${bookingExists?.bookingReference}`,
-      html: ReactDOMServer.renderToString(driverEmailHTML),
+    const booking = await BookingModel.findOne({ _id: bookingId });
+    const bookingDetails = await generateBookingDetails(booking);
+    // TO-DO: Send confirmation email here
+    dynamicTemplateData = {
+      driverName: `${driverExists?.firstName} ${driverExists?.lastName}`,
+      bookingDetails: bookingDetails,
     };
-    sendEmail(driverMessage);
 
-    console.log("BOOKIGNS ASSIGNED TO 9:");
+    msg = {
+      to: driverExists?.email,
+      from: "booking@shuttlelane.com",
+      subject: `Booking Confirmation: ${bookingExists?.bookingReference}`,
+      templateId: "d-373023cee4eb4b9b8ad2c5e121bd0354",
+      dynamicTemplateData,
+    };
+
+    await sendSGDynamicEmail(msg);
+
     // Send a notification to the driver if this is his first booking on shuttlelane
     if (driverExists?.bookingsAssignedTo?.length === 1) {
-      const driverFirstTimeEmailHTML = DriverFirstTimeBookingEmailTemplate({
-        driverName: `${
-          bookingExists?.assignedDriver?.firstName ??
-          bookingExists?.driverJobWasSentTo?.firstName
-        } ${
-          bookingExists?.assignedDriver?.lastName ??
-          bookingExists?.driverJobWasSentTo?.lastName
-        }`,
-      });
-
-      const driverFirstTimeMessage = {
-        to: driverExists?.email,
-        from: process.env.SENGRID_EMAIL,
-        subject: `Congratulations on accepting your first booking!🎉`,
-        html: ReactDOMServer.renderToString(driverFirstTimeEmailHTML),
+      dynamicTemplateData = {
+        driverName: `${driverExists?.firstName} ${driverExists?.lastName}`,
       };
-      sendEmail(driverFirstTimeMessage);
+
+      msg = {
+        to: driverExists?.email,
+        from: "booking@shuttlelane.com",
+        subject: `Congratulations on accepting your first booking!🎉`,
+        templateId: templateId,
+        dynamicTemplateData,
+      };
+
+      await sendSGDynamicEmail(msg);
     }
 
     // Fetch all upcoming bookings with the _id provided
@@ -836,7 +804,6 @@ export default class DriverService {
         bookingExists?.assignedDriver?.mobile ??
         bookingExists?.driverJobWasSentTo?.mobile,
     });
-
     const adminMessage = {
       to: "info@shuttlelane.com",
       //   to: "effiemmanuel.n@gmail.com",
@@ -847,32 +814,36 @@ export default class DriverService {
     sendEmail(adminMessage);
 
     // Send a notification to the user
-    const userEmailHTML = UserDriverStartedBookingEmailTemplate({
-      bookingReference: bookingExists?.booking?.bookingReference,
-      title: bookingExists?.user?.title ?? bookingExists?.title,
+    const userDynamicTemplateData = {
+      bookingReference: bookingExists?.bookingReference,
+      title: `${bookingExists?.title ?? bookingExists?.user?.title}`,
       firstName: `${
-        bookingExists?.user?.firstName ?? bookingExists?.firstName
+        bookingExists?.firstName ?? bookingExists?.user?.firstName
       }`,
-      driverName: `${
-        bookingExists?.assignedDriver?.firstName ??
-        bookingExists?.driverJobWasSentTo?.firstName
-      } ${
-        bookingExists?.assignedDriver?.lastName ??
-        bookingExists?.driverJobWasSentTo?.lastName
-      }`,
-      driverContact:
-        bookingExists?.assignedDriver?.mobile ??
-        bookingExists?.driverJobWasSentTo?.mobile,
-    });
-
-    const userMessage = {
-      to: bookingExists?.user?.email ?? bookingExists?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: `Your trip has started: ${bookingExists?.bookingReference}`,
-      html: ReactDOMServer.renderToString(userEmailHTML),
+      driverName: bookingExists?.isAssignedToDriver
+        ? `${
+            bookingExists?.assignedDriver?.firstName ??
+            bookingExists?.driverJobWasSentTo?.firstName
+          } ${
+            bookingExists?.assignedDriver?.lastName ??
+            bookingExists?.driverJobWasSentTo?.lastName
+          }`
+        : `${bookingExists?.vendorAssignedDriver?.firstName} ${bookingExists?.vendorAssignedDriver?.lastName}`,
+      driverContact: bookingExists?.isAssignedToDriver
+        ? `${
+            bookingExists?.assignedDriver?.mobile ??
+            bookingExists?.driverJobWasSentTo?.mobile
+          }`
+        : `${bookingExists?.vendorAssignedDriver?.mobile}`,
     };
-
-    sendEmail(userMessage);
+    const msg = {
+      to: bookingExists?.email ?? bookingExists?.user?.email,
+      from: "booking@shuttlelane.com",
+      subject: "Your Trip Has Started",
+      templateId: "d-84451cd8238642418957e4c1f21bdfa3",
+      dynamicTemplateData: userDynamicTemplateData,
+    };
+    await sendSGDynamicEmail(msg);
 
     // Fetch all upcoming bookings with the _id provided
     const driverUpcomingBookings = await BookingModel.find({
@@ -976,21 +947,21 @@ export default class DriverService {
     sendEmail(adminMessage);
 
     // Send a notification to the user
-    const userEmailHTML = UserBookingCompletedEmailTemplate({
-      bookingReference: bookingExists?.booking?.bookingReference,
+    const userDynamicTemplateData = {
+      bookingReference: bookingExists?.bookingReference,
+      title: `${bookingExists?.title ?? bookingExists?.user?.title}`,
       firstName: `${
-        bookingExists?.user?.firstName ?? bookingExists?.firstName
+        bookingExists?.firstName ?? bookingExists?.user?.firstName
       }`,
-    });
-
-    const userMessage = {
-      to: bookingExists?.user?.email ?? bookingExists?.email,
-      from: process.env.SENGRID_EMAIL,
-      subject: `Trip Ended: ${bookingExists?.bookingReference}`,
-      html: ReactDOMServer.renderToString(userEmailHTML),
     };
-
-    sendEmail(userMessage);
+    const msg = {
+      to: bookingExists?.email ?? bookingExists?.user?.email,
+      from: "booking@shuttlelane.com",
+      subject: "Your Trip Has Ended",
+      templateId: "d-6cd9d47d40944a91939e14af431a8a85",
+      dynamicTemplateData: userDynamicTemplateData,
+    };
+    await sendSGDynamicEmail(msg);
 
     // Fetch all upcoming bookings with the _id provided
     const driverUpcomingBookings = await BookingModel.find({
