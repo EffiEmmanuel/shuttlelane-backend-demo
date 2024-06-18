@@ -455,7 +455,9 @@ export const rejectDriverAccount = async (req, res) => {
 export const fetchSuspendDriverAccounts = async (req, res) => {
   try {
     // Fetch suspend driver accounts
-    const response = await adminService.fetchSuspendDriverAccounts();
+    const response = await adminService.fetchSuspendedDriverAccounts();
+
+    console.log("RESPONSE:", response);
 
     // Return a response
     return res.status(response?.status).json({

@@ -1125,7 +1125,7 @@ export default class AdminService {
   }
 
   // This service fetches SUSPENDED driver accounts
-  async fetchSuspendDriverAccounts() {
+  async fetchSuspendedDriverAccounts() {
     const suspendedDriverAccounts = await DriverModel.find({
       isAccountBlocked: true,
     }).sort({ createdAt: -1 });
