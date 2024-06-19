@@ -75,11 +75,9 @@ export const verifyJWT = (request, response) => {
 export const verifyUserToken = (request, response, next) => {
   try {
     const authHeader = request.headers.token;
-    console.log("AUTH HEADER:", authHeader);
     let result;
     if (authHeader) {
       const token = authHeader.split(" ")[1];
-      console.log("TOKEN:::", token);
 
       result = jwtVerify(token);
       if (!result) {
