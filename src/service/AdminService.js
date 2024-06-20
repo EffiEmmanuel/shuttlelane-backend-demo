@@ -1610,7 +1610,10 @@ export default class AdminService {
   // This service GETS all vendors
   async getVendors() {
     // Get vendors
-    const vendors = await VendorModel.find({})
+    const vendors = await VendorModel.find({
+      isAccountApproved: true,
+      isAccountBlocked: false,
+    })
       .populate({
         path: "bookingsAssignedTo",
       })
@@ -1653,6 +1656,7 @@ export default class AdminService {
     // Get vendors
     const vendors = await VendorModel.find({
       isAccountApproved: true,
+      isAccountBlocked: false,
     })
       .populate({
         path: "bookingsAssignedTo",
