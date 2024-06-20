@@ -1930,7 +1930,10 @@ export default class AdminService {
 
     await sendSGDynamicEmail(msg);
 
-    const vendors = await VendorModel.find({}).sort({ createdAt: -1 });
+    const vendors = await VendorModel.find({
+      isAccountApproved: true,
+      isAccountBlocked: false,
+    }).sort({ createdAt: -1 });
     const suspendedVendorAccounts = await VendorModel.find({
       isAccountBlocked: true,
     }).sort({ createdAt: -1 });
@@ -2001,7 +2004,10 @@ export default class AdminService {
 
     await sendSGDynamicEmail(msg);
 
-    const vendors = await VendorModel.find({}).sort({ createdAt: -1 });
+    const vendors = await VendorModel.find({
+      isAccountApproved: true,
+      isAccountBlocked: false,
+    }).sort({ createdAt: -1 });
     const suspendedVendorAccounts = await VendorModel.find({
       isAccountBlocked: true,
     }).sort({ createdAt: -1 });
