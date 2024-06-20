@@ -681,8 +681,10 @@ export const rejectVendorAccount = async (req, res) => {
 // Fetch suspend vendor accounts
 export const fetchSuspendVendorAccounts = async (req, res) => {
   try {
+    console.log("SUSPENED VENDOR ACCOUNTS CONTROLLER");
     // Fetch suspend vendor accounts
     const response = await adminService.fetchSuspendVendorAccounts();
+    console.log("SUSPENED VENDOR ACCOUNTS CONTROLLER 2");
 
     // Return a response
     return res.status(response?.status).json({

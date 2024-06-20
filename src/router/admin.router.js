@@ -182,7 +182,7 @@ adminRouter.patch(
 );
 // Fetch Suspended Vendor accounts
 adminRouter.get(
-  "/vendors/suspended-accounts",
+  "/vendors/account/suspended-accounts",
   verifyUserToken,
   fetchSuspendVendorAccounts
 );
