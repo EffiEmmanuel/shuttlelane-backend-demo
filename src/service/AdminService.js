@@ -1195,7 +1195,10 @@ export default class AdminService {
 
     await sendSGDynamicEmail(msg);
 
-    const drivers = await DriverModel.find({}).sort({ createdAt: -1 });
+    const drivers = await DriverModel.find({
+      isAccountApproved: true,
+      isAccountBlocked: false,
+    }).sort({ createdAt: -1 });
     const suspendedDriverAccounts = await DriverModel.find({
       isAccountBlocked: true,
     }).sort({ createdAt: -1 });
@@ -1249,7 +1252,10 @@ export default class AdminService {
 
     await sendSGDynamicEmail(msg);
 
-    const drivers = await DriverModel.find({}).sort({ createdAt: -1 });
+    const drivers = await DriverModel.find({
+      isAccountApproved: true,
+      isAccountBlocked: false,
+    }).sort({ createdAt: -1 });
     const suspendedDriverAccounts = await DriverModel.find({
       isAccountBlocked: true,
     }).sort({ createdAt: -1 });
