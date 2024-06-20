@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:server": "node ./src/index.js"
+    "dev:server": "nodemon ./src/index.js"
   },
   "author": "Effi Emmanuel",
   "license": "ISC",

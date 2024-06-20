@@ -132,7 +132,7 @@ adminRouter.patch(
 );
 // Fetch Suspended Driver accounts
 adminRouter.get(
-  "/drivers/suspended-accounts",
+  "/drivers/account/suspended-accounts",
   verifyUserToken,
   fetchSuspendDriverAccounts
 );

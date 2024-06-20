@@ -678,7 +678,10 @@ export default class AdminService {
   // This service GETS all drivers
   async getDrivers() {
     // Get drivers
-    const drivers = await DriverModel.find({}).populate({
+    const drivers = await DriverModel.find({
+      isAccountApproved: true,
+      isAccountBlocked: false,
+    }).populate({
       path: "bookingsAssignedTo",
     });
 
@@ -717,6 +720,7 @@ export default class AdminService {
     // Get drivers
     const drivers = await DriverModel.find({
       isAccountApproved: true,
+      isAccountBlocked: false,
     });
 
     const data = await DriverModel.aggregate([
@@ -969,43 +973,6 @@ export default class AdminService {
   //       };
   //     }
   //   }
-
-  // This service GETS all drivers
-  async getDrivers() {
-    // Get drivers
-    const drivers = await DriverModel.find({}).populate({
-      path: "bookingsAssignedTo",
-    });
-
-    const data = await DriverModel.aggregate([
-      {
-        $group: {
-          _id: {
-            month: { $month: "$createdAt" },
-            year: { $year: "$createdAt" },
-          },
-          count: { $sum: 1 },
-          drivers: { $push: "$$ROOT" },
-        },
-      },
-      {
-        $sort: {
-          "_id.year": 1,
-          "_id.month": 1,
-        },
-      },
-    ]);
-
-    console.log("drivers:", drivers);
-    console.log("data:", data);
-
-    return {
-      status: 200,
-      message: `Fetched drivers.`,
-      drivers: drivers,
-      data: data,
-    };
-  }
 
   // This service GETS all drivers
   async getApprovedDrivers() {
