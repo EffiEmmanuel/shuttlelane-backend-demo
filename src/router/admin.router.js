@@ -66,6 +66,8 @@ import {
   fetchSuspendDriverAccounts,
   suspendDriverAccount,
   unsuspendDriverAccount,
+  getUnapprovedVendors,
+  getUnapprovedDrivers,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
@@ -116,6 +118,8 @@ adminRouter.delete("/users/delete/:userId", verifyUserToken, deleteUserById);
 adminRouter.get("/drivers", verifyUserToken, getDrivers);
 // Fetch Approved Drivers
 adminRouter.get("/drivers/approved", verifyUserToken, getApprovedDrivers);
+// Fetch Unapproved Drivers
+adminRouter.get("/drivers/unapproved", verifyUserToken, getUnapprovedDrivers);
 // Fetch Driver by id
 adminRouter.get("/drivers/:driverId", verifyUserToken, getDriverById);
 // Approve Driver account
@@ -166,6 +170,8 @@ adminRouter.delete(
 adminRouter.get("/vendors", verifyUserToken, getVendors);
 // Fetch Approved Vendors
 adminRouter.get("/vendors/approved", verifyUserToken, getApprovedVendors);
+// Fetch Unapproved Vendors
+adminRouter.get("/vendors/unapproved", verifyUserToken, getUnapprovedVendors);
 // Fetch Vendor by id
 adminRouter.get("/vendors/:vendorId", verifyUserToken, getVendorById);
 // Approve Vendor account

@@ -379,6 +379,7 @@ export const getDrivers = async (req, res) => {
     return res.status(500).json({ message: internalServerError });
   }
 };
+
 // Get approved drivers
 export const getApprovedDrivers = async (req, res) => {
   try {
@@ -390,6 +391,23 @@ export const getApprovedDrivers = async (req, res) => {
       drivers: response?.drivers ?? null,
       message: response?.message,
       data: response?.data,
+    });
+  } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Get unapproved drivers
+export const getUnapprovedDrivers = async (req, res) => {
+  try {
+    // Fetch drivers
+    const response = await adminService.getUnapprovedDrivers();
+
+    // Return a response
+    return res.status(response?.status).json({
+      drivers: response?.drivers ?? null,
+      message: response?.message,
     });
   } catch (error) {
     console.log("ERROR:", error);
@@ -618,6 +636,23 @@ export const getApprovedVendors = async (req, res) => {
       vendors: response?.vendors ?? null,
       message: response?.message,
       data: response?.data,
+    });
+  } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Get unapproved vendors
+export const getUnapprovedVendors = async (req, res) => {
+  try {
+    // Fetch unapproved vendors
+    const response = await adminService.getUnapprovedVendors();
+
+    // Return a response
+    return res.status(response?.status).json({
+      vendors: response?.vendors ?? null,
+      message: response?.message,
     });
   } catch (error) {
     console.log("ERROR:", error);

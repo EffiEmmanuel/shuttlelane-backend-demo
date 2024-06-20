@@ -1011,6 +1011,20 @@ export default class AdminService {
     };
   }
 
+  // This service GETS all unappoved drivers
+  async getUnapprovedDrivers() {
+    // Get unapproved drivers
+    const drivers = await DriverModel.find({
+      isAccountApproved: false,
+    });
+
+    return {
+      status: 200,
+      message: `Fetched unapproved drivers.`,
+      drivers: drivers,
+    };
+  }
+
   // This service GETS a driver by their id
   async getDriverById(_id) {
     // Validate if fields are empty
@@ -1621,6 +1635,8 @@ export default class AdminService {
         path: "operatingCities",
       });
 
+    console.log("VENDORS FROM GET VENDORS:", vendors);
+
     const data = await VendorModel.aggregate([
       {
         $group: {
@@ -1641,7 +1657,6 @@ export default class AdminService {
     ]);
 
     console.log("vendors:", vendors);
-    console.log("data:", data);
 
     return {
       status: 200,
@@ -1692,6 +1707,26 @@ export default class AdminService {
       message: `Fetched approved vendors.`,
       vendors: vendors,
       data: data,
+    };
+  }
+
+  // This service GETS all unapproved Vendors
+  async getUnapprovedVendors() {
+    // Get vendors
+    const vendors = await VendorModel.find({
+      isAccountApproved: false,
+    })
+      .populate({
+        path: "bookingsAssignedTo",
+      })
+      .populate({
+        path: "operatingCities",
+      });
+
+    return {
+      status: 200,
+      message: `Fetched unapproved vendors.`,
+      vendors: vendors,
     };
   }
 
@@ -1938,6 +1973,7 @@ export default class AdminService {
       isAccountApproved: true,
       isAccountBlocked: false,
     }).sort({ createdAt: -1 });
+
     const suspendedVendorAccounts = await VendorModel.find({
       isAccountBlocked: true,
     }).sort({ createdAt: -1 });
@@ -2012,6 +2048,7 @@ export default class AdminService {
       isAccountApproved: true,
       isAccountBlocked: false,
     }).sort({ createdAt: -1 });
+
     const suspendedVendorAccounts = await VendorModel.find({
       isAccountBlocked: true,
     }).sort({ createdAt: -1 });
