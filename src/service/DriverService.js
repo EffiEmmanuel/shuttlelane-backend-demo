@@ -71,7 +71,7 @@ export default class DriverService {
 
     const templateId = "d-a9a55f4aa0fe4c7094ea29610d66c4f1";
 
-    const msg = {
+    let msg = {
       to: newDriver?.email,
       from: "info@shuttlelane.com",
       subject: `Driver Account Created Successfully🎉`,
@@ -517,7 +517,7 @@ export default class DriverService {
       bookingDetails: userBookingDetails,
     };
 
-    const msg = {
+    let msg = {
       to: bookingExists?.email ?? bookingExists?.user?.email,
       from: "booking@shuttlelane.com",
       subject: "Your Booking Has Been Scheduled",
@@ -838,7 +838,7 @@ export default class DriverService {
           }`
         : `${bookingExists?.vendorAssignedDriver?.mobile}`,
     };
-    const msg = {
+    let msg = {
       to: bookingExists?.email ?? bookingExists?.user?.email,
       from: "booking@shuttlelane.com",
       subject: "Your Trip Has Started",
@@ -956,7 +956,7 @@ export default class DriverService {
         bookingExists?.firstName ?? bookingExists?.user?.firstName
       }`,
     };
-    const msg = {
+    let msg = {
       to: bookingExists?.email ?? bookingExists?.user?.email,
       from: "booking@shuttlelane.com",
       subject: "Your Trip Has Ended",

@@ -76,7 +76,7 @@ export default class VendorService {
 
     const templateId = "d-e5b984be5da34e88b0e934ad2e9971ee";
 
-    const msg = {
+    let msg = {
       to: newVendor?.companyEmail,
       from: "info@shuttlelane.com",
       subject: `Vendor Account Created Successfully🎉`,
@@ -544,7 +544,7 @@ export default class VendorService {
       bookingDetails: userBookingDetails,
     };
 
-    const msg = {
+    let msg = {
       to: bookingExists?.email ?? bookingExists?.user?.email,
       from: "booking@shuttlelane.com",
       subject: "Your Booking Has Been Scheduled",
@@ -585,7 +585,7 @@ export default class VendorService {
         companyName: vendorExists?.companyName,
       };
       const templateId = "d-d7be6e8c4c664188a31f1626fcd1fadf";
-      const msg = {
+      let msg = {
         to: vendorExists?.companyEmail,
         from: "booking@shuttlelane.com",
         subject: `Congratulations on accepting your first booking!🎉`,
@@ -858,7 +858,7 @@ export default class VendorService {
           }`
         : `${bookingExists?.vendorAssignedDriver?.mobile}`,
     };
-    const msg = {
+    let msg = {
       to: bookingExists?.email ?? bookingExists?.user?.email,
       from: "booking@shuttlelane.com",
       subject: "Your Trip Has Started",
@@ -979,7 +979,7 @@ export default class VendorService {
         bookingExists?.firstName ?? bookingExists?.user?.firstName
       }`,
     };
-    const msg = {
+    let msg = {
       to: bookingExists?.email ?? bookingExists?.user?.email,
       from: "booking@shuttlelane.com",
       subject: "Your Trip Has Ended",

@@ -1080,13 +1080,13 @@ export default class AdminService {
     }
 
     // TO-DO: Send driver a confirmation email here
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       driverName: `${driver?.firstName} ${driver?.lastName}`,
     };
 
     const templateId = "d-8ab1ed96c87d452dbfe0be4d0f48b6c4";
 
-    const msg = {
+    let msg = {
       to: driver?.email,
       from: "info@shuttlelane.com",
       subject: `Driver Account Has Been Approved🎉`,
@@ -1143,13 +1143,13 @@ export default class AdminService {
     }
 
     // TO-DO: Send driver a confirmation email here
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       driverName: `${driver?.firstName} ${driver?.lastName}`,
     };
 
     const templateId = "d-4ca77bcd72064605ba885f8df8606659";
 
-    const msg = {
+    let msg = {
       to: driver?.email,
       from: "info@shuttlelane.com",
       subject: `Driver Application Rejected`,
@@ -1193,13 +1193,13 @@ export default class AdminService {
     }
 
     // TO-DO: Send driver a confirmation email here
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       driverName: `${driver?.firstName} ${driver?.lastName}`,
     };
 
     const templateId = "d-0ee57e699a5847a4bb0ad1c96e4b361f";
 
-    const msg = {
+    let msg = {
       to: driver?.email,
       from: "info@shuttlelane.com",
       subject: `Driver Account Suspended`,
@@ -1250,13 +1250,13 @@ export default class AdminService {
     }
 
     // TO-DO: Send driver a confirmation email here
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       driverName: `${driver?.firstName} ${driver?.lastName}`,
     };
 
     const templateId = "d-fd004f719e354bdf9c70f1c4fe419a97";
 
-    const msg = {
+    let msg = {
       to: driver?.email,
       from: "info@shuttlelane.com",
       subject: `Welcome Back!`,
@@ -1346,13 +1346,13 @@ export default class AdminService {
       const booking = await BookingModel.findOne({ _id: bookingId });
       const bookingDetails = await generateBookingDetails(booking);
       // TO-DO: Send confirmation email here
-      const dynamicTemplateData = {
+      let dynamicTemplateData = {
         driverName: `${driver?.firstName} ${driver?.lastName}`,
         bookingDetails: bookingDetails,
       };
 
       const templateId = "d-509719020e154d5aa26ce543aa362ea0";
-      const msg = {
+      let msg = {
         to: driver?.email,
         from: "booking@shuttlelane.com",
         subject: `New Booking Notification🚨`,
@@ -1439,14 +1439,14 @@ export default class AdminService {
       const bookingDetails = await generateBookingDetails(booking);
 
       // TO-DO: Send confirmation email here
-      const dynamicTemplateData = {
+      let dynamicTemplateData = {
         companyName: vendor?.companyName,
         bookingDetails: bookingDetails,
       };
 
       const templateId = "d-e84ddb740d574cc09100710b40a02a22";
 
-      const msg = {
+      let msg = {
         to: vendor?.companyEmail ?? vendor?.contactEmail,
         from: "booking@shuttlelane.com",
         subject: `New Booking Notification🚨`,
@@ -1813,13 +1813,13 @@ export default class AdminService {
     }
 
     // TO-DO: Send vendor a confirmation email here
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       companyName: vendor?.companyName,
     };
 
     const templateId = "d-0ea2352470254998bcd00d840a37bb0b";
 
-    const msg = {
+    let msg = {
       to: vendor?.companyEmail ?? vendor?.contactEmail,
       from: "info@shuttlelane.com",
       subject: "Vendor Account Has Been Approved🎉",
@@ -1880,13 +1880,13 @@ export default class AdminService {
     }
 
     // TO-DO: Send vendor a confirmation email here
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       companyName: vendor?.companyName,
     };
 
     const templateId = "d-9608d98927a04818a2e41e57f9ec4111";
 
-    const msg = {
+    let msg = {
       to: vendor?.companyEmail ?? vendor?.contactEmail,
       from: "info@shuttlelane.com",
       subject: "Vendor Account Application Has Been Rejected",
@@ -1960,13 +1960,13 @@ export default class AdminService {
     }
 
     // TO-DO: Send vendor a confirmation email here
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       companyName: vendor?.companyName,
     };
 
     const templateId = "d-865b59a46cb347ab914ec3886e6f03a0";
 
-    const msg = {
+    let msg = {
       to: vendor?.companyEmail ?? vendor?.contactEmail,
       from: "info@shuttlelane.com",
       subject: "Vendor Account Has Been Temporarily Suspended",
@@ -2035,13 +2035,13 @@ export default class AdminService {
     }
 
     // TO-DO: Send vendor a confirmation email here
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       companyName: vendor?.companyName,
     };
 
     const templateId = "d-79a6c8bf25f942aba3f3fa9f33096db8";
 
-    const msg = {
+    let msg = {
       to: vendor?.companyEmail ?? vendor?.contactEmail,
       from: "info@shuttlelane.com",
       subject: "Welcome Back!",
