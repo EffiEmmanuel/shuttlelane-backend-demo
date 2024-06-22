@@ -1334,6 +1334,8 @@ export default class AdminService {
           driverJobWasSentTo: driver?._id,
           hasDriverAccepted: false,
           hasDriverDeclined: false,
+          isAssignedToDriver: true,
+          isAssignedToVendor: false,
           bookingStatus: "Awaiting response",
           bookingRate: bookingRate,
         }
@@ -1420,6 +1422,8 @@ export default class AdminService {
           vendorJobWasSentTo: vendor?._id,
           hasVendorAccepted: false,
           hasVendorDeclined: false,
+          isAssignedToDriver: false,
+          isAssignedToVendor: true,
           bookingStatus: "Awaiting response",
           bookingRate: bookingRate,
         }

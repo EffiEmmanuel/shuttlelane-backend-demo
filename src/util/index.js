@@ -841,5 +841,7 @@ export async function generateUserBookingDetails(bookingExists) {
     ];
   }
 
+  console.log("USER BOOKING DETAILS:::", bookingDetails);
+
   return bookingDetails;
 }

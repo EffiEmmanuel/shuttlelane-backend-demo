@@ -458,6 +458,7 @@ export default class DriverService {
       {
         bookingStatus: "Scheduled",
         isAssignedToDriver: true,
+        isAssignedToVendor: false,
         assignedDriver: driverId,
         hasDriverAccepted: true,
       }
@@ -615,12 +616,13 @@ export default class DriverService {
       };
     }
 
-    // Update booking to "ACCEPT" job
-    const acceptBooking = await BookingModel.findOneAndUpdate(
+    // Update booking to "DECLINE" job
+    const declineBooking = await BookingModel.findOneAndUpdate(
       { _id: bookingId },
       {
         bookingStatus: "Not yet assigned",
         isAssignedToDriver: false,
+        isAssignedToVendor: false,
         hasDriverAccepted: false,
         hasDriverDeclined: true,
       }
