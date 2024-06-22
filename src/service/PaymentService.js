@@ -33,6 +33,20 @@ export default class PaymentService {
       .populate("booking")
       .populate("bookingCurrency");
 
+    // If the payment status is "Failed", we want to
+    // 1. Delete the booking
+    // 2. Return immediately, do not proceed to send an email or sms to the user
+    if (payment?.paymentStatus?.toLowerCase() == "failed") {
+      const deleteBooking = await BookingModel.findOneAndRemove({
+        _id: payment?.booking,
+      });
+      return {
+        status: 201,
+        message:
+          "Your payment failed. Please try again later or contact booking@shuttlelane.com",
+      };
+    }
+
     if (paymentExists) {
       if (paymentExists?.paymentStatus !== "Successful") {
         return {
