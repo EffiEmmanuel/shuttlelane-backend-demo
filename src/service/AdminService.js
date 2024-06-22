@@ -1370,7 +1370,10 @@ export default class AdminService {
 
       const updatedUnassignedBookings = bookingsAwaitingAssignment?.filter(
         (booking) => {
-          return booking?.bookingType !== "Visa";
+          return (
+            booking?.bookingType !== "Visa" &&
+            booking?.paymentId?.paymentStatus === "Successful"
+          );
         }
       );
 
