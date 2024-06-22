@@ -531,7 +531,7 @@ export default class DriverService {
     const booking = await BookingModel.findOne({ _id: bookingId });
     let bookingDetails = await generateBookingDetails(booking);
     // TO-DO: Send confirmation email here
-    dynamicTemplateData = {
+    const driverDynamicTemplateData = {
       driverName: `${driverExists?.firstName} ${driverExists?.lastName}`,
       bookingDetails: bookingDetails,
     };
@@ -541,7 +541,7 @@ export default class DriverService {
       from: "booking@shuttlelane.com",
       subject: `Booking Confirmation: ${bookingExists?.bookingReference}`,
       templateId: "d-373023cee4eb4b9b8ad2c5e121bd0354",
-      dynamicTemplateData,
+      dynamicTemplateData: driverDynamicTemplateData,
     };
 
     await sendSGDynamicEmail(msg);
