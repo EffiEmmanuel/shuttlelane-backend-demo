@@ -508,7 +508,7 @@ export default class DriverService {
 
     // Send a notification to the user
     const userBookingDetails = await generateUserBookingDetails(bookingExists);
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       bookingReference: bookingExists?.bookingReference,
       title: `${bookingExists?.title ?? bookingExists?.user?.title}`,
       firstName: `${
@@ -529,7 +529,7 @@ export default class DriverService {
 
     // Send a notification to the driver
     const booking = await BookingModel.findOne({ _id: bookingId });
-    const bookingDetails = await generateBookingDetails(booking);
+    let bookingDetails = await generateBookingDetails(booking);
     // TO-DO: Send confirmation email here
     dynamicTemplateData = {
       driverName: `${driverExists?.firstName} ${driverExists?.lastName}`,

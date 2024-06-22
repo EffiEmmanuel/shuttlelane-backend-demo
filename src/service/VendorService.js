@@ -69,7 +69,7 @@ export default class VendorService {
     });
 
     // TO-DO: Send confirmation email here
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       contactName: newVendor?.contactName,
       companyName: newVendor?.companyName,
     };
@@ -535,7 +535,7 @@ export default class VendorService {
     console.log("BOOKIGNS ASSIGNED TO 7:");
     // Send a notification to the user
     const userBookingDetails = await generateUserBookingDetails(bookingExists);
-    const dynamicTemplateData = {
+    let dynamicTemplateData = {
       bookingReference: bookingExists?.bookingReference,
       title: `${bookingExists?.title ?? bookingExists?.user?.title}`,
       firstName: `${
@@ -581,7 +581,7 @@ export default class VendorService {
 
     // Send a notification to the vendor if this is his first booking on shuttlelane
     if (vendorExists?.bookingsAssignedTo?.length === 1) {
-      const dynamicTemplateData = {
+      let dynamicTemplateData = {
         companyName: vendorExists?.companyName,
       };
       const templateId = "d-d7be6e8c4c664188a31f1626fcd1fadf";
