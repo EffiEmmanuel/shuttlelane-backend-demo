@@ -1385,7 +1385,7 @@ export default class AdminService {
             booking?.driverJobWasSentTo?._id
         ) {
           await sendSMS(
-            driver?.mobile,
+            scheduledBooking?.driverJobWasSentTo?.mobile,
             `Dear ${driver?.firstName}, we noticed you have not yet accepted your most recent booking assigned to you with reference: ${booking?.bookingReference}. Please, ensure to accept this booking immediately. If you would not be available at the the specified booking date, please feel free to decline the booking. Thank you, The Shuttlelane Team.`
           );
         }
@@ -1403,14 +1403,14 @@ export default class AdminService {
           .populate("assignedDriver")
           .populate("user");
 
-        // Send SMS only if driver has not accepted it
+        // Send SMS only if driver has accepted it
         if (
           booking?.bookingStatus === "Scheduled" &&
           booking?.isAssignedToDriver
         ) {
           await sendSMS(
-            driver?.mobile,
-            `Dear ${driver?.firstName}, you have a booking in 1 hour (Ref: ${scheduledBooking?.bookingReference}). Please, ensure to arrive on time. Thank you, The Shuttlelane Team.`
+            scheduledBooking?.assignedDriver?.mobile,
+            `Dear ${scheduledBooking?.assignedDriver?.firstName}, you have a booking in 1 hour (Ref: ${scheduledBooking?.bookingReference}). Please, ensure to arrive on time. Thank you, The Shuttlelane Team.`
           );
 
           await sendSMS(
