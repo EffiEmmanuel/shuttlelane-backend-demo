@@ -40,6 +40,10 @@ import {
 } from "../util/index.js";
 import VendorAccountApprovalEmail from "../emailTemplates/vendorEmailTemplates/VendorAccountApprovalEmail/index.js";
 
+// Node schedule
+import schedule from "node-schedule";
+import { sendSMS } from "../util/twilio.js";
+
 export default class AdminService {
   constructor(ShuttlelaneAdminModel) {
     this.AdminModel = ShuttlelaneAdminModel;
@@ -1362,6 +1366,66 @@ export default class AdminService {
 
       await sendSGDynamicEmail(msg);
 
+      // Schedule SMS job here (Should fire 10 minutes after job has been received)
+      let scheduledSMSDate = new Date();
+      scheduledSMSDate.setMinutes(scheduledSMSDate.getMinutes() + 10);
+
+      // Send a reminder SMS to the driver after 10 minutes of booking assignment
+      schedule.scheduleJob(scheduledSMSDate, async () => {
+        // Get the current booking status to check if driver has accepted the job
+        const scheduledBooking = await BookingModel.findOne({ _id: bookingId })
+          .populate("driverJobWasSentTo")
+          .populate("assignedDriver");
+
+        // Send SMS only if driver has not accepted it
+        if (
+          (scheduledBooking?.hasDriverAccepted === false ||
+            !scheduledBooking?.assignedDriver) &&
+          scheduledBooking?.driverJobWasSentTo?._id ==
+            booking?.driverJobWasSentTo?._id
+        ) {
+          await sendSMS(
+            driver?.mobile,
+            `Dear ${driver?.firstName}, we noticed you have not yet accepted your most recent booking assigned to you with reference: ${booking?.bookingReference}. Please, ensure to accept this booking immediately. If you would not be available at the the specified booking date, please feel free to decline the booking. Thank you, The Shuttlelane Team.`
+          );
+        }
+      });
+
+      // Send a reminder SMS to both the user and the driver 30 minutes before the booking time
+      const bookingReminderSMSDate = new Date(
+        booking?.booking?.pickupDate
+      ).setMinutes(booking?.booking?.pickupDate?.getMinutes() - 60);
+
+      schedule.scheduleJob(bookingReminderSMSDate, async () => {
+        // Get the current booking status to check if driver has accepted the job
+        const scheduledBooking = await BookingModel.findOne({ _id: bookingId })
+          .populate("driverJobWasSentTo")
+          .populate("assignedDriver")
+          .populate("user");
+
+        // Send SMS only if driver has not accepted it
+        if (
+          booking?.bookingStatus === "Scheduled" &&
+          booking?.isAssignedToDriver
+        ) {
+          await sendSMS(
+            driver?.mobile,
+            `Dear ${driver?.firstName}, you have a booking in 1 hour (Ref: ${scheduledBooking?.bookingReference}). Please, ensure to arrive on time. Thank you, The Shuttlelane Team.`
+          );
+
+          await sendSMS(
+            scheduledBooking?.user?.mobile ?? scheduledBooking?.mobile,
+            `Dear ${scheduledBooking?.user?.title ?? scheduledBooking?.title} ${
+              scheduledBooking?.user?.firstName ?? scheduledBooking?.firstName
+            }, your driver, ${
+              scheduledBooking?.assignedDriver?.firstName
+            } is close by and will arrive soon. You can reach out to your driver via this number: ${
+              scheduledBooking?.assignedDriver?.mobile
+            }. For complaints, please contact booking@shuttlelane.com. Thank you, The Shuttlelane Team.`
+          );
+        }
+      });
+
       const bookingsAwaitingAssignment = await BookingModel.find({
         bookingStatus: "Not yet assigned",
       })
@@ -1455,6 +1519,67 @@ export default class AdminService {
       };
 
       await sendSGDynamicEmail(msg);
+
+      // Schedule SMS job here (Should fire 10 minutes after job has been received)
+      let scheduledSMSDate = new Date();
+      scheduledSMSDate.setMinutes(scheduledSMSDate.getMinutes() + 10);
+
+      // Send a reminder SMS to the driver after 10 minutes of booking assignment
+      schedule.scheduleJob(scheduledSMSDate, async () => {
+        // Get the current booking status to check if driver has accepted the job
+        const scheduledBooking = await BookingModel.findOne({ _id: bookingId })
+          .populate("vendorJobWasSentTo")
+          .populate("assignedVendor");
+
+        // Send SMS only if driver has not accepted it
+        if (
+          (scheduledBooking?.hasVendorAccepted == false ||
+            !scheduledBooking?.assignedVendor) &&
+          scheduledBooking?.vendorJobWasSentTo?._id ==
+            booking?.vendorJobWasSentTo?._id
+        ) {
+          await sendSMS(
+            scheduledBooking?.vendorJobWasSentTo?.contactMobile,
+            `Dear ${scheduledBooking?.vendorJobWasSentTo?.companyName}, we noticed you have not yet accepted your most recent booking assigned to you with reference: ${booking?.bookingReference}. Please, ensure to accept this booking immediately. If you would not be available at the the specified booking date, please feel free to decline the booking. Thank you, The Shuttlelane Team.`
+          );
+        }
+      });
+
+      // Send a reminder SMS to both the user and the driver 30 minutes before the booking time
+      const bookingReminderSMSDate = new Date(
+        booking?.booking?.pickupDate
+      ).setMinutes(booking?.booking?.pickupDate?.getMinutes() - 60);
+
+      schedule.scheduleJob(bookingReminderSMSDate, async () => {
+        // Get the current booking status to check if driver has accepted the job
+        const scheduledBooking = await BookingModel.findOne({ _id: bookingId })
+          .populate("vendorJobWasSentTo")
+          .populate("assignedDriver")
+          .populate("vendorAssignedDriver")
+          .populate("user");
+
+        // Send SMS only if driver has not accepted it
+        if (
+          booking?.bookingStatus === "Scheduled" &&
+          booking?.isAssignedToVendor
+        ) {
+          await sendSMS(
+            scheduledBooking?.vendorAssignedDriver?.mobile,
+            `Dear ${vendorAssignedDriver?.firstName}, you have a booking in 1 hour (Ref: ${scheduledBooking?.bookingReference}). Please, ensure to arrive on time. Thank you, The Shuttlelane Team.`
+          );
+
+          await sendSMS(
+            scheduledBooking?.user?.mobile ?? scheduledBooking?.mobile,
+            `Dear ${scheduledBooking?.user?.title ?? scheduledBooking?.title} ${
+              scheduledBooking?.user?.firstName ?? scheduledBooking?.firstName
+            }, your driver, ${
+              scheduledBooking?.vendorAssignedDriver?.firstName
+            } is close by and will arrive soon. You can reach out to your driver via this number: ${
+              scheduledBooking?.vendorAssignedDriver?.mobile
+            }. For complaints, please contact booking@shuttlelane.com. Thank you, The Shuttlelane Team.`
+          );
+        }
+      });
 
       const bookingsAwaitingAssignment = await BookingModel.find({
         bookingStatus: "Not yet assigned",
