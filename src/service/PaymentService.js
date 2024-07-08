@@ -33,6 +33,8 @@ export default class PaymentService {
       .populate("booking")
       .populate("bookingCurrency");
 
+    console.log("BOOKING EXISTS:", bookingExists);
+
     // If the payment status is "Failed", we want to
     // 1. Delete the booking
     // 2. Return immediately, do not proceed to send an email or sms to the user
