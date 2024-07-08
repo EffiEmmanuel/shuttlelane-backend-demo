@@ -15,7 +15,10 @@ const bookingService = new BookingService(BookingModel);
 export const createBooking = async (req, res) => {
   try {
     // Create new admin
-    const response = await bookingService.createBooking(req.body);
+    const response = await bookingService.createBooking(
+      req.body,
+      req.query.isAdminRequest
+    );
 
     // return a response
     if (response?.status !== 201) {

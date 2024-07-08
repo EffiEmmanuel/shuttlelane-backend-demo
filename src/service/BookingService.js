@@ -27,6 +27,9 @@ import ReactDOMServer from "react-dom/server";
 import moment from "moment";
 import AdminBookingCreatedEmailTemplate from "../emailTemplates/adminEmailTemplates/AdminBookingCreatedEmail/index.js";
 import { sendSMS } from "../util/twilio.js";
+import PaymentService from "./PaymentService.js";
+
+const paymentService = new PaymentService(PaymentModel);
 
 export default class BookingService {
   constructor(ShuttlelaneBookingModel) {
@@ -34,7 +37,7 @@ export default class BookingService {
   }
 
   // This service CREATES a new booking
-  async createBooking(booking) {
+  async createBooking(booking, isAdminRequest) {
     console.log("BOOKING:", booking);
     // Generate booking reference
     const bookingReference = generateBookingReference(booking?.bookingType);
@@ -281,6 +284,15 @@ export default class BookingService {
         message: "An error occured while creating your booking.",
         status: 500,
       };
+    }
+
+    if (isAdminRequest) {
+      const paymentPayload = {
+        paymentStatus: "Successful",
+        booking: shuttlelaneBooking?._id,
+        gateway: "Admin Dashboard",
+      };
+      await paymentService.createPayment(paymentPayload);
     }
 
     const adminEmailHTML = AdminBookingCreatedEmailTemplate({
