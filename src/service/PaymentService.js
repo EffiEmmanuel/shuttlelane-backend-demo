@@ -163,7 +163,9 @@ export default class PaymentService {
         },
         {
           label: "TOTAL BILLED",
-          value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
+          value: `${bookingExists?.bookingCurrency?.symbol}${
+            bookingExists?.bookingTotal ?? " - PAID"
+          }`,
           backgroundColor: "#F5F5F5",
         },
       ];
@@ -221,7 +223,9 @@ export default class PaymentService {
         },
         {
           label: "TOTAL BILLED",
-          value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
+          value: `${bookingExists?.bookingCurrency?.symbol}${
+            bookingExists?.bookingTotal ?? " - PAID"
+          }`,
           backgroundColor: "#FFFFFF",
         },
       ];
@@ -289,7 +293,9 @@ export default class PaymentService {
         },
         {
           label: "TOTAL BILLED",
-          value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
+          value: `${bookingExists?.bookingCurrency?.symbol}${
+            bookingExists?.bookingTotal ?? " - PAID"
+          }`,
           backgroundColor: "#F5F5F5",
         },
       ];
@@ -440,7 +446,9 @@ export default class PaymentService {
         },
         {
           label: "TOTAL BILLED",
-          value: `${bookingExists?.bookingCurrency?.symbol}${bookingExists?.bookingTotal}`,
+          value: `${bookingExists?.bookingCurrency?.symbol}${
+            bookingExists?.bookingTotal ?? " - PAID"
+          }`,
           backgroundColor: "#FFFFFF",
         },
       ];

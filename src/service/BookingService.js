@@ -431,7 +431,7 @@ export default class BookingService {
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
 
-    // Check if any booking exists with the bookingname
+    // Check if any booking exists with the booking id
     const booking = await this.BookingModel.findOne({
       _id: _id,
     })
@@ -474,6 +474,10 @@ export default class BookingService {
             populate: {
               path: "vehicleClass",
               model: "VehicleClass",
+            },
+            populate: {
+              path: "priorityPassType",
+              model: "PriorityPass",
             },
           }
         : bookingReference?.split("-")[0] == "CR"
