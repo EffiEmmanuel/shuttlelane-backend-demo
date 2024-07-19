@@ -471,14 +471,12 @@ export default class BookingService {
       bookingReference?.split("-")[0] == "AT"
         ? {
             path: "booking",
-            populate: {
-              path: "vehicleClass",
-              model: "VehicleClass",
-            },
-            populate: {
-              path: "priorityPassType",
-              model: "PriorityPass",
-            },
+            populate: [
+              {
+                path: "vehicleClass",
+              },
+              { path: "priorityPassType" },
+            ],
           }
         : bookingReference?.split("-")[0] == "CR"
         ? {
@@ -524,7 +522,10 @@ export default class BookingService {
         path: "paymentId",
       })
       .populate({
-        path: "assignedDriver",
+        path: "assignedCar",
+      })
+      .populate({
+        path: "vendorAssignedDriver",
       })
       .populate({
         path: "user",
