@@ -2,7 +2,11 @@ import DriverModel from "../model/driver.model.js";
 import VerificationModel from "../model/verification.model.js";
 import DriverService from "../service/DriverService.js";
 import VerificationService from "../service/VerificationService.js";
-import { resetPassword } from "../util/auth.helper.js";
+import {
+  forgotPassword,
+  resetForgottenPassword,
+  resetPassword,
+} from "../util/auth.helper.js";
 
 // Generic messages
 const internalServerError =
@@ -351,6 +355,45 @@ export const endBooking = async (req, res) => {
     });
   } catch (error) {
     console.log("ERROR FROM ACCEPT BOOKING:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Forgot password
+export const handleDriverForgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Handle forgot password
+    const response = await forgotPassword(email, "driver");
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    console.log("ERROR FROM FORGOT PASSWORD (DRIVER):", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Reset Forgotten password
+export const handleDriverResetForgottenPassword = async (req, res) => {
+  const { driverId } = req.params;
+  const { password } = req.body;
+
+  try {
+    // Handle reset forgotten password
+    const response = await resetForgottenPassword(driverId, password, "driver");
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    console.log("ERROR FROM FORGOT PASSWORD (DRIVER):", error);
     return res.status(500).json({ message: internalServerError });
   }
 };

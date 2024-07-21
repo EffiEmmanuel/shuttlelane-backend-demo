@@ -4,6 +4,8 @@ const routes = {
   API_AUTH_PREFIX: `${process.env.API_AUTH_PREFIX}`,
   API_ADMIN_LOGIN_ROUTE: `/admin/login`,
   API_DRIVER_LOGIN_ROUTE: `/driver/login`,
+  API_DRIVER_FORGOT_PASSWORD_ROUTE: `/driver/forgot-password`,
+  API_DRIVER_RESET_FORGOTTEN_PASSWORD_ROUTE: `/driver/forgot-password/reset/:driverId`,
   API_VENDOR_LOGIN_ROUTE: `/vendor/login`,
   API_USER_LOGIN_ROUTE: `/user/login`,
   API_ADMIN_SIGNUP_ROUTE: `/admin/signup`,

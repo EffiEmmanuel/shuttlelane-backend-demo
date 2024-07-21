@@ -7,7 +7,12 @@ import {
   signupAdmin,
 } from "../controller/admin.controller.js";
 import { verifyJWT } from "../util/auth.helper.js";
-import { loginDriver, signupDriver } from "../controller/driver.controller.js";
+import {
+  handleDriverForgotPassword,
+  handleDriverResetForgottenPassword,
+  loginDriver,
+  signupDriver,
+} from "../controller/driver.controller.js";
 import { resendOTP, verifyOTP } from "../controller/verification.controller.js";
 import { loginVendor, signupVendor } from "../controller/vendor.controller.js";
 
@@ -35,6 +40,16 @@ authRouter.post(routes.API_ADMIN_LOGIN_ROUTE, loginAdmin);
 authRouter.post(routes.API_DRIVER_SIGNUP_ROUTE, signupDriver);
 // LOGIN DRIVER
 authRouter.post(routes.API_DRIVER_LOGIN_ROUTE, loginDriver);
+// FORGOT PASSWORD
+authRouter.post(
+  routes.API_DRIVER_FORGOT_PASSWORD_ROUTE,
+  handleDriverForgotPassword
+);
+// RESET FORGOTTEN PASSWORD
+authRouter.post(
+  routes.API_DRIVER_RESET_FORGOTTEN_PASSWORD_ROUTE,
+  handleDriverResetForgottenPassword
+);
 
 // Auth routes for Vendors
 // SIGNUP VENDOR

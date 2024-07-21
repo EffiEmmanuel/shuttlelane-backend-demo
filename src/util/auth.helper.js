@@ -7,6 +7,10 @@ import AdminModel from "../model/admin.model.js";
 import VendorModel from "../model/vendor.model.js";
 import config from "../config/index.js";
 import { sendEmail } from "./sendgrid.js";
+import ReactDOMServer from "react-dom/server";
+import DriverResetPasswordEmailTemplate from "../emailTemplates/driverEmailTemplates/DriverResetPasswordEmail/index.js";
+import VendorResetPasswordEmailTemplate from "../emailTemplates/vendorEmailTemplates/VendorResetPasswordEmail/index.js";
+import ResetPasswordSuccessEmailTemplate from "../emailTemplates/reusable/PasswordResetSuccessful/index.js";
 
 const { sign, verify } = jsonwebtoken;
 
@@ -280,6 +284,152 @@ export async function resetPassword(_id, oldPassword, newPassword, userType) {
       html: `<h1>Your password has been reset successfully!</h1><p>Dear ${user?.firstName}, Your password has just been reset. If this was not initiated by you, please reach out to info@shuttlelane.com immediately.`,
     };
     await sendEmail(message);
+
+    return {
+      status: 201,
+      message: `Your password has been successfully reset. You'll be required to log in again.`,
+      user: updatedUserDoc,
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      message:
+        "An error occured while processing your request. Please, try again.",
+    };
+  }
+}
+
+export async function forgotPassword(email, userType) {
+  try {
+    let user;
+    switch (userType) {
+      case "driver":
+        user = await DriverModel.findOne({ email: email });
+        if (!user)
+          return {
+            status: 404,
+            message:
+              "No account exists with the email provided. Plase try again with a different email address.",
+          };
+
+        // TO-DO: Send confirmation email here
+        const emailHTML = DriverResetPasswordEmailTemplate({
+          driverId: user?._id,
+        });
+
+        const message = {
+          to: user?.email,
+          from: process.env.SENGRID_EMAIL,
+          subject: "Password Reset",
+          html: ReactDOMServer.renderToStaticMarkup(emailHTML),
+        };
+
+        sendEmail(message);
+        break;
+      case "user":
+        user = await UserModel.findOne({ email: email });
+        if (!user)
+          return {
+            status: 404,
+            message:
+              "No account exists with the email provided. Plase try again with a different email address.",
+          };
+
+        // TO-DO: Send confirmation email here
+        //   const userEmailHTML = DriverResetPasswordEmailTemplate({
+        //     driverId: user?._id,
+        //   });
+
+        //   const message = {
+        //     to: user?.email,
+        //     from: process.env.SENGRID_EMAIL,
+        //     subject: "Password Reset",
+        //     html: ReactDOMServer.renderToStaticMarkup(userEmailHTML),
+        //   };
+
+        //   sendEmail(message);
+        break;
+      case "vendor":
+        user = await VendorModel.findOne({ companyEmail: email });
+        if (!user)
+          return {
+            status: 404,
+            message:
+              "No account exists with the email provided. Plase try again with a different email address.",
+          };
+
+        // TO-DO: Send confirmation email here
+        const vendorEmailHTML = VendorResetPasswordEmailTemplate({
+          vendorId: user?._id,
+        });
+
+        const vendorMessage = {
+          to: user?.companyEmail,
+          from: process.env.SENGRID_EMAIL,
+          subject: "Password Reset",
+          html: ReactDOMServer.renderToStaticMarkup(vendorEmailHTML),
+        };
+
+        sendEmail(vendorMessage);
+        break;
+      default:
+        break;
+    }
+
+    return {
+      status: 200,
+      message: `We will send a password reset link to the email provided if it is associated with an account on Shuttlelane.`,
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      message:
+        "An error occured while processing your request. Please, try again.",
+    };
+  }
+}
+
+export async function resetForgottenPassword(_id, newPassword, userType) {
+  try {
+    let user;
+    switch (userType) {
+      case "driver":
+        user = await DriverModel.findById(_id);
+        break;
+      case "user":
+        user = await UserModel.findById(_id);
+        break;
+      case "vendor":
+        user = await VendorModel.findById(_id);
+        break;
+      default:
+        break;
+    }
+
+    if (!user)
+      return { status: 400, message: "No user exists with the id specified." };
+
+    // Hash password
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Hash the password
+    user.password = hashedPassword;
+    const updatedUserDoc = await user.save();
+
+    // TO-DO: Send confirmation email here
+    const emailHTML = ResetPasswordSuccessEmailTemplate({
+      emailAddress: user?._id,
+    });
+
+    const message = {
+      to: user?.companyEmail ?? user?.email,
+      from: process.env.SENGRID_EMAIL,
+      subject: "Password Reset",
+      html: ReactDOMServer.renderToStaticMarkup(emailHTML),
+    };
+
+    sendEmail(message);
 
     return {
       status: 201,
