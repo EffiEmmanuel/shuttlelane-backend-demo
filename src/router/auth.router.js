@@ -46,7 +46,7 @@ authRouter.post(
   handleDriverForgotPassword
 );
 // RESET FORGOTTEN PASSWORD
-authRouter.post(
+authRouter.patch(
   routes.API_DRIVER_RESET_FORGOTTEN_PASSWORD_ROUTE,
   handleDriverResetForgottenPassword
 );
