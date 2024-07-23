@@ -6,6 +6,8 @@ const routes = {
   API_DRIVER_LOGIN_ROUTE: `/driver/login`,
   API_DRIVER_FORGOT_PASSWORD_ROUTE: `/driver/forgot-password`,
   API_DRIVER_RESET_FORGOTTEN_PASSWORD_ROUTE: `/driver/forgot-password/reset/:driverId`,
+  API_VENDOR_FORGOT_PASSWORD_ROUTE: `/vendor/forgot-password`,
+  API_VENDOR_RESET_FORGOTTEN_PASSWORD_ROUTE: `/vendor/forgot-password/reset/:vendorId`,
   API_VENDOR_LOGIN_ROUTE: `/vendor/login`,
   API_USER_LOGIN_ROUTE: `/user/login`,
   API_ADMIN_SIGNUP_ROUTE: `/admin/signup`,

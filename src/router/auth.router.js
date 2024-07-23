@@ -14,7 +14,12 @@ import {
   signupDriver,
 } from "../controller/driver.controller.js";
 import { resendOTP, verifyOTP } from "../controller/verification.controller.js";
-import { loginVendor, signupVendor } from "../controller/vendor.controller.js";
+import {
+  handleVendorForgotPassword,
+  handleVendorResetForgottenPassword,
+  loginVendor,
+  signupVendor,
+} from "../controller/vendor.controller.js";
 
 const authRouter = express.Router();
 
@@ -56,6 +61,16 @@ authRouter.patch(
 authRouter.post(routes.API_VENDOR_SIGNUP_ROUTE, signupVendor);
 // LOGIN VENDOR
 authRouter.post(routes.API_VENDOR_LOGIN_ROUTE, loginVendor);
+// FORGOT PASSWORD
+authRouter.post(
+  routes.API_VENDOR_FORGOT_PASSWORD_ROUTE,
+  handleVendorForgotPassword
+);
+// RESET FORGOTTEN PASSWORD
+authRouter.patch(
+  routes.API_VENDOR_RESET_FORGOTTEN_PASSWORD_ROUTE,
+  handleVendorResetForgottenPassword
+);
 
 // Verify Token
 authRouter.post("/verify-token", verifyJWT);

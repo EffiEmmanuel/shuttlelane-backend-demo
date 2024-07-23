@@ -2,7 +2,11 @@ import VendorModel from "../model/vendor.model.js";
 import VerificationModel from "../model/verification.model.js";
 import VendorService from "../service/VendorService.js";
 import VerificationService from "../service/VerificationService.js";
-import { resetPassword } from "../util/auth.helper.js";
+import {
+  forgotPassword,
+  resetForgottenPassword,
+  resetPassword,
+} from "../util/auth.helper.js";
 
 // Generic messages
 const internalServerError =
@@ -534,6 +538,45 @@ export const updateVendorDriverById = async (req, res) => {
     });
   } catch (error) {
     console.log("ERROR FROM UPDATE VENDOR DRIVER:", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Forgot password
+export const handleVendorForgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Handle forgot password
+    const response = await forgotPassword(email, "vendor");
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    console.log("ERROR FROM FORGOT PASSWORD (DRIVER):", error);
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+
+// Reset Forgotten password
+export const handleVendorResetForgottenPassword = async (req, res) => {
+  const { vendoId } = req.params;
+  const { password } = req.body;
+
+  try {
+    // Handle reset forgotten password
+    const response = await resetForgottenPassword(vendoId, password, "vendor");
+
+    // Return a response
+    return res.status(response?.status).json({
+      status: response?.status,
+      message: response?.message,
+    });
+  } catch (error) {
+    console.log("ERROR FROM FORGOT PASSWORD (VENDOR):", error);
     return res.status(500).json({ message: internalServerError });
   }
 };
