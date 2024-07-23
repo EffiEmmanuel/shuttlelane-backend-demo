@@ -419,6 +419,8 @@ export async function resetForgottenPassword(_id, newPassword, userType) {
     user.password = hashedPassword;
     const updatedUserDoc = await user.save();
 
+    console.log("UPDATED USER DOC:", updatedUserDoc);
+
     // TO-DO: Send confirmation email here
     const emailHTML = ResetPasswordSuccessEmailTemplate({
       emailAddress: user?._id,
@@ -439,6 +441,7 @@ export async function resetForgottenPassword(_id, newPassword, userType) {
       user: updatedUserDoc,
     };
   } catch (error) {
+    console.log("ERROR FROM RESET FORGOT PASSWORD (DRIVER):", error);
     return {
       status: 500,
       message:
