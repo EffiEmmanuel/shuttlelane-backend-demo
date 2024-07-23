@@ -406,7 +406,7 @@ export async function resetForgottenPassword(_id, newPassword, userType) {
         break;
     }
 
-    console.log('user:', user)
+    console.log("user:", user);
 
     if (!user)
       return { status: 400, message: "No user exists with the id specified." };
@@ -425,7 +425,7 @@ export async function resetForgottenPassword(_id, newPassword, userType) {
     });
 
     const message = {
-      to: user?.companyEmail ?? user?.email,
+      to: user?.email ?? user?.companyEmail,
       from: process.env.SENGRID_EMAIL,
       subject: "Password Successfully Reset",
       html: ReactDOMServer.renderToStaticMarkup(emailHTML),
@@ -435,7 +435,7 @@ export async function resetForgottenPassword(_id, newPassword, userType) {
 
     return {
       status: 201,
-      message: `Your password has been successfully reset. You'll be required to log in again.`,
+      message: `Your password has been successfully reset.`,
       user: updatedUserDoc,
     };
   } catch (error) {
