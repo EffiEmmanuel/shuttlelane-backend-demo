@@ -273,8 +273,38 @@ export default class BookingService {
 
         default:
           break;
-          king;
       }
+
+      if (isAdminRequest) {
+        const paymentPayload = {
+          paymentStatus: "Successful",
+          booking: justCreatedBooking?._id ?? shuttlelaneBooking?._id,
+          gateway: "Admin Dashboard",
+        };
+        await paymentService.createPayment(paymentPayload);
+      }
+
+      const adminEmailHTML = AdminBookingCreatedEmailTemplate({
+        bookingReference,
+        firstName: booking?.firstName ?? booking?.user?.firstName,
+        lastName: booking?.lastName ?? booking?.user?.lastName,
+        mobile: booking?.mobile ?? booking?.user?.mobile,
+        email: booking?.email ?? booking?.user?.email,
+      });
+
+      const adminMessage = {
+        to: "info@shuttlelane.com",
+        from: process.env.SENGRID_EMAIL,
+        subject: "🔔 New Booking Notification",
+        html: ReactDOMServer.renderToStaticMarkup(adminEmailHTML),
+      };
+      sendEmail(adminMessage);
+
+      return {
+        status: 201,
+        message: "Your booking has been created successfully!",
+        booking: shuttlelaneBooking,
+      };
     } catch (error) {
       console.log(
         "An error occured while creating your booking. Please try again ==> ",
@@ -285,37 +315,6 @@ export default class BookingService {
         status: 500,
       };
     }
-
-    if (isAdminRequest) {
-      const paymentPayload = {
-        paymentStatus: "Successful",
-        booking: shuttlelaneBooking?._id,
-        gateway: "Admin Dashboard",
-      };
-      await paymentService.createPayment(paymentPayload);
-    }
-
-    const adminEmailHTML = AdminBookingCreatedEmailTemplate({
-      bookingReference,
-      firstName: booking?.firstName ?? booking?.user?.firstName,
-      lastName: booking?.lastName ?? booking?.user?.lastName,
-      mobile: booking?.mobile ?? booking?.user?.mobile,
-      email: booking?.email ?? booking?.user?.email,
-    });
-
-    const adminMessage = {
-      to: "info@shuttlelane.com",
-      from: process.env.SENGRID_EMAIL,
-      subject: "🔔 New Booking Notification",
-      html: ReactDOMServer.renderToStaticMarkup(adminEmailHTML),
-    };
-    sendEmail(adminMessage);
-
-    return {
-      status: 201,
-      message: "Your booking has been created successfully!",
-      booking: shuttlelaneBooking,
-    };
   }
 
   // RATE PER MILE
