@@ -422,9 +422,9 @@ export async function resetForgottenPassword(_id, newPassword, userType) {
     console.log("UPDATED USER DOC:", updatedUserDoc);
 
     // TO-DO: Send confirmation email here
-    const emailHTML = ResetPasswordSuccessEmailTemplate({
-      emailAddress: user?._id,
-    });
+    const emailHTML = ResetPasswordSuccessEmailTemplate(
+      user?.email ?? user?.companyEmail
+    );
 
     const message = {
       to: user?.email ?? user?.companyEmail,

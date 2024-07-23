@@ -1,7 +1,6 @@
 import React from "react";
 import EmailFooter from "../EmailFooter/index.js";
-const ResetPasswordSuccessEmailTemplate = (_ref) => {
-  let { emailAddress } = _ref;
+const ResetPasswordSuccessEmailTemplate = (emailAddress) => {
   return /*#__PURE__*/ React.createElement(
     "div",
     {
