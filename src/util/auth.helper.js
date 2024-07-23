@@ -406,6 +406,8 @@ export async function resetForgottenPassword(_id, newPassword, userType) {
         break;
     }
 
+    console.log('user:', user)
+
     if (!user)
       return { status: 400, message: "No user exists with the id specified." };
 
@@ -425,7 +427,7 @@ export async function resetForgottenPassword(_id, newPassword, userType) {
     const message = {
       to: user?.companyEmail ?? user?.email,
       from: process.env.SENGRID_EMAIL,
-      subject: "Password Reset",
+      subject: "Password Successfully Reset",
       html: ReactDOMServer.renderToStaticMarkup(emailHTML),
     };
 
