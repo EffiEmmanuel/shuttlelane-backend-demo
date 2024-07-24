@@ -1347,7 +1347,13 @@ export default class AdminService {
         path: "booking",
       });
 
-      const booking = await BookingModel.findOne({ _id: bookingId });
+      const booking = await BookingModel.findOne({ _id: bookingId })
+        .populate("booking")
+        .populate("user")
+        .populate("assignedDriver")
+        .populate("assignedVendor")
+        .populate("vendorAssignedDriver")
+        .populate("assignedCar");
       const bookingDetails = await generateBookingDetails(booking);
       // TO-DO: Send confirmation email here
       let dynamicTemplateData = {
