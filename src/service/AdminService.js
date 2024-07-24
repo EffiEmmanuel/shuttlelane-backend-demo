@@ -3072,7 +3072,7 @@ export default class AdminService {
 
     if (bookingType == "airport") {
       upcomingBookings = await BookingModel.find({
-        status: "Scheduled",
+        bookingStatus: "Scheduled",
         bookingType: "Airport",
       })
         .sort({ createdAt: -1 })
@@ -3084,7 +3084,7 @@ export default class AdminService {
         .populate("paymentId");
     } else if (bookingType == "car") {
       upcomingBookings = await BookingModel.find({
-        status: "Scheduled",
+        bookingStatus: "Scheduled",
         bookingType: "Car",
       })
         .sort({ createdAt: -1 })
@@ -3096,7 +3096,7 @@ export default class AdminService {
         .populate("paymentId");
     } else if (bookingType == "priority") {
       upcomingBookings = await BookingModel.find({
-        status: "Scheduled",
+        bookingStatus: "Scheduled",
         bookingType: "Priority",
       })
         .sort({ createdAt: -1 })
@@ -3108,7 +3108,7 @@ export default class AdminService {
         .populate("paymentId");
     } else if (bookingType == "visa") {
       upcomingBookings = await BookingModel.find({
-        status: "Processing",
+        bookingStatus: "Processing",
         bookingType: "Visa",
       })
         .sort({ createdAt: -1 })

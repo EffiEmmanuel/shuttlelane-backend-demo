@@ -34,6 +34,8 @@ const bookingSchema = new mongoose.Schema(
         "Scheduled",
         "Cancelled",
         "Completed",
+        "Processing",
+        "Customer no show",
         "Ongoing",
       ],
       default: "Not yet assigned",
