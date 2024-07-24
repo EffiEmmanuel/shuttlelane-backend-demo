@@ -1625,6 +1625,7 @@ export const updateBookingStatus = async (req, res) => {
 
     // Return a response
     return res.status(response?.status).json({
+      status: response?.status,
       message: response?.message,
       upcomingBookings: response?.upcomingBookings,
       bookings: response?.bookings,
