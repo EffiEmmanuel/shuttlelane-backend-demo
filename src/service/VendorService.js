@@ -503,16 +503,16 @@ export default class VendorService {
       pickupDate: moment(updatedBooking?.booking?.pickupDate).format(
         "MMM DD, YYYY"
       ),
-      pickupTime: moment(updatedBooking?.booking?.pickupTime).format("H:MM A"),
+      pickupTime: moment(updatedBooking?.booking?.pickupTime).format("H:mm A"),
       pickupLocation: updatedBooking?.booking?.pickupAddress,
       driverName: `${updatedBooking?.vendorAssignedDriver?.firstName} ${updatedBooking?.vendorAssignedDriver?.lastName}`,
       driverMobile: updatedBooking?.vendorAssignedDriver?.mobile,
       vendorName: `${
-        updatedBooking?.assignedVendor?.firstName ??
-        updatedBooking?.vendorJobWasSentTo?.firstName
+        updatedBooking?.assignedVendor?.companyName ??
+        updatedBooking?.vendorJobWasSentTo?.companyName
       } ${
-        updatedBooking?.assignedVendor?.lastName ??
-        updatedBooking?.vendorJobWasSentTo?.lastName
+        updatedBooking?.assignedVendor?.companyName ??
+        updatedBooking?.vendorJobWasSentTo?.companyName
       }`,
       vendorMobile:
         updatedBooking?.assignedVendor?.mobile ??
@@ -524,8 +524,7 @@ export default class VendorService {
     });
 
     const adminMessage = {
-      //   to: "info@shuttlelane.com",
-      to: "effiemmanuel.n@gmail.com",
+      to: "booking@shuttlelane.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Booking Confirmation: ${updatedBooking?.bookingReference}`,
       html: ReactDOMServer.renderToString(adminEmailHTML),
@@ -556,7 +555,15 @@ export default class VendorService {
 
     console.log("BOOKIGNS ASSIGNED TO 8:");
     // Send a notification to the vendor
-    const booking = await BookingModel.findOne({ _id: bookingId });
+    const booking = await BookingModel.findOne({ _id: bookingId })
+      .populate("booking")
+      .populate("paymentId")
+      .populate("bookingCurrency")
+      .populate("assignedDriver")
+      .populate("vendorAssignedDriver")
+      .populate("vendorJobWasSentTo")
+      .populate("assignedVendor")
+      .populate("assignedCar");
     const bookingDetails = await generateBookingDetails(booking);
 
     // TO-DO: Send confirmation email here
@@ -678,8 +685,7 @@ export default class VendorService {
     });
 
     const message = {
-      to: "info@shuttlelane.com",
-      //   to: "effiemmanuel.n@gmail.com",
+      to: "booking@shuttlelane.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Booking Rejected: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(emailHTML),
@@ -827,8 +833,7 @@ export default class VendorService {
     });
 
     const adminMessage = {
-      //   to: 'info@shuttlelane.com',
-      to: "effiemmanuel.n@gmail.com",
+      to: "booking@shuttlelane.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Vendor En Route: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(adminEmailHTML),
@@ -963,8 +968,7 @@ export default class VendorService {
     });
 
     const adminMessage = {
-      //   to: 'info@shuttlelane.com',
-      to: "effiemmanuel.n@gmail.com",
+      to: "booking@shuttlelane.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Trip Ended: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(adminEmailHTML),

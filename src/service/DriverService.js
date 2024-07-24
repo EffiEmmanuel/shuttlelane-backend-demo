@@ -431,6 +431,8 @@ export default class DriverService {
       .populate("assignedCar")
       .populate("driverJobWasSentTo")
       .populate("vendorAssignedDriver")
+      .populate("vendorJobWasSentTo")
+      .populate("assignedVendor")
       .populate("assignedDriver")
       .populate("bookingCurrency")
       .populate("user");
@@ -496,8 +498,7 @@ export default class DriverService {
     });
 
     const adminMessage = {
-      to: "info@shuttlelane.com",
-      //   to: "effiemmanuel.n@gmail.com",
+      to: "booking@shuttlelane.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Booking Confirmation: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(adminEmailHTML),
@@ -528,7 +529,15 @@ export default class DriverService {
     await sendSGDynamicEmail(msg);
 
     // Send a notification to the driver
-    const booking = await BookingModel.findOne({ _id: bookingId });
+    const booking = await BookingModel.findOne({ _id: bookingId })
+      .populate("booking")
+      .populate("paymentId")
+      .populate("bookingCurrency")
+      .populate("assignedDriver")
+      .populate("vendorAssignedDriver")
+      .populate("vendorJobWasSentTo")
+      .populate("assignedVendor")
+      .populate("assignedCar");
     let bookingDetails = await generateBookingDetails(booking);
     // TO-DO: Send confirmation email here
     const driverDynamicTemplateData = {
@@ -645,8 +654,7 @@ export default class DriverService {
     });
 
     const message = {
-      to: "info@shuttlelane.com",
-      //   to: "effiemmanuel.n@gmail.com",
+      to: "booking@shuttlelane.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Booking Rejected: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(emailHTML),
@@ -807,8 +815,7 @@ export default class DriverService {
         bookingExists?.driverJobWasSentTo?.mobile,
     });
     const adminMessage = {
-      to: "info@shuttlelane.com",
-      //   to: "effiemmanuel.n@gmail.com",
+      to: "booking@shuttlelane.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Driver En Route: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(adminEmailHTML),
@@ -940,8 +947,7 @@ export default class DriverService {
     });
 
     const adminMessage = {
-      //   to: "info@shuttlelane.com",
-      to: "effiemmanuel.n@gmail.com",
+      to: "booking@shuttlelane.com",
       from: process.env.SENGRID_EMAIL,
       subject: `Trip Ended: ${bookingExists?.bookingReference}`,
       html: ReactDOMServer.renderToString(adminEmailHTML),
