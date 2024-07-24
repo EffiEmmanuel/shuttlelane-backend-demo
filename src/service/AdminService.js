@@ -3045,4 +3045,86 @@ export default class AdminService {
       message: `Admin with _id ${_id} has been updated successfully.`,
     };
   }
+
+  // This service UPDATES a booking status by id
+  async updateBookingStatus(_id, bookingStatus, bookingType) {
+    // Validate if fields are empty
+    const areFieldsEmpty = validateFields([_id, bookingStatus, bookingType]);
+
+    // areFieldsEmpty is an object that contains a status and message field
+    if (areFieldsEmpty) return areFieldsEmpty;
+
+    // Update the booking
+    const updatedBooking = await BookingModel.findOneAndUpdate(
+      { _id: _id },
+      { bookingStatus: bookingStatus }
+    );
+
+    if (!updatedBooking) {
+      return {
+        status: 404,
+        message: `No booking with _id ${_id} exists.`,
+      };
+    }
+
+    // Upcoming bookings
+    let upcomingBookings, bookings;
+
+    if (bookingType == "airport") {
+      upcomingBookings = await BookingModel.find({
+        status: "Scheduled",
+        bookingType: "Airport",
+      })
+        .sort({ createdAt: -1 })
+        .populate("booking")
+        .populate("paymentId");
+      bookings = await BookingModel.find({ bookingType: "Airport" })
+        .sort({ createdAt: -1 })
+        .populate("booking")
+        .populate("paymentId");
+    } else if (bookingType == "car") {
+      upcomingBookings = await BookingModel.find({
+        status: "Scheduled",
+        bookingType: "Car",
+      })
+        .sort({ createdAt: -1 })
+        .populate("booking")
+        .populate("paymentId");
+      bookings = await BookingModel.find({ bookingType: "Car" })
+        .sort({ createdAt: -1 })
+        .populate("booking")
+        .populate("paymentId");
+    } else if (bookingType == "priority") {
+      upcomingBookings = await BookingModel.find({
+        status: "Scheduled",
+        bookingType: "Priority",
+      })
+        .sort({ createdAt: -1 })
+        .populate("booking")
+        .populate("paymentId");
+      bookings = await BookingModel.find({ bookingType: "Priority" })
+        .sort({ createdAt: -1 })
+        .populate("booking")
+        .populate("paymentId");
+    } else if (bookingType == "visa") {
+      upcomingBookings = await BookingModel.find({
+        status: "Processing",
+        bookingType: "Visa",
+      })
+        .sort({ createdAt: -1 })
+        .populate("booking")
+        .populate("paymentId");
+      bookings = await BookingModel.find({ bookingType: "Visa" })
+        .sort({ createdAt: -1 })
+        .populate("booking")
+        .populate("paymentId");
+    }
+
+    return {
+      status: 201,
+      message: `Booking status has been updated.`,
+      bookings: bookings,
+      upcomingBookings: upcomingBookings,
+    };
+  }
 }

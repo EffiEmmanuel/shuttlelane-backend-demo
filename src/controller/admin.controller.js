@@ -1551,3 +1551,25 @@ export const getAllBookings = async (req, res) => {
     return res.status(500).json({ message: internalServerError });
   }
 };
+// UPDATE BOOKING STATUS
+export const updateBookingStatus = async (req, res) => {
+  const { bookingId } = req.params;
+  const { status, bookingType } = req.body;
+  try {
+    // Update booking status
+    const response = await adminService.updateBookingStatus(
+      bookingId,
+      status,
+      bookingType
+    );
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      upcomingBookings: response?.upcomingBookings,
+      bookings: response?.bookings,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};

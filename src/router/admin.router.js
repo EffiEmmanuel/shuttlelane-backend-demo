@@ -68,6 +68,7 @@ import {
   unsuspendDriverAccount,
   getUnapprovedVendors,
   getUnapprovedDrivers,
+  updateBookingStatus,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
@@ -89,6 +90,12 @@ adminRouter.get(
   "/bookings/unassigned",
   verifyUserToken,
   fetchBookingsAwaitingAssignment
+);
+// UPDATE BOOKING STATUS
+adminRouter.patch(
+  "/bookings/:bookingId/update-status",
+  verifyUserToken,
+  updateBookingStatus
 );
 
 // CITIES
