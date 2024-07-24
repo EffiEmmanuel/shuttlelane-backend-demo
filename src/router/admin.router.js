@@ -69,6 +69,10 @@ import {
   getUnapprovedVendors,
   getUnapprovedDrivers,
   updateBookingStatus,
+  fetchUpcomingAirportBookings,
+  fetchUpcomingCarBookings,
+  fetchUpcomingPriorityBookings,
+  fetchUpcomingVisaBookings,
 } from "../controller/admin.controller.js";
 
 const adminRouter = express.Router();
@@ -83,6 +87,30 @@ adminRouter.delete("/:adminId", verifyUserToken, deleteAdminById);
 adminRouter.get("/statistics", verifyUserToken, getStatistics);
 // GET ALL BOOKINGS
 adminRouter.get("/bookings", verifyUserToken, getAllBookings);
+// GET UPCOMING AIRPORT BOOKINGS
+adminRouter.get(
+  "/bookings/airport/upcoming",
+  verifyUserToken,
+  fetchUpcomingAirportBookings
+);
+// GET UPCOMING CAR BOOKINGS
+adminRouter.get(
+  "/bookings/car/upcoming",
+  verifyUserToken,
+  fetchUpcomingCarBookings
+);
+// GET UPCOMING PRIORITY BOOKINGS
+adminRouter.get(
+  "/bookings/priority/upcoming",
+  verifyUserToken,
+  fetchUpcomingPriorityBookings
+);
+// GET UPCOMING VISA BOOKINGS
+adminRouter.get(
+  "/bookings/visa/upcoming",
+  verifyUserToken,
+  fetchUpcomingVisaBookings
+);
 // GET UPCOMING BOOKINGS
 adminRouter.get("/bookings/upcoming", verifyUserToken, fetchUpcomingBookings);
 // GET BOOKINGS AWAITING ASSIGNMENT

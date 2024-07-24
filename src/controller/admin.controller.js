@@ -1551,6 +1551,66 @@ export const getAllBookings = async (req, res) => {
     return res.status(500).json({ message: internalServerError });
   }
 };
+// GET UPCOMING AIRPORT BOOKINGS
+export const fetchUpcomingAirportBookings = async (req, res) => {
+  try {
+    // Fetch upcoming airport bookings
+    const response = await bookingService.getUpcomingAirportBookings();
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      upcomingBookings: response?.upcomingBookings,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+// GET UPCOMING CAR BOOKINGS
+export const fetchUpcomingCarBookings = async (req, res) => {
+  try {
+    // Fetch upcoming car bookings
+    const response = await bookingService.getUpcomingCarBookings();
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      upcomingBookings: response?.upcomingBookings,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+// GET UPCOMING PRIORITY BOOKINGS
+export const fetchUpcomingPriorityBookings = async (req, res) => {
+  try {
+    // Fetch upcoming priority bookings
+    const response = await bookingService.getUpcomingPriorityBookings();
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      upcomingBookings: response?.upcomingBookings,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
+// GET UPCOMING VISA BOOKINGS
+export const fetchUpcomingVisaBookings = async (req, res) => {
+  try {
+    // Fetch upcoming visa bookings
+    const response = await bookingService.getUpcomingVisaBookings();
+
+    // Return a response
+    return res.status(response?.status).json({
+      message: response?.message,
+      upcomingBookings: response?.upcomingBookings,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: internalServerError });
+  }
+};
 // UPDATE BOOKING STATUS
 export const updateBookingStatus = async (req, res) => {
   const { bookingId } = req.params;

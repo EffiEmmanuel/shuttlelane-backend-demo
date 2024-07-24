@@ -422,6 +422,82 @@ export default class BookingService {
     };
   }
 
+  async getUpcomingAirportBookings() {
+    // Fetch upcoming airport transfer bookings
+    const airportTransferBookings = await this.BookingModel.find({
+      bookingType: "Airport",
+      bookingStatus: "Scheduled",
+    })
+      .populate("booking")
+      .populate("bookingCurrency")
+      .populate("paymentId")
+      .populate("user")
+      .sort({ createdAt: -1 });
+
+    return {
+      status: 200,
+      message: `Fetched upcoming airport bookings`,
+      upcomingBookings: airportTransferBookings,
+    };
+  }
+
+  async getUpcomingCarBookings() {
+    // Fetch upcoming car bookings
+    const carRentalBookings = await this.BookingModel.find({
+      bookingType: "Car",
+      bookingStatus: "Scheduled",
+    })
+      .populate("booking")
+      .populate("bookingCurrency")
+      .populate("paymentId")
+      .populate("user")
+      .sort({ createdAt: -1 });
+
+    return {
+      status: 200,
+      message: `Fetched upcoming car bookings`,
+      upcomingBookings: carRentalBookings,
+    };
+  }
+
+  async getUpcomingPriorityBookings() {
+    // Fetch upcoming priority bookings
+    const priorityPassBookings = await this.BookingModel.find({
+      bookingType: "Priority",
+      bookingStatus: "Scheduled",
+    })
+      .populate("booking")
+      .populate("bookingCurrency")
+      .populate("paymentId")
+      .populate("user")
+      .sort({ createdAt: -1 });
+
+    return {
+      status: 200,
+      message: `Fetched upcoming priority bookings`,
+      upcomingBookings: priorityPassBookings,
+    };
+  }
+
+  async getUpcomingVisaBookings() {
+    // Fetch upcoming visa bookings
+    const visaOnArrivalBookings = await this.BookingModel.find({
+      bookingType: "Visa",
+      bookingStatus: "Ongoing",
+    })
+      .populate("booking")
+      .populate("bookingCurrency")
+      .populate("paymentId")
+      .populate("user")
+      .sort({ createdAt: -1 });
+
+    return {
+      status: 200,
+      message: `Fetched upcoming visa bookings`,
+      upcomingBookings: visaOnArrivalBookings,
+    };
+  }
+
   // This service GETS a booking by their id
   async getBookingById(_id) {
     // Validate if fields are empty
