@@ -51,8 +51,7 @@ const vendorSchema = new mongoose.Schema(
 
     operatingCities: [
       {
-        type: mongoose.Types?.ObjectId,
-        ref: "City",
+        type: String,
       },
     ],
 
